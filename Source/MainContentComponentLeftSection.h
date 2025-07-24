@@ -59,7 +59,7 @@ public:
     std::function<void(int, const juce::String&)> onMidiFileChanged;
     std::function<void()> onGrooveAndFillsRequested;
 
-    void setComponentState(ComponentState* state) { componentState = state; }
+    void setComponentState(ComponentState* state) { componentState.reset(state); }
 
     BeatsButtonGroup* findOrCreateGroup(const juce::String& groupName, ComponentState& state);
 

@@ -210,7 +210,7 @@ MidiFileManager* MainContentComponentLeftSection::getMidiFileManager() {
 }
 
 void MainContentComponentLeftSection::saveStates(ComponentState& state) {
-    componentState = &state;
+    componentState.reset(&state);
     savePlayerBeatsButtonState(currentPlayerIndex, state);
 
     for (int i = 0; i < 16; ++i) {
@@ -225,7 +225,7 @@ void MainContentComponentLeftSection::saveStates(ComponentState& state) {
 }
 
 void MainContentComponentLeftSection::loadStates(const ComponentState& state) {
-    componentState = const_cast<ComponentState*>(&state);
+    componentState.reset(const_cast<ComponentState*>(&state));
     closeCurrentDropdown();
 
     for (int i = 0; i < 16; ++i) {

@@ -177,7 +177,6 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
         if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
             auto* popup = topLevel->getChildComponent(i);
             topLevel->removeChildComponent(popup);
-            delete popup;
             break;
         }
     }
@@ -222,7 +221,6 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                             if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
                                 auto* popup = topLevel->getChildComponent(i);
                                 topLevel->removeChildComponent(popup);
-                                delete popup;
                                 break;
                             }
                         }
@@ -234,7 +232,6 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                             if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
                                 auto* popup = topLevel->getChildComponent(i);
                                 topLevel->removeChildComponent(popup);
-                                delete popup;
                                 break;
                             }
                         }
@@ -276,7 +273,6 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                             if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
                                 auto* popup = topLevel->getChildComponent(i);
                                 topLevel->removeChildComponent(popup);
-                                delete popup;
                                 break;
                             }
                         }
@@ -288,7 +284,6 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                             if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
                                 auto* popup = topLevel->getChildComponent(i);
                                 topLevel->removeChildComponent(popup);
-                                delete popup;
                                 break;
                             }
                         }
@@ -323,7 +318,6 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                             if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
                                 auto* popup = topLevel->getChildComponent(i);
                                 topLevel->removeChildComponent(popup);
-                                delete popup;
                                 break;
                             }
                         }
@@ -335,7 +329,6 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                             if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
                                 auto* popup = topLevel->getChildComponent(i);
                                 topLevel->removeChildComponent(popup);
-                                delete popup;
                                 break;
                             }
                         }

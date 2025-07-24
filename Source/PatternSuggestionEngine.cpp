@@ -1,4 +1,5 @@
 #include "PatternSuggestionEngine.h"
+#include "ErrorHandling.h"
 #include "INIConfig.h"
 
 PatternSuggestionEngine::PatternSuggestionEngine() {
@@ -90,46 +91,53 @@ void PatternSuggestionEngine::initializeGenreProfiles() {
 juce::Array<PatternSuggestionEngine::PatternSuggestion>
 PatternSuggestionEngine::suggestPatterns(const SuggestionParams& params, int numSuggestions) {
     juce::Array<PatternSuggestion> suggestions;
-
-    int profileIndex = -1;
-    for (int i = 0; i < genreProfiles.size(); ++i) {
-        if (genreProfiles[i].genre == params.genre) {
-            profileIndex = i;
-            break;
+    
+    try {
+        int profileIndex = -1;
+        for (int i = 0; i < genreProfiles.size(); ++i) {
+            if (genreProfiles[i].genre == params.genre) {
+                profileIndex = i;
+                break;
+            }
         }
+
+        if (profileIndex < 0) {
+            profileIndex = 0;
+        }
+
+        const GenreProfile& profile = genreProfiles.getReference(profileIndex);
+
+        for (int i = 0; i < numSuggestions; ++i) {
+            PatternSuggestion suggestion;
+            suggestion.name = "Pattern " + juce::String(i + 1);
+
+            float complexityVariation = params.complexity + (i * 0.1f) - 0.2f;
+            complexityVariation = juce::jlimit(0.0f, 1.0f, complexityVariation);
+
+            suggestion.pattern = generateDrumPattern(profile,
+                                                   params.bars,
+                                                   params.timeSignature);
+
+            suggestion.analysis.averageSwing = profile.avgSwing + (params.humanization * INIConfig::LayoutConstants::midiEngineSwingRatioBase);
+            suggestion.analysis.averageVelocity = profile.avgVelocity;
+            suggestion.analysis.grooveTightness = 1.0f - params.humanization;
+            suggestion.analysis.timeSignatureNumerator = params.timeSignature;
+            suggestion.analysis.timeSignatureDenominator = 4;
+            suggestion.analysis.tempo = params.tempo;
+
+            suggestion.matchScore = 1.0f - (std::abs(i - numSuggestions / INIConfig::LayoutConstants::customLookFeelThumbDivisor) /
+                                            static_cast<float>(numSuggestions));
+
+            suggestions.add(suggestion);
+        }
+
+        return suggestions;
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Pattern suggestion generation failed: " + juce::String(e.what()), 
+            "PatternSuggestionEngine");
+        return {};
     }
-
-    if (profileIndex < 0) {
-        profileIndex = 0;
-    }
-
-    const GenreProfile& profile = genreProfiles.getReference(profileIndex);
-
-    for (int i = 0; i < numSuggestions; ++i) {
-        PatternSuggestion suggestion;
-        suggestion.name = "Pattern " + juce::String(i + 1);
-
-        float complexityVariation = params.complexity + (i * 0.1f) - 0.2f;
-        complexityVariation = juce::jlimit(0.0f, 1.0f, complexityVariation);
-
-        suggestion.pattern = generateDrumPattern(profile,
-                                               params.bars,
-                                               params.timeSignature);
-
-        suggestion.analysis.averageSwing = profile.avgSwing + (params.humanization * INIConfig::LayoutConstants::midiEngineSwingRatioBase);
-        suggestion.analysis.averageVelocity = profile.avgVelocity;
-        suggestion.analysis.grooveTightness = 1.0f - params.humanization;
-        suggestion.analysis.timeSignatureNumerator = params.timeSignature;
-        suggestion.analysis.timeSignatureDenominator = 4;
-        suggestion.analysis.tempo = params.tempo;
-
-        suggestion.matchScore = 1.0f - (std::abs(i - numSuggestions / INIConfig::LayoutConstants::customLookFeelThumbDivisor) /
-                                        static_cast<float>(numSuggestions));
-
-        suggestions.add(suggestion);
-    }
-
-    return suggestions;
 }
 
 PatternSuggestionEngine::PatternSuggestion

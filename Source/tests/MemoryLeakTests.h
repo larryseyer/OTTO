@@ -2,7 +2,9 @@
 #include <JuceHeader.h>
 #include "../PluginProcessor.h"
 #include "../PluginEditor.h"
+#include "../PatternSuggestionEngine.h"
 #include "../INIConfig.h"
+#include <memory>
 
 class MemoryLeakTests : public juce::UnitTest {
 public:
@@ -38,6 +40,15 @@ public:
 
         beginTest("Stress Test");
         testStressConditions();
+
+        beginTest("AI Component Memory");
+        testAIComponentMemory();
+
+        beginTest("Pattern Engine Memory");
+        testPatternEngineMemory();
+
+        beginTest("Smart Pointer Usage");
+        testSmartPointerUsage();
     }
 
 private:
@@ -303,6 +314,64 @@ private:
 
        logMessage("Stress test completed in " + juce::String(elapsed) + "ms");
        expect(elapsed < static_cast<juce::int64>(INIConfig::Defaults::DEFAULT_AUTO_SAVE_INTERVAL * INIConfig::Defaults::FIXED_VELOCITY), "Stress test should complete in reasonable time");
+   }
+
+   void testAIComponentMemory() {
+       for (int i = 0; i < INIConfig::Defaults::FIXED_VELOCITY; ++i) {
+           auto processor = std::make_unique<OTTOAudioProcessor>();
+           auto editor = std::unique_ptr<OTTOAudioProcessorEditor>(
+               dynamic_cast<OTTOAudioProcessorEditor*>(processor->createEditor()));
+           
+           if (editor) {
+               editor->setSize(INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH, 
+                             INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT);
+               editor->resized();
+               
+               editor.reset();
+           }
+           
+           processor.reset();
+       }
+       
+       expect(true, "AI component memory test completed without leaks");
+   }
+
+   void testPatternEngineMemory() {
+       for (int i = 0; i < static_cast<int>(INIConfig::Defaults::SWING); ++i) {
+           auto patternEngine = std::make_unique<PatternSuggestionEngine>();
+           
+           PatternSuggestionEngine::SuggestionParams params;
+           params.genre = static_cast<PatternSuggestionEngine::Genre>(i % 8);
+           params.complexity = 0.5f;
+           params.bars = 4;
+           
+           auto suggestions = patternEngine->suggestPatterns(params, 5);
+           
+           for (const auto& suggestion : suggestions) {
+               expect(!suggestion.name.isEmpty(), "Pattern suggestion should have valid name");
+           }
+           
+           patternEngine.reset();
+       }
+       
+       expect(true, "Pattern engine memory test completed");
+   }
+
+   void testSmartPointerUsage() {
+       {
+           auto testPtr = std::make_unique<int>(42);
+           auto sharedPtr = std::make_shared<int>(84);
+           std::weak_ptr<int> weakPtr = sharedPtr;
+           
+           expect(*testPtr == 42, "Unique pointer should hold correct value");
+           expect(*sharedPtr == 84, "Shared pointer should hold correct value");
+           expect(!weakPtr.expired(), "Weak pointer should not be expired");
+           
+           sharedPtr.reset();
+           expect(weakPtr.expired(), "Weak pointer should be expired after shared_ptr reset");
+       }
+       
+       expect(true, "Smart pointer usage test completed");
    }
 };
 

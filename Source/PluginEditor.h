@@ -43,6 +43,7 @@ private:
     std::unique_ptr<PlayerTabsComponent> playerTabs;
     std::unique_ptr<DrumKitSectionComponent> drumKitSection;
     std::unique_ptr<MainContentComponent> mainContent;
+    std::unique_ptr<juce::Component> splashOverlay;
     ComponentState componentState;
     std::unique_ptr<SettingsPanelWindow> settingsPanel;
 

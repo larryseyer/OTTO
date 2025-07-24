@@ -1,4 +1,5 @@
 #include "AIAssistantPanel.h"
+#include "ErrorHandling.h"
 #include "INIConfig.h"
 
 AIAssistantPanel::AIAssistantPanel(AutoMixAssistant& mixAssistant,
@@ -210,23 +211,33 @@ void AIAssistantPanel::modeChanged() {
 }
 
 void AIAssistantPanel::analyzeMix() {
-    currentMixSuggestion = autoMixAssistant.analyzeMix();
-    updateMixSuggestionView();
+    try {
+        currentMixSuggestion = autoMixAssistant.analyzeMix();
+        updateMixSuggestionView();
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Mix analysis failed: " + juce::String(e.what()), "AIAssistantPanel");
+    }
 }
 
 void AIAssistantPanel::generatePatternSuggestions() {
-    juce::String genre = genreSelector.getText();
-    int complexity = static_cast<int>(complexitySlider.getValue());
+    try {
+        juce::String genre = genreSelector.getText();
+        int complexity = static_cast<int>(complexitySlider.getValue());
 
-    currentPatternSuggestions.clear();
+        currentPatternSuggestions.clear();
 
-    for (int i = 0; i < 5; ++i) {
-        PatternSuggestionEngine::PatternSuggestion suggestion;
-        suggestion.name = genre + " Pattern " + juce::String(i + 1) + " (Complexity: " + juce::String(complexity) + ")";
-        currentPatternSuggestions.add(suggestion);
+        for (int i = 0; i < 5; ++i) {
+            PatternSuggestionEngine::PatternSuggestion suggestion;
+            suggestion.name = genre + " Pattern " + juce::String(i + 1) + " (Complexity: " + juce::String(complexity) + ")";
+            currentPatternSuggestions.add(suggestion);
+        }
+
+        patternSuggestionsView.updateContent();
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Pattern suggestion generation failed: " + juce::String(e.what()), "AIAssistantPanel");
     }
-
-    patternSuggestionsView.updateContent();
 }
 
 void AIAssistantPanel::updatePerformanceStats() {

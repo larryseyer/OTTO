@@ -45,7 +45,6 @@ public:
                 {
                     parent->removeChildComponent(this);
                 }
-                delete this;
             }
             else
             {
@@ -152,16 +151,22 @@ OTTOAudioProcessorEditor::OTTOAudioProcessorEditor(OTTOAudioProcessor& p)
 
         juce::Colour appBgColor = colorScheme->getBackgroundColor();
 
-        auto* splash = new OTTOSplashOverlay(
+        splashOverlay = std::make_unique<OTTOSplashOverlay>(
             customLookAndFeel->getSplashImage(),
             splashTime,
-            [this]() { repaint(); },
+            [this]() { 
+                if (splashOverlay) {
+                    removeChildComponent(splashOverlay.get());
+                    splashOverlay.reset();
+                }
+                repaint(); 
+            },
             appBgColor
         );
 
-        splash->setBounds(getLocalBounds());
-        addAndMakeVisible(splash);
-        splash->toFront(false);
+        splashOverlay->setBounds(getLocalBounds());
+        addAndMakeVisible(splashOverlay.get());
+        splashOverlay->toFront(false);
 
 
     }

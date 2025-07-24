@@ -70,6 +70,7 @@ private:
     ColorScheme& colorScheme;
 
     std::unique_ptr<MidiFileManager> midiFileManager;
+    std::unique_ptr<juce::Component> activePopup;
 
     PhosphorIconButton editButton;
     PhosphorIconButton leftChevronButton;
@@ -90,7 +91,7 @@ private:
     std::unique_ptr<juce::PopupMenu> currentDropdownMenu;
     bool isInitialized = false;
 
-    ComponentState* componentState = nullptr;
+    std::unique_ptr<ComponentState> componentState;
 
     void setupComponents();
     void updateFontsAndColors();

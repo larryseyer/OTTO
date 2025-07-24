@@ -4,6 +4,7 @@
 #include "SceneLauncherComponent.h"
 #include "INIConfig.h"
 #include "INIDataManager.h"
+#include "ErrorHandling.h"
 
 MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
                                           Mixer& mixer,
@@ -63,44 +64,102 @@ void MainContentComponent::updatePlayerDisplay(int playerIndex) {
 }
 
 float MainContentComponent::getSwingValue() const {
-    return rightSection ? rightSection->getSwingValue() : INIConfig::Defaults::SWING;
+    if (!rightSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Right section is null, returning default swing value", "MainContentComponent");
+        return INIConfig::Defaults::SWING;
+    }
+    return rightSection->getSwingValue();
 }
 
 void MainContentComponent::setSwingValue(float value) {
-    if (rightSection) {
+    if (!rightSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Right section is null, cannot set swing value", "MainContentComponent");
+        return;
+    }
+    
+    try {
         float clampedValue = INIConfig::clampSwing(value);
         rightSection->setSwingValue(clampedValue);
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to set swing value: " + juce::String(e.what()), "MainContentComponent");
     }
 }
 
 float MainContentComponent::getEnergyValue() const {
-    return rightSection ? rightSection->getEnergyValue() : INIConfig::Defaults::ENERGY;
+    if (!rightSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Right section is null, returning default energy value", "MainContentComponent");
+        return INIConfig::Defaults::ENERGY;
+    }
+    return rightSection->getEnergyValue();
 }
 
 void MainContentComponent::setEnergyValue(float value) {
-    if (rightSection) {
+    if (!rightSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Right section is null, cannot set energy value", "MainContentComponent");
+        return;
+    }
+    
+    try {
         float clampedValue = INIConfig::clampEnergy(value);
         rightSection->setEnergyValue(clampedValue);
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to set energy value: " + juce::String(e.what()), "MainContentComponent");
     }
 }
 
 float MainContentComponent::getVolumeValue() const {
-    return rightSection ? rightSection->getVolumeValue() : INIConfig::Defaults::VOLUME;
+    if (!rightSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Right section is null, returning default volume value", "MainContentComponent");
+        return INIConfig::Defaults::VOLUME;
+    }
+    return rightSection->getVolumeValue();
 }
 
 void MainContentComponent::setVolumeValue(float value) {
-    if (rightSection) {
+    if (!rightSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Right section is null, cannot set volume value", "MainContentComponent");
+        return;
+    }
+    
+    try {
         float clampedValue = INIConfig::clampVolume(value);
         rightSection->setVolumeValue(clampedValue);
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to set volume value: " + juce::String(e.what()), "MainContentComponent");
     }
 }
 
 bool MainContentComponent::getEditMode() const {
-    return leftSection ? leftSection->getEditMode() : INIConfig::Defaults::DEFAULT_EDIT_MODE;
+    if (!leftSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Left section is null, returning default edit mode", "MainContentComponent");
+        return INIConfig::Defaults::DEFAULT_EDIT_MODE;
+    }
+    return leftSection->getEditMode();
 }
 
 void MainContentComponent::setEditModeVisuals(bool isEditing) {
-    if (leftSection) leftSection->setEditModeVisuals(isEditing);
+    if (!leftSection) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+            "Left section is null, cannot set edit mode visuals", "MainContentComponent");
+        return;
+    }
+    
+    try {
+        leftSection->setEditModeVisuals(isEditing);
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to set edit mode visuals: " + juce::String(e.what()), "MainContentComponent");
+    }
 }
 
 juce::String MainContentComponent::getMidiFileAssignment(int buttonIndex) const {
@@ -139,6 +198,8 @@ void MainContentComponent::saveStates(ComponentState& state) {
         notifyStateChanged(state);
     }
     catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to save component states: " + juce::String(e.what()), "MainContentComponent");
     }
 }
 
@@ -170,6 +231,8 @@ void MainContentComponent::loadStates(const ComponentState& state) {
 
     }
     catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to load component states: " + juce::String(e.what()), "MainContentComponent");
     }
 }
 
@@ -217,6 +280,8 @@ void MainContentComponent::updateFromState(const ComponentState& state) {
         loadStates(state);
     }
     catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to update from state: " + juce::String(e.what()), "MainContentComponent");
     }
 }
 
@@ -245,6 +310,9 @@ void MainContentComponent::switchToPlayer(int playerIndex, const ComponentState&
 
     }
     catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to switch to player " + juce::String(playerIndex) + ": " + juce::String(e.what()), 
+            "MainContentComponent");
     }
 }
 

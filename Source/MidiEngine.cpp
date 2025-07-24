@@ -1,6 +1,7 @@
 #include "MidiEngine.h"
 #include "INIConfig.h"
 #include "MidiFileManager.h"
+#include "ErrorHandling.h"
 
 MidiEngine::MidiEngine() : currentPlayerIndex(0), isPlaying(false), tempo(120.0f), hostTempo(0.0) {
     for (int i = 0; i < INIConfig::Defaults::MAX_PLAYERS; ++i) {
@@ -38,37 +39,43 @@ void MidiEngine::prepare(double sampleRate) {
 }
 
 void MidiEngine::process(juce::MidiBuffer& midiMessages) {
-    if (!isPlaying) {
-        midiMessages.clear();
-        return;
-    }
-
-    const double currentTime = juce::Time::getMillisecondCounterHiRes();
-    const double deltaTime = currentTime - lastProcessTime;
-    lastProcessTime = currentTime;
-
-    processMidiInput(midiMessages);
-
-    if (liveRecording) {
-        processLiveRecording(midiMessages);
-    }
-
-    if (loopRecordingMode) {
-        processLoopRecording();
-    }
-
-    midiMessages.clear();
-
-    processQueuedChanges();
-
-    for (int i = 0; i < INIConfig::Defaults::MAX_PLAYERS; ++i) {
-        if (players[i].enabled) {
-            processPlayer(i, midiMessages, deltaTime);
+    try {
+        if (!isPlaying) {
+            midiMessages.clear();
+            return;
         }
-    }
 
-    if (sendMidiClock) {
-        generateMidiClock(midiMessages);
+        const double currentTime = juce::Time::getMillisecondCounterHiRes();
+        const double deltaTime = currentTime - lastProcessTime;
+        lastProcessTime = currentTime;
+
+        processMidiInput(midiMessages);
+
+        if (liveRecording) {
+            processLiveRecording(midiMessages);
+        }
+
+        if (loopRecordingMode) {
+            processLoopRecording();
+        }
+
+        midiMessages.clear();
+
+        processQueuedChanges();
+
+        for (int i = 0; i < INIConfig::Defaults::MAX_PLAYERS; ++i) {
+            if (players[i].enabled) {
+                processPlayer(i, midiMessages, deltaTime);
+            }
+        }
+
+        if (sendMidiClock) {
+            generateMidiClock(midiMessages);
+        }
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to process MIDI: " + juce::String(e.what()), "MidiEngine");
+        midiMessages.clear();
     }
 }
 

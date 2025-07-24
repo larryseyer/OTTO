@@ -1,31 +1,50 @@
 #include "SFZEngine.h"
 #include "INIConfig.h"
+#include "ErrorHandling.h"
 
 SFZEngine::VelocityLayer* SFZEngine::Region::getLayerForVelocity(int velocity) {
-    for (auto& layer : velocityLayers) {
-        if (velocity >= layer.loVel && velocity <= layer.hiVel) {
-            return &layer;
+    try {
+        for (auto& layer : velocityLayers) {
+            if (velocity >= layer.loVel && velocity <= layer.hiVel) {
+                return &layer;
+            }
         }
+        return velocityLayers.empty() ? nullptr : &velocityLayers[0];
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to get velocity layer for velocity " + juce::String(velocity) + ": " + juce::String(e.what()), 
+            "SFZEngine::Region");
+        return nullptr;
     }
-    return velocityLayers.empty() ? nullptr : &velocityLayers[0];
 }
 
 SFZEngine::VelocityLayer* SFZEngine::Region::getNextRoundRobinLayer(int velocity) {
-    if (roundRobinCount <= 1 || velocityLayers.empty()) {
-        return getLayerForVelocity(velocity);
-    }
-
-    std::vector<VelocityLayer*> validLayers;
-    for (auto& layer : velocityLayers) {
-        if (velocity >= layer.loVel && velocity <= layer.hiVel) {
-            validLayers.push_back(&layer);
+    try {
+        if (roundRobinCount <= 1 || velocityLayers.empty()) {
+            return getLayerForVelocity(velocity);
         }
+
+        std::vector<VelocityLayer*> validLayers;
+        for (auto& layer : velocityLayers) {
+            if (velocity >= layer.loVel && velocity <= layer.hiVel) {
+                validLayers.push_back(&layer);
+            }
+        }
+
+        if (validLayers.empty()) {
+            ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+                "No valid layers found for velocity " + juce::String(velocity), "SFZEngine::Region");
+            return nullptr;
+        }
+
+        currentRoundRobin = (currentRoundRobin + 1) % validLayers.size();
+        return validLayers[currentRoundRobin];
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to get round robin layer for velocity " + juce::String(velocity) + ": " + juce::String(e.what()), 
+            "SFZEngine::Region");
+        return nullptr;
     }
-
-    if (validLayers.empty()) return nullptr;
-
-    currentRoundRobin = (currentRoundRobin + 1) % validLayers.size();
-    return validLayers[currentRoundRobin];
 }
 
 SFZEngine::SFZEngine() {
@@ -80,24 +99,44 @@ juce::File SFZEngine::getAssetsPath() {
 }
 
 void SFZEngine::prepare(double newSampleRate, int samplesPerBlock) {
-    sampleRate = newSampleRate;
-    voiceAllocator.prepare(sampleRate, samplesPerBlock);
+    try {
+        if (newSampleRate <= 0 || samplesPerBlock <= 0) {
+            ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+                "Invalid audio parameters: sampleRate=" + juce::String(newSampleRate) + 
+                ", samplesPerBlock=" + juce::String(samplesPerBlock), "SFZEngine");
+            return;
+        }
 
-    for (auto& [note, region] : regions) {
-        for (auto& layer : region->velocityLayers) {
-            if (layer.source) {
-                layer.source->prepareToPlay(samplesPerBlock, sampleRate);
+        sampleRate = newSampleRate;
+        voiceAllocator.prepare(sampleRate, samplesPerBlock);
+
+        for (auto& [note, region] : regions) {
+            if (!region) {
+                ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Warning,
+                    "Null region found for note " + juce::String(note), "SFZEngine");
+                continue;
+            }
+
+            for (auto& layer : region->velocityLayers) {
+                if (layer.source) {
+                    layer.source->prepareToPlay(samplesPerBlock, sampleRate);
+                }
             }
         }
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to prepare SFZ engine: " + juce::String(e.what()), "SFZEngine");
     }
 }
 
 void SFZEngine::process(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
-    if (buffer.getNumChannels() == 0 || buffer.getNumSamples() == 0)
-        return;
+    try {
+        if (buffer.getNumChannels() == 0 || buffer.getNumSamples() == 0) {
+            return;
+        }
 
-    for (const auto midi : midiMessages) {
-        auto msg = midi.getMessage();
+        for (const auto midi : midiMessages) {
+            auto msg = midi.getMessage();
 
         if (msg.isNoteOn()) {
             int noteNumber = msg.getNoteNumber();
@@ -125,9 +164,13 @@ void SFZEngine::process(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi
         else if (msg.isAllNotesOff() || msg.isAllSoundOff()) {
             voiceAllocator.releaseAllVoices();
         }
-    }
+        }
 
-    voiceAllocator.renderNextBlock(buffer);
+        voiceAllocator.renderNextBlock(buffer);
+    } catch (const std::exception& e) {
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Failed to process audio buffer: " + juce::String(e.what()), "SFZEngine");
+    }
 }
 
 void SFZEngine::release() {

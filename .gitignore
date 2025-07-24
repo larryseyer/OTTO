@@ -39,3 +39,15 @@
 
 # debug information files
 *.dwo
+
+# Build directories
+build-*/
+Builds/Linux*/
+
+# Setup and development files
+.clang-tidy
+Makefile.linux
+lint.sh
+run_local.sh
+simple_standalone.cpp
+Source/Main.cpp

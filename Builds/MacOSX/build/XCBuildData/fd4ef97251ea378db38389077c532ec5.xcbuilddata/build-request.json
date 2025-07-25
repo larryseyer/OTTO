@@ -1,0 +1,74 @@
+{
+  "buildCommand" : {
+    "command" : "prepareForIndexing",
+    "enableIndexBuildArena" : false,
+    "targets" : null
+  },
+  "configuredTargets" : [
+    {
+      "guid" : "de057f78edf313264736695f44ab763d66ff3e0f401792744040feaa8203c751"
+    },
+    {
+      "guid" : "de057f78edf313264736695f44ab763def64de5ccca3a6ccf3f5a0f283664f6b"
+    },
+    {
+      "guid" : "de057f78edf313264736695f44ab763d5de7da0c9d74f3b29a7b6c059073f200"
+    },
+    {
+      "guid" : "de057f78edf313264736695f44ab763dc29dd282a97dfd4027ca12ef78c243d6"
+    },
+    {
+      "guid" : "de057f78edf313264736695f44ab763dc0744b6a8a7fafcae2b8e2dabbabfba7"
+    },
+    {
+      "guid" : "de057f78edf313264736695f44ab763d2924e9f7c157108ea5a47093afa724fe"
+    }
+  ],
+  "containerPath" : "/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/OTTO.xcodeproj",
+  "continueBuildingAfterErrors" : true,
+  "dependencyScope" : "workspace",
+  "enableIndexBuildArena" : false,
+  "hideShellScriptEnvironment" : false,
+  "parameters" : {
+    "action" : "build",
+    "activeArchitecture" : "arm64",
+    "activeRunDestination" : {
+      "disableOnlyActiveArch" : false,
+      "platform" : "macosx",
+      "sdk" : "macosx15.5",
+      "sdkVariant" : "macos",
+      "supportedArchitectures" : [
+        "arm64e",
+        "arm64",
+        "x86_64"
+      ],
+      "targetArchitecture" : "arm64"
+    },
+    "arenaInfo" : {
+      "buildIntermediatesPath" : "",
+      "buildProductsPath" : "",
+      "derivedDataPath" : "/Users/larryseyer/Library/Developer/Xcode/DerivedData",
+      "indexDataStoreFolderPath" : "/Users/larryseyer/Library/Developer/Xcode/DerivedData/OTTO-fjpgifxibgmhqiequcdtxcwouzoy/Index.noindex/DataStore",
+      "indexEnableDataStore" : true,
+      "indexPCHPath" : "/Users/larryseyer/Library/Developer/Xcode/DerivedData/OTTO-fjpgifxibgmhqiequcdtxcwouzoy/Index.noindex/PrecompiledHeaders",
+      "pchPath" : ""
+    },
+    "configurationName" : "Debug",
+    "overrides" : {
+      "synthesized" : {
+        "table" : {
+          "ENABLE_PREVIEWS" : "NO",
+          "ENABLE_XOJIT_PREVIEWS" : "NO",
+          "ONLY_ACTIVE_ARCH" : "YES"
+        }
+      }
+    }
+  },
+  "qos" : "default",
+  "schemeCommand" : "launch",
+  "showNonLoggedProgress" : true,
+  "useDryRun" : true,
+  "useImplicitDependencies" : true,
+  "useLegacyBuildLocations" : false,
+  "useParallelTargets" : true
+}

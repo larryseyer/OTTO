@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ai.zencoder.plugin.chat.index">
+    <option name="activeChatId" value="9977ee9f-9d59-43d0-9972-f0f48858e1c0" />
+    <option name="chatMetadata" value="{&quot;9977ee9f-9d59-43d0-9972-f0f48858e1c0&quot;:{&quot;id&quot;:&quot;9977ee9f-9d59-43d0-9972-f0f48858e1c0&quot;,&quot;title&quot;:&quot;Generate repo.md file with information from my ...&quot;,&quot;createdAt&quot;:1753463323137,&quot;updatedAt&quot;:1753463329214,&quot;messageCount&quot;:2,&quot;lastMessagePreview&quot;:&quot;I'll help you generate a repo.md file for your JUCE 8 project. Let me first explore your repository ...&quot;}}" />
+  </component>
+</project>

@@ -174,9 +174,17 @@ juce::Font FontManager::createFontWithOptions(juce::Typeface::Ptr typeface,
                                              const juce::String& fallbackName,
                                              float size) const {
     if (typeface != nullptr) {
+#if JUCE_MAJOR_VERSION >= 8
         return juce::Font(juce::FontOptions(typeface).withHeight(scaled(size)));
+#else
+        return juce::Font(typeface).withHeight(scaled(size));
+#endif
     }
+#if JUCE_MAJOR_VERSION >= 8
     return juce::Font(juce::FontOptions().withName(fallbackName).withHeight(scaled(size)));
+#else
+    return juce::Font(fallbackName, scaled(size), juce::Font::plain);
+#endif
 }
 
 juce::Font FontManager::getFont(FontRole role, float size) const {

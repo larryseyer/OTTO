@@ -69,7 +69,11 @@ void CommunityBrowser::paint(juce::Graphics& g) {
 
     auto bounds = getLocalBounds().reduced(INIConfig::LayoutConstants::defaultMargin);
 
+#if JUCE_MAJOR_VERSION >= 8
     auto headerFont = juce::Font(juce::FontOptions().withHeight(static_cast<float>(INIConfig::LayoutConstants::effectSectionHeaderHeight)));
+#else
+    auto headerFont = juce::Font(static_cast<float>(INIConfig::LayoutConstants::effectSectionHeaderHeight));
+#endif
     headerFont.setBold(true);
     g.setFont(headerFont);
     g.setColour(colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
@@ -346,7 +350,11 @@ void CommunityBrowser::ItemListModel::paintListBoxItem(int rowNumber, juce::Grap
 
     bounds.removeFromLeft(10);
 
+#if JUCE_MAJOR_VERSION >= 8
     auto nameFont = juce::Font(juce::FontOptions().withHeight(14.0f));
+#else
+    auto nameFont = juce::Font(14.0f);
+#endif
     nameFont.setBold(true);
     g.setFont(nameFont);
     g.setColour(item.isDownloaded ?
@@ -355,13 +363,21 @@ void CommunityBrowser::ItemListModel::paintListBoxItem(int rowNumber, juce::Grap
     g.drawText(item.name, bounds.removeFromTop(height / 2),
                juce::Justification::centredLeft);
 
+#if JUCE_MAJOR_VERSION >= 8
     g.setFont(juce::Font(juce::FontOptions().withHeight(12.0f)));
+#else
+    g.setFont(juce::Font(12.0f));
+#endif
     g.setColour(parent.colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     g.drawText("by " + item.author, bounds, juce::Justification::centredLeft);
 
     auto statsArea = juce::Rectangle<int>(0, 0, width, height).reduced(5);
 
+#if JUCE_MAJOR_VERSION >= 8
     g.setFont(juce::Font(juce::FontOptions().withHeight(12.0f)));
+#else
+    g.setFont(juce::Font(12.0f));
+#endif
     g.setColour(parent.colorScheme.getColor(ColorScheme::ColorRole::Warning));
     juce::String rating = juce::String::charToString(0x2605) + " " +
                          juce::String(item.rating, 1);
@@ -392,26 +408,46 @@ void CommunityBrowser::ItemListModel::listBoxItemDoubleClicked(int row, const ju
 }
 
 CommunityBrowser::PreviewPanel::PreviewPanel(ColorScheme& cs) : colorScheme(cs) {
+#if JUCE_MAJOR_VERSION >= 8
    auto titleFont = juce::Font(juce::FontOptions().withHeight(20.0f));
+#else
+   auto titleFont = juce::Font(20.0f);
+#endif
    titleFont.setBold(true);
    titleLabel.setFont(titleFont);
    titleLabel.setJustificationType(juce::Justification::centredLeft);
    addAndMakeVisible(titleLabel);
 
+#if JUCE_MAJOR_VERSION >= 8
    descriptionLabel.setFont(juce::Font(juce::FontOptions().withHeight(14.0f)));
+#else
+   descriptionLabel.setFont(juce::Font(14.0f));
+#endif
    descriptionLabel.setJustificationType(juce::Justification::topLeft);
    addAndMakeVisible(descriptionLabel);
 
+#if JUCE_MAJOR_VERSION >= 8
    authorLabel.setFont(juce::Font(juce::FontOptions().withHeight(14.0f)));
+#else
+   authorLabel.setFont(juce::Font(14.0f));
+#endif
    authorLabel.setColour(juce::Label::textColourId,
        colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
    addAndMakeVisible(authorLabel);
 
+#if JUCE_MAJOR_VERSION >= 8
    statsLabel.setFont(juce::Font(juce::FontOptions().withHeight(12.0f)));
+#else
+   statsLabel.setFont(juce::Font(12.0f));
+#endif
    statsLabel.setJustificationType(juce::Justification::topLeft);
    addAndMakeVisible(statsLabel);
 
+#if JUCE_MAJOR_VERSION >= 8
    tagsLabel.setFont(juce::Font(juce::FontOptions().withHeight(12.0f)));
+#else
+   tagsLabel.setFont(juce::Font(12.0f));
+#endif
    tagsLabel.setColour(juce::Label::textColourId,
        colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
    addAndMakeVisible(tagsLabel);
@@ -623,7 +659,11 @@ CommunityBrowser::ShareDialog::ShareDialog(ColorScheme& cs) : colorScheme(cs) {
    setSize(400, 300);
 
    titleLabel.setText("Share Preset", juce::dontSendNotification);
+#if JUCE_MAJOR_VERSION >= 8
    auto titleFont = juce::Font(juce::FontOptions().withHeight(20.0f));
+#else
+   auto titleFont = juce::Font(20.0f);
+#endif
    titleFont.setBold(true);
    titleLabel.setFont(titleFont);
    titleLabel.setJustificationType(juce::Justification::centred);

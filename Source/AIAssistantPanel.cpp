@@ -105,7 +105,11 @@ void AIAssistantPanel::timerCallback() {
 
 void AIAssistantPanel::setupUI() {
     titleLabel.setText("AI Assistant", juce::dontSendNotification);
+#if JUCE_MAJOR_VERSION >= 8
     titleLabel.setFont(juce::Font(juce::FontOptions().withHeight(INIConfig::LayoutConstants::fontSizeTitle)));
+#else
+    titleLabel.setFont(juce::Font(INIConfig::LayoutConstants::fontSizeTitle));
+#endif
     titleLabel.setJustificationType(juce::Justification::centredLeft);
     addAndMakeVisible(titleLabel);
 

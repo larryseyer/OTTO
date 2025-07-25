@@ -1,6 +1,7 @@
 #include "PatternSuggestionEngine.h"
 #include "ErrorHandling.h"
 #include "INIConfig.h"
+#include "PerformanceOptimizations.h"
 
 PatternSuggestionEngine::PatternSuggestionEngine() {
     initializeGenreProfiles();
@@ -107,9 +108,10 @@ PatternSuggestionEngine::suggestPatterns(const SuggestionParams& params, int num
 
         const GenreProfile& profile = genreProfiles.getReference(profileIndex);
 
+        auto& stringCache = StringCache::getInstance();
         for (int i = 0; i < numSuggestions; ++i) {
             PatternSuggestion suggestion;
-            suggestion.name = "Pattern " + juce::String(i + 1);
+            suggestion.name = stringCache.getPatternString(i + 1);
 
             float complexityVariation = params.complexity + (i * 0.1f) - 0.2f;
             complexityVariation = juce::jlimit(0.0f, 1.0f, complexityVariation);

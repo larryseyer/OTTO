@@ -1,5 +1,6 @@
 #include "PopupWindowsPerformance.h"
 #include "INIConfig.h"
+#include "PerformanceOptimizations.h"
 
 PerformanceTab::PerformanceTab(ColorScheme& colorScheme,
                               ResponsiveLayoutManager& layoutManager,
@@ -213,9 +214,11 @@ void PerformanceTab::timerCallback() {
 
 void PerformanceTab::updateMeters() {
     static juce::Random random;
+    auto& stringCache = StringCache::getInstance();
+    
     cpuUsage = juce::jlimit(0.0, 1.0, cpuUsage + (random.nextFloat() - 0.5f) * 0.1);
-    const juce::String cpuText = juce::String(static_cast<int>(cpuUsage * 100)) + "%";
-    cpuValueLabel.setText(cpuText, juce::dontSendNotification);
+    int cpuPercent = static_cast<int>(cpuUsage * 100);
+    cpuValueLabel.setText(stringCache.getPercentageString(cpuPercent), juce::dontSendNotification);
 
     #if JUCE_WINDOWS || JUCE_MAC || JUCE_LINUX
         memoryUsage = 0.3 + random.nextFloat() * 0.4;
@@ -223,15 +226,14 @@ void PerformanceTab::updateMeters() {
         memoryUsage = 0.5;
     #endif
 
-    const juce::String memoryText = juce::String(static_cast<int>(memoryUsage * 100)) + "%";
-    memoryValueLabel.setText(memoryText, juce::dontSendNotification);
+    int memoryPercent = static_cast<int>(memoryUsage * 100);
+    memoryValueLabel.setText(stringCache.getPercentageString(memoryPercent), juce::dontSendNotification);
 
     activeVoices = random.nextInt(33);
     voicesValueLabel.setText(juce::String(activeVoices), juce::dontSendNotification);
 
     latency = 5.3 + random.nextFloat() * 2.0;
-    const juce::String latencyText = juce::String(latency, 1) + " ms";
-    latencyValueLabel.setText(latencyText, juce::dontSendNotification);
+    latencyValueLabel.setText(stringCache.getLatencyString(latency, 1), juce::dontSendNotification);
 
     cpuMeter.repaint();
     memoryMeter.repaint();

@@ -29,7 +29,6 @@ void ResponsiveLayoutManager::updateScale(int currentWidth, int currentHeight) {
         float newScale = calculateScale(currentWidth, currentHeight);
 
         if (std::abs(newScale - currentScale) > INIConfig::LayoutConstants::responsiveLayoutScaleThreshold) {
-            float previousScale = currentScale;
             currentScale = newScale;
             windowWidth = INIConfig::clampWindowSize(currentWidth);
             windowHeight = INIConfig::clampWindowSize(currentHeight);

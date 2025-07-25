@@ -6,8 +6,9 @@ OTTO is a powerful drum machine and sample playback system with these key featur
 - **Pattern Management**: 4x4 grids of MIDI Beat patterns organized in groups of 16
 - **Smart Fill System**: Automatic and manual drum fills
 - **Professional Audio**: SFZ 2.0 sample playback with effects for each drumkit element (kick, snare, hat , toms, cymbals, etc)
-- **Cross-Platform**: Works on Mac, Windows, Linux, and IOS
-- **Plugin Support**: VST3, AU, CLAP, Standalone, and IOS stand alone and AUV3 versions
+- **Cross-Platform**: Works on Mac, Windows, Linux, and iOS with native support
+- **Plugin Support**: VST3, AU, CLAP, Standalone, and iOS standalone and AUv3 versions
+- **iOS Features**: Touch-optimized UI, background audio, inter-app audio, App Store ready
 
 ### Technical Architecture
 
@@ -21,9 +22,11 @@ OTTO uses these core components:
 - **Reaper INI style .ini plain text database**
 
 #### Current Build Status ✅
+- **JUCE 8 Integration**: Fully updated to use JUCE 8 methods and protocols with ProJucer compatibility
+- **iOS Support**: Native iOS application with dedicated entry point and touch-optimized UI
 - **Graphics & Fonts**: All UI elements, custom fonts, and Phosphor icons properly embedded and displaying
-- **Cross-Platform Builds**: CMake-based build system supports macOS, Windows, Linux, iOS, Android
-- **Plugin Formats**: VST3, AU, and Standalone all building and installing correctly
+- **Cross-Platform Builds**: Enhanced CMake-based build system supports macOS, Windows, Linux, iOS, Android
+- **Plugin Formats**: VST3, AU, AUv3 (iOS), and Standalone all building and installing correctly
 - **Asset Management**: Critical UI assets embedded in binary, user content (samples, patterns) still file-based
 
 #### Quick Start Building
@@ -33,7 +36,8 @@ OTTO uses these core components:
 
 # Build for your platform
 ./build_macos.sh      # macOS Universal Binary
-./build_ios.sh        # iOS
+./build_ios.sh        # iOS (includes device and simulator)
+./run_both.sh         # Build both macOS and iOS
 ./build_linux.sh      # Linux
 ./build_android.sh    # Android
 ./build_all.sh --all  # All platforms

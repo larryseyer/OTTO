@@ -191,7 +191,7 @@ juce::Font CustomLookAndFeel::getTextButtonFont(juce::TextButton& button, int bu
     ComponentType type = getComponentType(&button);
     float sizeMult = largeTextMode ? INIConfig::LayoutConstants::customLookFeelLargeTextMultiplier : 1.0f;
 
-    juce::Font font = juce::Font();
+    juce::Font font = juce::Font(juce::FontOptions());
     switch (type) {
         case Icon:
             font = fontManager.getFont(FontManager::FontRole::Icon, INIConfig::LayoutConstants::fontSizeIcon * sizeMult);

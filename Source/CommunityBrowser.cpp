@@ -398,20 +398,20 @@ CommunityBrowser::PreviewPanel::PreviewPanel(ColorScheme& cs) : colorScheme(cs) 
    titleLabel.setJustificationType(juce::Justification::centredLeft);
    addAndMakeVisible(titleLabel);
 
-   descriptionLabel.setFont(juce::Font(14.0f));
+   descriptionLabel.setFont(juce::Font(juce::FontOptions().withHeight(14.0f)));
    descriptionLabel.setJustificationType(juce::Justification::topLeft);
    addAndMakeVisible(descriptionLabel);
 
-   authorLabel.setFont(juce::Font(14.0f));
+   authorLabel.setFont(juce::Font(juce::FontOptions().withHeight(14.0f)));
    authorLabel.setColour(juce::Label::textColourId,
        colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
    addAndMakeVisible(authorLabel);
 
-   statsLabel.setFont(juce::Font(12.0f));
+   statsLabel.setFont(juce::Font(juce::FontOptions().withHeight(12.0f)));
    statsLabel.setJustificationType(juce::Justification::topLeft);
    addAndMakeVisible(statsLabel);
 
-   tagsLabel.setFont(juce::Font(12.0f));
+   tagsLabel.setFont(juce::Font(juce::FontOptions().withHeight(12.0f)));
    tagsLabel.setColour(juce::Label::textColourId,
        colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
    addAndMakeVisible(tagsLabel);

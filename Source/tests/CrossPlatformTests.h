@@ -34,6 +34,9 @@ public:
 
         beginTest("Performance Consistency");
         testPerformanceConsistency();
+
+        beginTest("AI Performance Consistency");
+        testAIPerformanceConsistency();
     }
 
 private:
@@ -365,6 +368,51 @@ private:
         double maxExpectedTime = (optimalBufferSize / optimalSampleRate) * 1000.0 * 0.5;
         expect(averageBlockTime < maxExpectedTime, 
                "Processing should be faster than 50% real-time on " + juce::SystemStats::getOperatingSystemName());
+    }
+
+    void testAIPerformanceConsistency() {
+        auto patternEngine = std::make_unique<PatternSuggestionEngine>();
+        
+        #if JUCE_MAC || JUCE_IOS
+            const int numIterations = 200;
+            const double maxTimeMs = 2000.0;
+        #elif JUCE_WINDOWS
+            const int numIterations = 150;
+            const double maxTimeMs = 3000.0;
+        #elif JUCE_LINUX
+            const int numIterations = 100;
+            const double maxTimeMs = 4000.0;
+        #elif JUCE_ANDROID
+            const int numIterations = 50;
+            const double maxTimeMs = 5000.0;
+        #else
+            const int numIterations = 100;
+            const double maxTimeMs = 4000.0;
+        #endif
+        
+        auto startTime = juce::Time::getHighResolutionTicks();
+        
+        for (int i = 0; i < numIterations; ++i) {
+            PatternSuggestionEngine::SuggestionParams params;
+            params.genre = static_cast<PatternSuggestionEngine::Genre>(i % 8);
+            params.complexity = (i % 10) / 10.0f;
+            params.bars = (i % 4) + 1;
+            
+            auto suggestions = patternEngine->suggestPatterns(params, 3);
+            expect(!suggestions.isEmpty(), "AI should generate patterns consistently");
+        }
+        
+        auto endTime = juce::Time::getHighResolutionTicks();
+        double elapsedMs = juce::Time::highResolutionTicksToSeconds(endTime - startTime) * 1000.0;
+        
+        logMessage("Platform: " + juce::SystemStats::getOperatingSystemName());
+        logMessage("AI Performance: " + juce::String(numIterations) + " pattern generations in " + 
+                   juce::String(elapsedMs, 2) + "ms");
+        logMessage("Average per pattern: " + juce::String(elapsedMs / numIterations, 2) + "ms");
+        
+        expect(elapsedMs < maxTimeMs, 
+               "AI pattern generation should complete within expected time on " + 
+               juce::SystemStats::getOperatingSystemName());
     }
 
     // Helper method

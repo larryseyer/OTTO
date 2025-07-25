@@ -36,19 +36,61 @@ void AudioSettingsTab::setupComponents() {
                         colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     }
 
-    sampleRateCombo.addItem("44100 Hz", 1);
-    sampleRateCombo.addItem("48000 Hz", 2);
-    sampleRateCombo.addItem("88200 Hz", 3);
-    sampleRateCombo.addItem("96000 Hz", 4);
-    sampleRateCombo.addItem("192000 Hz", 5);
+    #if JUCE_MAC || JUCE_IOS
+        sampleRateCombo.addItem("44100 Hz", 1);
+        sampleRateCombo.addItem("48000 Hz", 2);
+        sampleRateCombo.addItem("88200 Hz", 3);
+        sampleRateCombo.addItem("96000 Hz", 4);
+        sampleRateCombo.addItem("176400 Hz", 5);
+        sampleRateCombo.addItem("192000 Hz", 6);
+    #elif JUCE_WINDOWS
+        sampleRateCombo.addItem("44100 Hz", 1);
+        sampleRateCombo.addItem("48000 Hz", 2);
+        sampleRateCombo.addItem("88200 Hz", 3);
+        sampleRateCombo.addItem("96000 Hz", 4);
+    #elif JUCE_LINUX
+        sampleRateCombo.addItem("44100 Hz", 1);
+        sampleRateCombo.addItem("48000 Hz", 2);
+        sampleRateCombo.addItem("96000 Hz", 3);
+    #elif JUCE_ANDROID
+        sampleRateCombo.addItem("44100 Hz", 1);
+        sampleRateCombo.addItem("48000 Hz", 2);
+    #else
+        sampleRateCombo.addItem("44100 Hz", 1);
+        sampleRateCombo.addItem("48000 Hz", 2);
+        sampleRateCombo.addItem("88200 Hz", 3);
+        sampleRateCombo.addItem("96000 Hz", 4);
+        sampleRateCombo.addItem("192000 Hz", 5);
+    #endif
 
-    bufferSizeCombo.addItem("32 samples", 1);
-    bufferSizeCombo.addItem("64 samples", 2);
-    bufferSizeCombo.addItem("128 samples", 3);
-    bufferSizeCombo.addItem("256 samples", 4);
-    bufferSizeCombo.addItem("512 samples", 5);
-    bufferSizeCombo.addItem("1024 samples", 6);
-    bufferSizeCombo.addItem("2048 samples", 7);
+    #if JUCE_MAC || JUCE_IOS
+        bufferSizeCombo.addItem("64 samples", 1);
+        bufferSizeCombo.addItem("128 samples", 2);
+        bufferSizeCombo.addItem("256 samples", 3);
+        bufferSizeCombo.addItem("512 samples", 4);
+    #elif JUCE_WINDOWS
+        bufferSizeCombo.addItem("128 samples", 1);
+        bufferSizeCombo.addItem("256 samples", 2);
+        bufferSizeCombo.addItem("512 samples", 3);
+        bufferSizeCombo.addItem("1024 samples", 4);
+    #elif JUCE_LINUX
+        bufferSizeCombo.addItem("256 samples", 1);
+        bufferSizeCombo.addItem("512 samples", 2);
+        bufferSizeCombo.addItem("1024 samples", 3);
+        bufferSizeCombo.addItem("2048 samples", 4);
+    #elif JUCE_ANDROID
+        bufferSizeCombo.addItem("512 samples", 1);
+        bufferSizeCombo.addItem("1024 samples", 2);
+        bufferSizeCombo.addItem("2048 samples", 3);
+    #else
+        bufferSizeCombo.addItem("32 samples", 1);
+        bufferSizeCombo.addItem("64 samples", 2);
+        bufferSizeCombo.addItem("128 samples", 3);
+        bufferSizeCombo.addItem("256 samples", 4);
+        bufferSizeCombo.addItem("512 samples", 5);
+        bufferSizeCombo.addItem("1024 samples", 6);
+        bufferSizeCombo.addItem("2048 samples", 7);
+    #endif
 
     addAndMakeVisible(asioToggle);
     addAndMakeVisible(multiCoreToggle);

@@ -37,15 +37,25 @@ function(configure_juce8_target target_name)
         $<$<PLATFORM_ID:Android>:JUCE_ANDROID=1>
     )
     
-    # JUCE 8 compiler flags
+    # JUCE 8 compiler flags with platform-specific optimizations
     target_compile_options(${target_name} PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
-        $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
-        $<$<CXX_COMPILER_ID:MSVC>:/W4>
+        $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -O3 -march=native>
+        $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -O3 -march=native>
+        $<$<CXX_COMPILER_ID:MSVC>:/W4 /O2 /arch:AVX2>
         
-        # Platform specific flags
-        $<$<PLATFORM_ID:Darwin>:-Wno-deprecated-declarations -fno-objc-arc>
-        $<$<PLATFORM_ID:Linux>:-fPIC>
+        $<$<PLATFORM_ID:Darwin>:-Wno-deprecated-declarations -fno-objc-arc -msse4.2 -mavx>
+        $<$<PLATFORM_ID:iOS>:-Wno-deprecated-declarations -fno-objc-arc -mfpu=neon>
+        $<$<PLATFORM_ID:Linux>:-fPIC -msse4.2 -mavx -pthread>
+        $<$<PLATFORM_ID:Windows>:/arch:SSE2>
+        $<$<PLATFORM_ID:Android>:-mfpu=neon -ffast-math>
+    )
+    
+    target_compile_definitions(${target_name} PRIVATE
+        $<$<PLATFORM_ID:Darwin>:JUCE_COREAUDIO_ENABLED=1>
+        $<$<PLATFORM_ID:iOS>:JUCE_IOS_AUDIO_ENABLED=1>
+        $<$<PLATFORM_ID:Windows>:JUCE_ASIO_ENABLED=1 JUCE_DIRECTSOUND_ENABLED=1>
+        $<$<PLATFORM_ID:Linux>:JUCE_ALSA_ENABLED=1 JUCE_JACK_ENABLED=1>
+        $<$<PLATFORM_ID:Android>:JUCE_OPENSLES_ENABLED=1>
     )
     
     # Set properties for JUCE 8

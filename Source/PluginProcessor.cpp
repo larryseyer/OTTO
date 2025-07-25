@@ -313,6 +313,35 @@ void OTTOAudioProcessor::changeProgramName(int index, const juce::String& newNam
 
 void OTTOAudioProcessor::prepareToPlay(double newSampleRate, int samplesPerBlock) {
     sampleRate = newSampleRate;
+    
+    #if JUCE_MAC
+        if (auto* device = deviceManager.getCurrentAudioDevice()) {
+            auto setup = deviceManager.getAudioDeviceSetup();
+            setup.bufferSize = juce::jmin(setup.bufferSize, 256);
+            deviceManager.setAudioDeviceSetup(setup, false);
+        }
+    #elif JUCE_WINDOWS
+        auto& deviceTypes = deviceManager.getAvailableDeviceTypes();
+        for (auto* type : deviceTypes) {
+            if (type->getTypeName() == "ASIO") {
+                deviceManager.setCurrentAudioDeviceType(type->getTypeName(), true);
+                break;
+            }
+        }
+    #elif JUCE_LINUX
+        if (auto* device = deviceManager.getCurrentAudioDevice()) {
+            auto setup = deviceManager.getAudioDeviceSetup();
+            setup.bufferSize = juce::jmax(setup.bufferSize, 512);
+            deviceManager.setAudioDeviceSetup(setup, false);
+        }
+    #elif JUCE_ANDROID
+        if (auto* device = deviceManager.getCurrentAudioDevice()) {
+            auto setup = deviceManager.getAudioDeviceSetup();
+            setup.sampleRate = juce::jmin(setup.sampleRate, 48000.0);
+            deviceManager.setAudioDeviceSetup(setup, false);
+        }
+    #endif
+
     midiEngine.prepare(newSampleRate);
     sfzEngine.prepare(newSampleRate, samplesPerBlock);
     mixer.prepare(newSampleRate, samplesPerBlock);
@@ -492,6 +521,20 @@ bool OTTOAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) cons
 
 void OTTOAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
+    
+    #if JUCE_MAC || JUCE_IOS
+        juce::FloatVectorOperations::disableDenormalisedNumberSupport();
+    #elif JUCE_WINDOWS
+        if (juce::Thread::getCurrentThread() != nullptr) {
+            juce::Thread::getCurrentThread()->setPriority(10);
+        }
+    #elif JUCE_LINUX
+        static juce::CriticalSection audioProcessingLock;
+        juce::ScopedLock lock(audioProcessingLock);
+    #elif JUCE_ANDROID
+        buffer.clear();
+    #endif
+
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 

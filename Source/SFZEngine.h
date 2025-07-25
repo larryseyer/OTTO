@@ -104,6 +104,7 @@ private:
    juce::String currentSFZFile;
    PlayerDrumkitSelection playerSelections[INIConfig::Defaults::MAX_PLAYERS];
    int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
+   juce::OwnedArray<juce::AudioBuffer<float>> preAllocatedBuffers;
 
    juce::File getAssetsPath();
    void loadSFZFile();

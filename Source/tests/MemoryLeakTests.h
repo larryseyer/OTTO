@@ -49,6 +49,9 @@ public:
 
         beginTest("Smart Pointer Usage");
         testSmartPointerUsage();
+
+        beginTest("AI Stress Conditions");
+        testAIStressConditions();
     }
 
 private:
@@ -340,16 +343,32 @@ private:
        for (int i = 0; i < static_cast<int>(INIConfig::Defaults::SWING); ++i) {
            auto patternEngine = std::make_unique<PatternSuggestionEngine>();
            
-           PatternSuggestionEngine::SuggestionParams params;
-           params.genre = static_cast<PatternSuggestionEngine::Genre>(i % 8);
-           params.complexity = 0.5f;
-           params.bars = 4;
-           
-           auto suggestions = patternEngine->suggestPatterns(params, 5);
-           
-           for (const auto& suggestion : suggestions) {
-               expect(!suggestion.name.isEmpty(), "Pattern suggestion should have valid name");
+           for (int genre = 0; genre < 8; ++genre) {
+               PatternSuggestionEngine::SuggestionParams params;
+               params.genre = static_cast<PatternSuggestionEngine::Genre>(genre);
+               params.complexity = 0.5f;
+               params.bars = 4;
+               
+               auto suggestions = patternEngine->suggestPatterns(params, 5);
+               
+               for (const auto& suggestion : suggestions) {
+                   expect(!suggestion.name.isEmpty(), "Pattern suggestion should have valid name");
+                   expect(suggestion.pattern.getNumEvents() >= 0, "Pattern should have valid event count");
+               }
            }
+           
+           juce::MidiMessageSequence testPattern;
+           auto noteOn = juce::MidiMessage::noteOn(10, INIConfig::GMDrums::BASS_DRUM_1, 100);
+           testPattern.addEvent(noteOn);
+           
+           patternEngine->learnFromPattern(testPattern, PatternSuggestionEngine::Genre::Rock);
+           
+           juce::Array<float> velocities, timings;
+           for (int j = 0; j < 10; ++j) {
+               velocities.add(80.0f + j);
+               timings.add(0.01f * j);
+           }
+           patternEngine->adaptToPerformance(velocities, timings);
            
            patternEngine.reset();
        }
@@ -372,6 +391,27 @@ private:
        }
        
        expect(true, "Smart pointer usage test completed");
+   }
+
+   void testAIStressConditions() {
+       auto patternEngine = std::make_unique<PatternSuggestionEngine>();
+       
+       for (int i = 0; i < 1000; ++i) {
+           PatternSuggestionEngine::SuggestionParams params;
+           params.genre = static_cast<PatternSuggestionEngine::Genre>(i % 8);
+           params.complexity = (i % 100) / 100.0f;
+           params.bars = (i % 8) + 1;
+           params.tempo = 60.0f + (i % 200);
+           
+           auto pattern = patternEngine->generatePattern(params);
+           expect(!pattern.name.isEmpty(), "Stress test pattern should be valid");
+           
+           if (i % 100 == 0) {
+               patternEngine->learnFromPattern(pattern.pattern, params.genre);
+           }
+       }
+       
+       expect(true, "AI stress test completed");
    }
 };
 

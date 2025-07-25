@@ -4,6 +4,7 @@
 #include "StatePersistenceTests.h"
 #include "MemoryLeakTests.h"
 #include "CrossPlatformTests.h"
+#include "AIComponentTests.h"
 
 
 
@@ -120,6 +121,7 @@
             std::cout << "  - State Persistence Tests" << std::endl;
             std::cout << "  - Memory Leak Detection Tests" << std::endl;
             std::cout << "  - Cross-Platform Compatibility Tests" << std::endl;
+            std::cout << "  - AI Component Tests" << std::endl;
         }
 
         void printResults() {

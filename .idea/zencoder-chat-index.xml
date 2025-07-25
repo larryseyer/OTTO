@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ai.zencoder.plugin.chat.index">
-    <option name="activeChatId" value="9977ee9f-9d59-43d0-9972-f0f48858e1c0" />
-    <option name="chatMetadata" value="{&quot;9977ee9f-9d59-43d0-9972-f0f48858e1c0&quot;:{&quot;id&quot;:&quot;9977ee9f-9d59-43d0-9972-f0f48858e1c0&quot;,&quot;title&quot;:&quot;Repository Documentation Creation&quot;,&quot;createdAt&quot;:1753463323137,&quot;updatedAt&quot;:1753463441964,&quot;isNameGenerated&quot;:true,&quot;messageCount&quot;:3,&quot;lastMessagePreview&quot;:&quot;&quot;}}" />
+    <option name="activeChatId" value="2ce37710-f501-4f29-a8dc-cb3e3dc41027" />
+    <option name="chatMetadata" value="{&quot;f24148a4-62e6-4cb3-9d96-89b10b11f9af&quot;:{&quot;id&quot;:&quot;f24148a4-62e6-4cb3-9d96-89b10b11f9af&quot;,&quot;title&quot;:&quot;JUCE Project Compilation Guide&quot;,&quot;createdAt&quot;:1753476064827,&quot;updatedAt&quot;:1753477865890,&quot;isAgent&quot;:true,&quot;isNameGenerated&quot;:true,&quot;messageCount&quot;:28,&quot;lastMessagePreview&quot;:&quot;Continue. You were in the middle of request:&quot;},&quot;2ce37710-f501-4f29-a8dc-cb3e3dc41027&quot;:{&quot;id&quot;:&quot;2ce37710-f501-4f29-a8dc-cb3e3dc41027&quot;,&quot;title&quot;:&quot;GitHub Commit and Push Guide&quot;,&quot;createdAt&quot;:1753478019793,&quot;updatedAt&quot;:1753478052370,&quot;isAgent&quot;:true,&quot;isNameGenerated&quot;:true,&quot;messageCount&quot;:3,&quot;lastMessagePreview&quot;:&quot;/Users/larryseyer/AudioDevelopment/OTTO&quot;}}" />
   </component>
 </project>

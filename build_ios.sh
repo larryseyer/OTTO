@@ -7,18 +7,22 @@ echo "Building OTTO for iOS..."
 mkdir -p build-ios
 cd build-ios
 
-# Configure with CMake for iOS
+# Configure with CMake for iOS Simulator
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_SYSTEM_NAME=iOS \
-    -DCMAKE_OSX_ARCHITECTURES="arm64" \
+    -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
     -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-    -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="YOUR_TEAM_ID" \
-    -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="iPhone Developer" \
+    -DCMAKE_OSX_SYSROOT=iphonesimulator \
+    -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="Apple Development" \
+    -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=YES \
+    -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=YES \
+    -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE="Automatic" \
+    -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="" \
     -G Xcode
 
-# Build
-cmake --build . --config Release --parallel $(sysctl -n hw.ncpu)
+# Build for simulator with automatic signing
+cmake --build . --config Release --parallel $(sysctl -n hw.ncpu) -- -sdk iphonesimulator CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
 echo "iOS build complete! Check build-ios directory for outputs."
-echo "Note: You'll need to set your Apple Developer Team ID in the script."
+echo "App built for iOS Simulator without code signing requirements."

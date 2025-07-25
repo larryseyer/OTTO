@@ -39,12 +39,12 @@ function(configure_juce8_target target_name)
     
     # JUCE 8 compiler flags with platform-specific optimizations
     target_compile_options(${target_name} PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -O3 -march=native>
-        $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -O3 -march=native>
+        $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -O3>
+        $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic -O3>
         $<$<CXX_COMPILER_ID:MSVC>:/W4 /O2 /arch:AVX2>
         
-        $<$<PLATFORM_ID:Darwin>:-Wno-deprecated-declarations -fno-objc-arc -msse4.2 -mavx>
-        $<$<PLATFORM_ID:iOS>:-Wno-deprecated-declarations -fno-objc-arc -mfpu=neon>
+        $<$<PLATFORM_ID:Darwin>:-Wno-deprecated-declarations -fno-objc-arc>
+        $<$<PLATFORM_ID:iOS>:-Wno-deprecated-declarations -fno-objc-arc>
         $<$<PLATFORM_ID:Linux>:-fPIC -msse4.2 -mavx -pthread>
         $<$<PLATFORM_ID:Windows>:/arch:SSE2>
         $<$<PLATFORM_ID:Android>:-mfpu=neon -ffast-math>

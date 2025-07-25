@@ -38,33 +38,40 @@ else()
 endif()
 
 # Create the plugin target
-juce_add_plugin(OTTO
-    COMPANY_NAME "YourCompany"
-    PLUGIN_MANUFACTURER_CODE "Manu"
-    PLUGIN_CODE "Otto"
-    FORMATS AU VST3 Standalone
-    PRODUCT_NAME "OTTO"
-    DESCRIPTION "OTTO Audio Plugin"
-    
-    # Plugin characteristics
-    IS_SYNTH TRUE
-    NEEDS_MIDI_INPUT TRUE
-    NEEDS_MIDI_OUTPUT TRUE
-    EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD TRUE
-    
-    # iOS specific
-    $<$<PLATFORM_ID:iOS>:
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    # For iOS, create a simple app instead of a plugin
+    juce_add_gui_app(OTTO
+        COMPANY_NAME "YourCompany"  
+        PRODUCT_NAME "OTTO"
+        VERSION "1.0.0"
+        BUNDLE_ID "com.yourcompany.otto"
         IPHONE_SCREEN_ORIENTATIONS UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         REQUIRES_FULL_SCREEN TRUE
-    >
-    
-    # Android specific  
-    $<$<PLATFORM_ID:Android>:
-        ANDROID_MIN_SDK_VERSION 23
-        ANDROID_TARGET_SDK_VERSION 33
-    >
-)
+    )
+else()
+    # For other platforms, create the plugin
+    juce_add_plugin(OTTO
+        COMPANY_NAME "YourCompany"
+        PLUGIN_MANUFACTURER_CODE "Manu"
+        PLUGIN_CODE "Otto"
+        FORMATS AU VST3 Standalone
+        PRODUCT_NAME "OTTO"
+        DESCRIPTION "OTTO Audio Plugin"
+        
+        # Plugin characteristics
+        IS_SYNTH TRUE
+        NEEDS_MIDI_INPUT TRUE
+        NEEDS_MIDI_OUTPUT TRUE
+        EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+        COPY_PLUGIN_AFTER_BUILD TRUE
+        
+        # Android specific  
+        $<$<PLATFORM_ID:Android>:
+            ANDROID_MIN_SDK_VERSION 23
+            ANDROID_TARGET_SDK_VERSION 33
+        >
+    )
+endif()
 
 # Source files - only include existing files
 file(GLOB_RECURSE SOURCE_FILES
@@ -73,6 +80,17 @@ file(GLOB_RECURSE SOURCE_FILES
 
 # Exclude test files from main build
 list(FILTER SOURCE_FILES EXCLUDE REGEX "Source/tests/.*")
+
+# For iOS, exclude plugin-specific files and include iOS main
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    list(FILTER SOURCE_FILES EXCLUDE REGEX "Source/PluginProcessor\\.cpp$")
+    list(FILTER SOURCE_FILES EXCLUDE REGEX "Source/PluginEditor\\.cpp$")
+    # Add iOS-specific main file
+    list(APPEND SOURCE_FILES "Source/Main_iOS.cpp")
+else()
+    # For non-iOS platforms, exclude the iOS main file
+    list(FILTER SOURCE_FILES EXCLUDE REGEX "Source/Main_iOS\\.cpp$")
+endif()
 
 # Add sources to target
 target_sources(OTTO PRIVATE ${SOURCE_FILES})
@@ -103,5 +121,7 @@ else()
     message(WARNING "BinaryData files not found - assets may not be available")
 endif()
 
-# Copy plugin after build for easier testing
-juce_enable_copy_plugin_step(OTTO)
+# Copy plugin after build for easier testing (only for plugins, not iOS apps)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    juce_enable_copy_plugin_step(OTTO)
+endif()

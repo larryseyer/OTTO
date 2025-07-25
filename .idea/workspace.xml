@@ -15,7 +15,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e1b0f214-8b4a-4549-a89a-54cad696307e" name="Changes" comment="Clion Zencoder initial adds" />
+    <list default="true" id="e1b0f214-8b4a-4549-a89a-54cad696307e" name="Changes" comment="Clion Zencoder initial adds">
+      <change afterPath="$PROJECT_DIR$/JUCE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/zencoder-chat-index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/zencoder-chat-index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/zencoder/chats/9977ee9f-9d59-43d0-9972-f0f48858e1c0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/project.xcworkspace/xcuserdata/larryseyer.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/project.xcworkspace/xcuserdata/larryseyer.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/xcuserdata/larryseyer.xcuserdatad/xcschemes/xcschememanagement.plist" beforeDir="false" afterPath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/xcuserdata/larryseyer.xcuserdatad/xcschemes/xcschememanagement.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_ios.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build_ios.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake/JuceConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake/JuceConfig.cmake" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -68,9 +79,10 @@
     "RunOnceActivity.zencoder-patch-migrate-custom-instruction": "true",
     "RunOnceActivity.zencoder-patch-migrate-repo-info-to-rules": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "SHELLCHECK.PATH": "/Users/larryseyer/Library/Application Support/JetBrains/CLion2025.1/plugins/Shell Script/shellcheck",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "devin/1753394790-world-class-drummer-plan",
     "last_opened_file_path": "/Users/larryseyer/AudioDevelopment/OTTO",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -93,6 +105,8 @@
       <workItem from="1753462787479" duration="231000" />
       <workItem from="1753463040995" duration="77000" />
       <workItem from="1753463126777" duration="529000" />
+      <workItem from="1753471005128" duration="2561000" />
+      <workItem from="1753476022514" duration="1938000" />
     </task>
     <task id="LOCAL-00001" summary="Clion Zencoder initial adds">
       <option name="closed" value="true" />

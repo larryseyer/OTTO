@@ -45,9 +45,19 @@ void MidiEngine::process(juce::MidiBuffer& midiMessages) {
             return;
         }
 
-        const double currentTime = juce::Time::getMillisecondCounterHiRes();
+        #if JUCE_MAC || JUCE_IOS
+            const double currentTime = juce::Time::getHighResolutionTicks() / juce::Time::getHighResolutionTicksPerSecond() * 1000.0;
+        #elif JUCE_WINDOWS
+            const double currentTime = juce::Time::getMillisecondCounterHiRes();
+        #else
+            const double currentTime = juce::Time::getMillisecondCounterHiRes();
+        #endif
+        
         const double deltaTime = currentTime - lastProcessTime;
         lastProcessTime = currentTime;
+
+        static thread_local juce::MidiBuffer tempBuffer;
+        tempBuffer.clear();
 
         processMidiInput(midiMessages);
 

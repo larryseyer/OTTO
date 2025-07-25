@@ -313,20 +313,40 @@ private:
     }
 
     void testPerformanceConsistency() {
-        // Test consistent performance across platforms
         auto processor = std::make_unique<OTTOAudioProcessor>();
-        processor->prepareToPlay(static_cast<double>(INIConfig::Defaults::DEFAULT_SAMPLE_RATE), INIConfig::Defaults::DEFAULT_BUFFER_SIZE * INIConfig::Audio::NUM_SEND_TYPES);
+        
+        #if JUCE_MAC || JUCE_IOS
+            double optimalSampleRate = 48000.0;
+            int optimalBufferSize = 256;
+            const int warmupIterations = 100;
+        #elif JUCE_WINDOWS
+            double optimalSampleRate = 44100.0;
+            int optimalBufferSize = 512;
+            const int warmupIterations = 50;
+        #elif JUCE_LINUX
+            double optimalSampleRate = 48000.0;
+            int optimalBufferSize = 1024;
+            const int warmupIterations = 50;
+        #elif JUCE_ANDROID
+            double optimalSampleRate = 44100.0;
+            int optimalBufferSize = 1024;
+            const int warmupIterations = 50;
+        #else
+            double optimalSampleRate = static_cast<double>(INIConfig::Defaults::DEFAULT_SAMPLE_RATE);
+            int optimalBufferSize = INIConfig::Defaults::DEFAULT_BUFFER_SIZE;
+            const int warmupIterations = 50;
+        #endif
+        
+        processor->prepareToPlay(optimalSampleRate, optimalBufferSize);
 
-        juce::AudioBuffer<float> buffer(INIConfig::Defaults::DEFAULT_OUTPUT_CHANNELS, INIConfig::Defaults::DEFAULT_BUFFER_SIZE * INIConfig::Audio::NUM_SEND_TYPES);
+        juce::AudioBuffer<float> buffer(2, optimalBufferSize);
         juce::MidiBuffer midiBuffer;
 
-        // Warm up
-        for (int i = 0; i < INIConfig::Defaults::FIXED_VELOCITY; ++i) {
+        for (int i = 0; i < warmupIterations; ++i) {
             processor->processBlock(buffer, midiBuffer);
         }
 
-        // Measure processing time
-        const int numBlocks = INIConfig::Defaults::DEFAULT_AUTO_SAVE_INTERVAL * INIConfig::Audio::NUM_EQ_BANDS + INIConfig::Defaults::DEFAULT_AUTO_SAVE_INTERVAL / INIConfig::Audio::NUM_EQ_BANDS;
+        const int numBlocks = 1000;
         auto startTime = juce::Time::getHighResolutionTicks();
 
         for (int i = 0; i < numBlocks; ++i) {
@@ -334,14 +354,17 @@ private:
         }
 
         auto endTime = juce::Time::getHighResolutionTicks();
-        double processingTimeMs = juce::Time::highResolutionTicksToSeconds(endTime - startTime) * static_cast<double>(INIConfig::Defaults::MS_PER_SECOND);
+        double processingTimeMs = juce::Time::highResolutionTicksToSeconds(endTime - startTime) * 1000.0;
         double averageBlockTime = processingTimeMs / numBlocks;
 
-        logMessage("Average block processing time: " + juce::String(averageBlockTime, INIConfig::Audio::NUM_EQ_BANDS) + "ms");
+        logMessage("Platform: " + juce::SystemStats::getOperatingSystemName());
+        logMessage("Optimal sample rate: " + juce::String(optimalSampleRate));
+        logMessage("Optimal buffer size: " + juce::String(optimalBufferSize));
+        logMessage("Average block processing time: " + juce::String(averageBlockTime, 3) + "ms");
 
-        // Expected time for 512 samples at 48kHz is ~10.67ms
-        // Processing should be much faster than real-time
-        expect(averageBlockTime < static_cast<double>(INIConfig::UI::MAX_TOGGLE_STATES), "Processing should be faster than real-time on all platforms");
+        double maxExpectedTime = (optimalBufferSize / optimalSampleRate) * 1000.0 * 0.5;
+        expect(averageBlockTime < maxExpectedTime, 
+               "Processing should be faster than 50% real-time on " + juce::SystemStats::getOperatingSystemName());
     }
 
     // Helper method

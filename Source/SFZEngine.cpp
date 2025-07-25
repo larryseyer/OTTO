@@ -49,6 +49,22 @@ SFZEngine::VelocityLayer* SFZEngine::Region::getNextRoundRobinLayer(int velocity
 
 SFZEngine::SFZEngine() {
     formatManager.registerBasicFormats();
+    
+    #if JUCE_MAC || JUCE_IOS
+        voiceAllocator.setMaxVoices(64);
+    #elif JUCE_WINDOWS
+        voiceAllocator.setMaxVoices(48);
+    #elif JUCE_LINUX
+        voiceAllocator.setMaxVoices(32);
+    #elif JUCE_ANDROID
+        voiceAllocator.setMaxVoices(16);
+    #else
+        voiceAllocator.setMaxVoices(INIConfig::Defaults::MAX_VOICES);
+    #endif
+    
+    for (int i = 0; i < voiceAllocator.getMaxVoices(); ++i) {
+        preAllocatedBuffers.add(new juce::AudioBuffer<float>(2, 4096));
+    }
 
     sfzFolder = getAssetsPath().getChildFile("Drumkits");
 

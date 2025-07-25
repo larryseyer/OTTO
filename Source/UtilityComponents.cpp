@@ -753,7 +753,7 @@ void EffectButton::paintButton(juce::Graphics& g, bool shouldDrawButtonAsHighlig
 
  g.setColour(isBypassed ? colorScheme.getColor(ColorScheme::ColorRole::SecondaryText).withAlpha(INIConfig::LayoutConstants::effectButtonBypassAlpha)
                         : colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
- g.setFont(juce::FontOptions().withHeight(INIConfig::LayoutConstants::effectButtonFontSize));
+ g.setFont(juce::Font(INIConfig::LayoutConstants::effectButtonFontSize));
  g.drawText(getButtonText(), bounds, juce::Justification::centred);
 
  if (isBypassed) {

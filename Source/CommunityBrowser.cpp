@@ -69,7 +69,7 @@ void CommunityBrowser::paint(juce::Graphics& g) {
 
     auto bounds = getLocalBounds().reduced(INIConfig::LayoutConstants::defaultMargin);
 
-    auto headerFont = juce::Font(juce::FontOptions(static_cast<float>(INIConfig::LayoutConstants::effectSectionHeaderHeight)));
+    auto headerFont = juce::Font(static_cast<float>(INIConfig::LayoutConstants::effectSectionHeaderHeight));
     headerFont.setBold(true);
     g.setFont(headerFont);
     g.setColour(colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
@@ -346,7 +346,7 @@ void CommunityBrowser::ItemListModel::paintListBoxItem(int rowNumber, juce::Grap
 
     bounds.removeFromLeft(10);
 
-    auto nameFont = juce::Font(juce::FontOptions(14.0f));
+    auto nameFont = juce::Font(14.0f);
     nameFont.setBold(true);
     g.setFont(nameFont);
     g.setColour(item.isDownloaded ?
@@ -355,13 +355,13 @@ void CommunityBrowser::ItemListModel::paintListBoxItem(int rowNumber, juce::Grap
     g.drawText(item.name, bounds.removeFromTop(height / 2),
                juce::Justification::centredLeft);
 
-    g.setFont(juce::Font(juce::FontOptions(12.0f)));
+    g.setFont(juce::Font(12.0f));
     g.setColour(parent.colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     g.drawText("by " + item.author, bounds, juce::Justification::centredLeft);
 
     auto statsArea = juce::Rectangle<int>(0, 0, width, height).reduced(5);
 
-    g.setFont(juce::Font(juce::FontOptions(12.0f)));
+    g.setFont(juce::Font(12.0f));
     g.setColour(parent.colorScheme.getColor(ColorScheme::ColorRole::Warning));
     juce::String rating = juce::String::charToString(0x2605) + " " +
                          juce::String(item.rating, 1);
@@ -392,26 +392,26 @@ void CommunityBrowser::ItemListModel::listBoxItemDoubleClicked(int row, const ju
 }
 
 CommunityBrowser::PreviewPanel::PreviewPanel(ColorScheme& cs) : colorScheme(cs) {
-   auto titleFont = juce::Font(juce::FontOptions(20.0f));
+   auto titleFont = juce::Font(20.0f);
    titleFont.setBold(true);
    titleLabel.setFont(titleFont);
    titleLabel.setJustificationType(juce::Justification::centredLeft);
    addAndMakeVisible(titleLabel);
 
-   descriptionLabel.setFont(juce::Font(juce::FontOptions(14.0f)));
+   descriptionLabel.setFont(juce::Font(14.0f));
    descriptionLabel.setJustificationType(juce::Justification::topLeft);
    addAndMakeVisible(descriptionLabel);
 
-   authorLabel.setFont(juce::Font(juce::FontOptions(14.0f)));
+   authorLabel.setFont(juce::Font(14.0f));
    authorLabel.setColour(juce::Label::textColourId,
        colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
    addAndMakeVisible(authorLabel);
 
-   statsLabel.setFont(juce::Font(juce::FontOptions(12.0f)));
+   statsLabel.setFont(juce::Font(12.0f));
    statsLabel.setJustificationType(juce::Justification::topLeft);
    addAndMakeVisible(statsLabel);
 
-   tagsLabel.setFont(juce::Font(juce::FontOptions(12.0f)));
+   tagsLabel.setFont(juce::Font(12.0f));
    tagsLabel.setColour(juce::Label::textColourId,
        colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
    addAndMakeVisible(tagsLabel);
@@ -623,7 +623,7 @@ CommunityBrowser::ShareDialog::ShareDialog(ColorScheme& cs) : colorScheme(cs) {
    setSize(400, 300);
 
    titleLabel.setText("Share Preset", juce::dontSendNotification);
-   auto titleFont = juce::Font(juce::FontOptions(20.0f));
+   auto titleFont = juce::Font(20.0f);
    titleFont.setBold(true);
    titleLabel.setFont(titleFont);
    titleLabel.setJustificationType(juce::Justification::centred);

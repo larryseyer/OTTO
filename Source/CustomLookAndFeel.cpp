@@ -191,7 +191,7 @@ juce::Font CustomLookAndFeel::getTextButtonFont(juce::TextButton& button, int bu
     ComponentType type = getComponentType(&button);
     float sizeMult = largeTextMode ? INIConfig::LayoutConstants::customLookFeelLargeTextMultiplier : 1.0f;
 
-    juce::Font font = juce::Font(juce::FontOptions());
+    juce::Font font = juce::Font();
     switch (type) {
         case Icon:
             font = fontManager.getFont(FontManager::FontRole::Icon, INIConfig::LayoutConstants::fontSizeIcon * sizeMult);
@@ -210,7 +210,7 @@ juce::Font CustomLookAndFeel::getTextButtonFont(juce::TextButton& button, int bu
 
     if (font.getTypefaceName().isEmpty()) {
 
-        font = juce::Font(juce::FontOptions().withHeight(sizeMult * INIConfig::LayoutConstants::fontSizeButton));
+        font = juce::Font(sizeMult * INIConfig::LayoutConstants::fontSizeButton);
     }
 
     return font;
@@ -402,7 +402,7 @@ void CustomLookAndFeel::drawButtonText(juce::Graphics& g, juce::TextButton& butt
         float textWidth = glyphs.getBoundingBox(0, -1, true).getWidth();
         if (textWidth > textBounds.getWidth() && textBounds.getWidth() > 0) {
             float scale = textBounds.getWidth() / textWidth;
-            font = juce::Font(juce::FontOptions().withHeight(font.getHeight() * scale * INIConfig::LayoutConstants::customLookFeelTextScaleFactor));
+            font = juce::Font(font.getHeight() * scale * INIConfig::LayoutConstants::customLookFeelTextScaleFactor);
         }
 
         g.setFont(font);

@@ -222,7 +222,7 @@ void OTTOAudioProcessorEditor::initializeManagers()
     
     // Debug: Check if fonts loaded
     if (fontManager->hasError()) {
-        DBG("FontManager Error: " + fontManager->getError());
+        DBG("FontManager Error: " + fontManager->getLastError());
     }
     
     if (!fontManager->arePhosphorFontsLoaded()) {

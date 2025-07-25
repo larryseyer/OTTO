@@ -59,7 +59,7 @@ public:
     std::function<void(int, const juce::String&)> onMidiFileChanged;
     std::function<void()> onGrooveAndFillsRequested;
 
-    void setComponentState(ComponentState* state) { componentState.reset(state); }
+    void setComponentState(ComponentState* state) { componentState = state; }
 
     BeatsButtonGroup* findOrCreateGroup(const juce::String& groupName, ComponentState& state);
 
@@ -91,7 +91,7 @@ private:
     std::unique_ptr<juce::PopupMenu> currentDropdownMenu;
     bool isInitialized = false;
 
-    std::unique_ptr<ComponentState> componentState;
+    ComponentState* componentState = nullptr;
 
     void setupComponents();
     void updateFontsAndColors();

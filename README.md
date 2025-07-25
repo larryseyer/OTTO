@@ -12,13 +12,34 @@ OTTO is a powerful drum machine and sample playback system with these key featur
 ### Technical Architecture
 
 OTTO uses these core components:
-**JUCE Framework** - Cross-platform audio application framework using Projucer and Xcode
-**SFZ Engine** - Industry-standard sample playback
-**MIDI Engine** - Pattern playback and timing
-**Audio Engine** - Mixing, effects, and output
-**High Quality convolution and audio processing FX
-**User Interface** - Modern, responsive GUI
-**Reaper INI style .ini plain text database
+- **JUCE 8 Framework** - Modern cross-platform audio application framework with CMake build system
+- **SFZ Engine** - Industry-standard sample playback
+- **MIDI Engine** - Pattern playback and timing
+- **Audio Engine** - Mixing, effects, and output
+- **High Quality convolution and audio processing FX**
+- **User Interface** - Modern, responsive GUI with embedded graphics and fonts
+- **Reaper INI style .ini plain text database**
+
+#### Current Build Status ✅
+- **Graphics & Fonts**: All UI elements, custom fonts, and Phosphor icons properly embedded and displaying
+- **Cross-Platform Builds**: CMake-based build system supports macOS, Windows, Linux, iOS, Android
+- **Plugin Formats**: VST3, AU, and Standalone all building and installing correctly
+- **Asset Management**: Critical UI assets embedded in binary, user content (samples, patterns) still file-based
+
+#### Quick Start Building
+```bash
+# Setup JUCE 8 and dependencies
+./setup_juce8.sh
+
+# Build for your platform
+./build_macos.sh      # macOS Universal Binary
+./build_ios.sh        # iOS
+./build_linux.sh      # Linux
+./build_android.sh    # Android
+./build_all.sh --all  # All platforms
+
+# See BUILD_INSTRUCTIONS.md for detailed build information
+```
 
 OTTO uses 8 MIDI Player Playback engines consisting of:
 - **Note events**: Which drum to hit (kick, snare, hi-hat, etc.)

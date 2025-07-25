@@ -51,3 +51,6 @@ lint.sh
 run_local.sh
 simple_standalone.cpp
 Source/Main.cpp
+
+# JUCE Framework (untracked)
+JUCE/

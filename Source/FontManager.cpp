@@ -1,5 +1,6 @@
 #include "FontManager.h"
 #include "INIConfig.h"
+#include "BinaryData.h"
 
 const std::map<juce::String, juce::uint32> FontManager::iconMappings = {
     {"gear", 0xE270}, {"settings", 0xE270},
@@ -91,54 +92,32 @@ void FontManager::loadCustomFonts(const juce::File& assetsPath) {
     clearError();
 
     try {
-        juce::File fontsPath = assetsPath.getChildFile("Fonts");
-        if (!fontsPath.exists()) {
-            setError("Fonts directory not found: " + fontsPath.getFullPathName());
-            return;
-        }
-
-        auto loadTypeface = [&](const juce::String& path, juce::Typeface::Ptr& target, const juce::String& name) {
-            juce::File fontFile = fontsPath.getChildFile(path);
-            if (fontFile.existsAsFile()) {
-                juce::MemoryBlock fontData;
-                if (fontFile.loadFileAsData(fontData)) {
-                    target = juce::Typeface::createSystemTypefaceFor(fontData.getData(), fontData.getSize());
-                    if (target != nullptr) {
-
-                        return true;
-                    }
-                }
-
+        // Load fonts from embedded BinaryData (ignore assetsPath - kept for compatibility)
+        auto loadTypefaceFromBinary = [&](const char* data, int size, juce::Typeface::Ptr& target, const juce::String& name) {
+            target = juce::Typeface::createSystemTypefaceFor(data, size);
+            if (target != nullptr) {
+                return true;
             } else {
-
+                setError("Failed to load " + name + " font from BinaryData");
+                return false;
             }
-            return false;
         };
 
-        loadTypeface("Roboto/Roboto-VariableFont_wdth,wght.ttf", robotoTypeface, "Roboto");
-        loadTypeface("Playfair_Display/PlayfairDisplay-VariableFont_wght.ttf", playfairTypeface, "Playfair Display");
-        loadTypeface("Orbitron/Orbitron-VariableFont_wght.ttf", orbitronTypeface, "Orbitron");
-        loadTypeface("Roboto_Condensed/RobotoCondensed-VariableFont_wght.ttf", robotoCondensedTypeface, "Roboto Condensed");
-        loadTypeface("Montserrat/Montserrat-VariableFont_wght.ttf", montserratTypeface, "Montserrat");
-        loadTypeface("Open_Sans/OpenSans-VariableFont_wdth,wght.ttf", openSansTypeface, "Open Sans");
+        loadTypefaceFromBinary(BinaryData::RobotoVariableFont_wdthwght_ttf, BinaryData::RobotoVariableFont_wdthwght_ttfSize, robotoTypeface, "Roboto");
+        loadTypefaceFromBinary(BinaryData::PlayfairDisplayVariableFont_wght_ttf, BinaryData::PlayfairDisplayVariableFont_wght_ttfSize, playfairTypeface, "Playfair Display");
+        loadTypefaceFromBinary(BinaryData::OrbitronVariableFont_wght_ttf, BinaryData::OrbitronVariableFont_wght_ttfSize, orbitronTypeface, "Orbitron");
+        loadTypefaceFromBinary(BinaryData::RobotoCondensedVariableFont_wght_ttf, BinaryData::RobotoCondensedVariableFont_wght_ttfSize, robotoCondensedTypeface, "Roboto Condensed");
+        loadTypefaceFromBinary(BinaryData::MontserratVariableFont_wght_ttf, BinaryData::MontserratVariableFont_wght_ttfSize, montserratTypeface, "Montserrat");
+        loadTypefaceFromBinary(BinaryData::OpenSansVariableFont_wdthwght_ttf, BinaryData::OpenSansVariableFont_wdthwght_ttfSize, openSansTypeface, "Open Sans");
 
-        loadPhosphorFonts(fontsPath);
+        loadPhosphorFontsFromBinary();
     }
     catch (const std::exception& e) {
         setError("Error loading custom fonts: " + juce::String(e.what()));
     }
 }
 
-void FontManager::loadPhosphorFonts(const juce::File& fontsPath) {
-    const juce::String phosphorPaths[] = {
-        "Phosphor/thin/Phosphor-Thin.ttf",
-        "Phosphor/light/Phosphor-Light.ttf",
-        "Phosphor/regular/Phosphor.ttf",
-        "Phosphor/bold/Phosphor-Bold.ttf",
-        "Phosphor/fill/Phosphor-Fill.ttf",
-        "Phosphor/duotone/Phosphor-Duotone.ttf"
-    };
-
+void FontManager::loadPhosphorFontsFromBinary() {
     const juce::String phosphorNames[] = {
         "Phosphor Thin", "Phosphor Light", "Phosphor Regular",
         "Phosphor Bold", "Phosphor Fill", "Phosphor Duotone"
@@ -147,21 +126,24 @@ void FontManager::loadPhosphorFonts(const juce::File& fontsPath) {
     int loadedCount = 0;
 
     try {
+        // Load Phosphor fonts from BinaryData
+        phosphorTypefaces[0] = juce::Typeface::createSystemTypefaceFor(BinaryData::PhosphorThin_ttf, BinaryData::PhosphorThin_ttfSize);
+        phosphorTypefaces[1] = juce::Typeface::createSystemTypefaceFor(BinaryData::PhosphorLight_ttf, BinaryData::PhosphorLight_ttfSize);
+        phosphorTypefaces[2] = juce::Typeface::createSystemTypefaceFor(BinaryData::Phosphor_ttf, BinaryData::Phosphor_ttfSize);
+        phosphorTypefaces[3] = juce::Typeface::createSystemTypefaceFor(BinaryData::PhosphorBold_ttf, BinaryData::PhosphorBold_ttfSize);
+        phosphorTypefaces[4] = juce::Typeface::createSystemTypefaceFor(BinaryData::PhosphorFill_ttf, BinaryData::PhosphorFill_ttfSize);
+        phosphorTypefaces[5] = juce::Typeface::createSystemTypefaceFor(BinaryData::PhosphorDuotone_ttf, BinaryData::PhosphorDuotone_ttfSize);
+
         for (int i = 0; i < 6; ++i) {
-            juce::File fontFile = fontsPath.getChildFile(phosphorPaths[i]);
-            if (fontFile.existsAsFile()) {
-                juce::MemoryBlock fontData;
-                if (fontFile.loadFileAsData(fontData)) {
-                    phosphorTypefaces[i] = juce::Typeface::createSystemTypefaceFor(
-                        fontData.getData(), fontData.getSize());
-                    if (phosphorTypefaces[i] != nullptr) {
-
-                        loadedCount++;
-                    }
-                }
+            if (phosphorTypefaces[i] != nullptr) {
+                loadedCount++;
             } else {
-
+                setError("Failed to load " + phosphorNames[i] + " from BinaryData");
             }
+        }
+
+        if (loadedCount == 0) {
+            setError("No Phosphor fonts loaded successfully");
         }
 
     }

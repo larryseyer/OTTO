@@ -216,13 +216,23 @@ void OTTOAudioProcessorEditor::initializeManagers()
     fontManager = std::make_unique<FontManager>();
 
     auto assetsPath = FontManager::getAssetsPath();
-
-    if (assetsPath.exists()) {
-        fontManager->loadCustomFonts(assetsPath);
-
-    } else {
-
+    
+    // Always load fonts from BinaryData (assetsPath no longer required)
+    fontManager->loadCustomFonts(assetsPath);
+    
+    // Debug: Check if fonts loaded
+    if (fontManager->hasError()) {
+        DBG("FontManager Error: " + fontManager->getError());
     }
+    
+    if (!fontManager->arePhosphorFontsLoaded()) {
+        DBG("Warning: No Phosphor fonts loaded!");
+    } else {
+        DBG("Phosphor fonts loaded successfully");
+    }
+    
+    auto loadedFonts = fontManager->getLoadedFontNames();
+    DBG("Loaded fonts: " + loadedFonts.joinIntoString(", "));
 
     dataManager = std::make_unique<INIDataManager>();
 

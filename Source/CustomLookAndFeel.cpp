@@ -1,6 +1,7 @@
 #include "CustomLookAndFeel.h"
 #include "INIConfig.h"
 #include "UtilityComponents.h"
+#include "BinaryData.h"
 
 CustomLookAndFeel::CustomLookAndFeel(FontManager& fontMgr, ColorScheme& colorScheme)
     : fontManager(fontMgr), colorScheme(colorScheme) {
@@ -17,23 +18,10 @@ CustomLookAndFeel::CustomLookAndFeel(FontManager& fontMgr, ColorScheme& colorSch
     setColour(juce::TooltipWindow::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     setColour(juce::TooltipWindow::outlineColourId, colorScheme.getColor(ColorScheme::ColorRole::Separator));
 
-    juce::File assetsPath = fontManager.getAssetsPath();
-    if (assetsPath.exists()) {
-        juce::File buttonImageFile = assetsPath.getChildFile("GUI/Button080.png");
-        if (buttonImageFile.existsAsFile()) {
-            buttonImage = juce::ImageFileFormat::loadFrom(buttonImageFile);
-        }
-
-        juce::File sliderImageFile = assetsPath.getChildFile("GUI/Slider100.png");
-        if (sliderImageFile.existsAsFile()) {
-            sliderImage = juce::ImageFileFormat::loadFrom(sliderImageFile);
-        }
-
-        juce::File splashImageFile = assetsPath.getChildFile("GUI/OTTO Splash Screen.png");
-        if (splashImageFile.existsAsFile()) {
-            splashImage = juce::ImageFileFormat::loadFrom(splashImageFile);
-        }
-    }
+    // Load images from embedded BinaryData instead of files
+    buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button080_png, BinaryData::Button080_pngSize);
+    sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
+    splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
 }
 
 CustomLookAndFeel::~CustomLookAndFeel() = default;
@@ -961,30 +949,17 @@ void CustomLookAndFeel::syncWithColorScheme() {
 }
 
 void CustomLookAndFeel::reloadImages() {
-   juce::File assetsPath = fontManager.getAssetsPath();
-   if (!assetsPath.exists()) {
-       return;
-   }
-
+   // Load from embedded BinaryData instead of files
    if (!buttonImage.isValid()) {
-       juce::File buttonImageFile = assetsPath.getChildFile("GUI/Button080.png");
-       if (buttonImageFile.existsAsFile()) {
-           buttonImage = juce::ImageFileFormat::loadFrom(buttonImageFile);
-       }
+       buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button080_png, BinaryData::Button080_pngSize);
    }
 
    if (!sliderImage.isValid()) {
-       juce::File sliderImageFile = assetsPath.getChildFile("GUI/Slider100.png");
-       if (sliderImageFile.existsAsFile()) {
-           sliderImage = juce::ImageFileFormat::loadFrom(sliderImageFile);
-       }
+       sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
    }
 
    if (!splashImage.isValid()) {
-       juce::File splashImageFile = assetsPath.getChildFile("GUI/OTTO Splash Screen.png");
-       if (splashImageFile.existsAsFile()) {
-           splashImage = juce::ImageFileFormat::loadFrom(splashImageFile);
-       }
+       splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
    }
 }
 

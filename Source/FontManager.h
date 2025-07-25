@@ -129,7 +129,7 @@ private:
                                     const juce::String& fallbackName,
                                     float size) const;
 
-    void loadPhosphorFonts(const juce::File& fontsPath);
+    void loadPhosphorFontsFromBinary();
     float scaled(float size) const { return size * scaleFactor; }
     void setError(const juce::String& error) const { lastError = error; }
 

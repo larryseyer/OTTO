@@ -5,6 +5,7 @@
 #include "INIConfig.h"
 #include "INIDataManager.h"
 #include "ErrorHandling.h"
+#include "PerformanceOptimizations.h"
 
 MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
                                           Mixer& mixer,
@@ -323,7 +324,8 @@ void MainContentComponent::validatePlayerIndex(int playerIndex) const {
 }
 
 void MainContentComponent::updatePlayerNumberDisplay() {
-    playerNumber.setText(juce::String("PLAYER ") + juce::String(currentPlayerIndex + 1), juce::dontSendNotification);
+    auto& stringCache = StringCache::getInstance();
+    playerNumber.setText(stringCache.getPlayerString(currentPlayerIndex + 1), juce::dontSendNotification);
 }
 
 void MainContentComponent::notifyStateChanged(ComponentState& state) {

@@ -1,6 +1,7 @@
 #include "MainContentComponentLeftSection.h"
 #include "CustomGroupManagerPopup.h"
 #include "INIConfig.h"
+#include "PerformanceOptimizations.h"
 
 void MainContentComponentLeftSection::initializeEmptyPatternGroups(ComponentState& state) {
     if (state.beatsButtonGroups.isEmpty()) {
@@ -376,8 +377,9 @@ void MainContentComponentLeftSection::loadPlayerBeatsButtonState(int playerIndex
     if (playerIndex >= 0 && playerIndex < 8) {
         const auto& playerSettings = state.playerSettings[playerIndex];
 
+        auto& stringCache = StringCache::getInstance();
         currentSelectedGroup = playerSettings.selectedMidiGroup.isEmpty() ?
-            ("Group " + juce::String(playerIndex + 1)) : playerSettings.selectedMidiGroup;
+            stringCache.getGroupString(playerIndex + 1) : playerSettings.selectedMidiGroup;
 
         selectedDrumButton = INIConfig::clampButtonIndex(playerSettings.selectedButton);
 
@@ -393,7 +395,8 @@ void MainContentComponentLeftSection::initializePlayerWithMidiFiles(int playerIn
             initializeEmptyPatternGroups(state);
         }
 
-        const juce::String defaultGroup = "Group " + juce::String(playerIndex + 1);
+        auto& stringCache = StringCache::getInstance();
+        const juce::String defaultGroup = stringCache.getGroupString(playerIndex + 1);
         auto& playerSettings = state.playerSettings[playerIndex];
         playerSettings.selectedMidiGroup = defaultGroup;
         playerSettings.selectedButton = 0;

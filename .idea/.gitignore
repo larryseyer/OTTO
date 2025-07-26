@@ -1,9 +1,0 @@
-# CLion-specific workspace files that might create unwanted build directories
-workspace.xml
-
-# Prevent CLion from creating these legacy build directories at project root
-../build-ios-sim/
-../build-macos/
-../cmake-build-debug/
-../cmake-build-release/
-../cmake-build-*/

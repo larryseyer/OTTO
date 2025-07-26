@@ -27,11 +27,11 @@
       <config projectName="OTTO" targetName="OTTO_Standalone" />
     </generated>
   </component>
-  <component name="CMakeSettings" AUTO_RELOAD="true">
+  <component name="CMakeSettings">
     <configurations>
       <configuration PROFILE_NAME="macos-debug" ENABLED="true" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Debug" />
+      <configuration PROFILE_NAME="ios-simulator-debug" ENABLED="true" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/iOS/CMake-Simulator-Debug" />
       <configuration PROFILE_NAME="macos-release" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Release" />
-      <configuration PROFILE_NAME="ios-simulator-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/iOS/CMake-Simulator-Debug" />
       <configuration PROFILE_NAME="ios-device-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/iOS/CMake-Device-Debug" />
       <configuration PROFILE_NAME="macos-debug - macos-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Debug" />
       <configuration PROFILE_NAME="macos-release - macos-release" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Release" />
@@ -114,11 +114,16 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RunManager" selected="CMake Application.OTTO_Standalone">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="OTTO" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OTTO" TARGET_NAME="OTTO" CONFIG_NAME="macos-debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -197,8 +202,6 @@
       <workItem from="1753564745830" duration="32000" />
       <workItem from="1753564799753" duration="12000" />
       <workItem from="1753564875472" duration="86000" />
-      <workItem from="1753565018585" duration="93000" />
-      <workItem from="1753565127070" duration="65000" />
     </task>
     <task id="LOCAL-00001" summary="Clion Zencoder initial adds">
       <option name="closed" value="true" />

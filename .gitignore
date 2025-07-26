@@ -88,3 +88,12 @@ Source/Main.cpp
 
 # JUCE Framework (untracked)
 JUCE/
+
+# Track cmake toolchain files but ignore generated cache files in cmake directory
+cmake/CMakeCache.txt
+cmake/CMakeFiles/
+cmake/cmake_install.cmake
+cmake/Makefile
+
+# Make sure our custom cmake toolchain files are tracked
+!cmake/*.cmake

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ai.zencoder.plugin.chat.index">
-    <option name="activeChatId" value="f008d6e9-853f-451c-8b6f-778a58940ed7" />
-    <option name="chatMetadata" value="{&quot;f008d6e9-853f-451c-8b6f-778a58940ed7&quot;:{&quot;id&quot;:&quot;f008d6e9-853f-451c-8b6f-778a58940ed7&quot;,&quot;title&quot;:&quot;CMake Consolidation for JUCE Project&quot;,&quot;createdAt&quot;:1753552669891,&quot;updatedAt&quot;:1753555642118,&quot;isAgent&quot;:true,&quot;isNameGenerated&quot;:true,&quot;messageCount&quot;:28}}" />
+    <option name="chatMetadata" value="{&quot;2ea71836-9dd4-4181-a66e-72958ee0a3fa&quot;:{&quot;id&quot;:&quot;2ea71836-9dd4-4181-a66e-72958ee0a3fa&quot;,&quot;title&quot;:&quot;CMake Configuration Fixing&quot;,&quot;createdAt&quot;:1753562184959,&quot;updatedAt&quot;:1753563837036,&quot;isAgent&quot;:true,&quot;isNameGenerated&quot;:true,&quot;messageCount&quot;:32,&quot;lastMessagePreview&quot;:&quot;It's asking me to reset CMake again... should I?&quot;}}" />
   </component>
 </project>

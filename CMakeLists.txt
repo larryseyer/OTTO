@@ -15,8 +15,34 @@ if(APPLE)
     if(IOS)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0")
         set(CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "12.0")
+        
+        # Auto-detect architecture for iOS Simulator if not specified
+        if(CMAKE_OSX_SYSROOT STREQUAL "iphonesimulator" AND NOT CMAKE_OSX_ARCHITECTURES)
+            execute_process(
+                COMMAND uname -m
+                OUTPUT_VARIABLE HOST_ARCH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+            if(HOST_ARCH STREQUAL "arm64")
+                set(CMAKE_OSX_ARCHITECTURES "arm64")
+                message(STATUS "Auto-detected iOS Simulator architecture: arm64 (Apple Silicon)")
+            else()
+                set(CMAKE_OSX_ARCHITECTURES "x86_64")
+                message(STATUS "Auto-detected iOS Simulator architecture: x86_64 (Intel)")
+            endif()
+        endif()
     else()
         set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13")
+        # Auto-detect macOS architecture if not specified
+        if(NOT CMAKE_OSX_ARCHITECTURES)
+            execute_process(
+                COMMAND uname -m
+                OUTPUT_VARIABLE HOST_ARCH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+            set(CMAKE_OSX_ARCHITECTURES "${HOST_ARCH}")
+            message(STATUS "Auto-detected macOS architecture: ${HOST_ARCH}")
+        endif()
     endif()
 elseif(WIN32)
     set(CMAKE_SYSTEM_VERSION "10.0")

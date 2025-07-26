@@ -91,6 +91,99 @@ build-{platform}/
 │   │   └── Standalone/OTTO.app
 ```
 
+## IDE-Specific Instructions
+
+### CLion Configuration
+
+#### iOS Simulator Setup for Apple Silicon Macs
+
+1. **Create iOS Simulator CMake Profile:**
+   - Go to `File > Settings > Build, Execution, Deployment > CMake`
+   - Add new profile: `iOS-Simulator`
+   - Set the following CMake options:
+   ```
+   -DCMAKE_BUILD_TYPE=Debug
+   -DCMAKE_SYSTEM_NAME=iOS
+   -DCMAKE_OSX_ARCHITECTURES=arm64
+   -DCMAKE_OSX_SYSROOT=iphonesimulator
+   -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+   ```
+
+2. **Environment Variables:**
+   Set the following environment variables in CLion:
+   ```bash
+   DYLD_ROOT_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk
+   DYLD_FRAMEWORK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks
+   ```
+
+3. **For Intel Macs (Legacy):**
+   Use `x86_64` architecture instead:
+   ```
+   -DCMAKE_OSX_ARCHITECTURES=x86_64
+   ```
+
+4. **macOS Profile:**
+   - Profile name: `macOS-Debug`
+   - CMake options:
+   ```
+   -DCMAKE_BUILD_TYPE=Debug
+   -DCMAKE_OSX_ARCHITECTURES=arm64
+   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
+   ```
+
+#### Runtime Configuration
+
+To resolve simulator runtime errors, set up run configuration with:
+1. **Working directory:** Project root
+2. **Environment variables:**
+   ```
+   DYLD_ROOT_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk
+   ```
+
+#### Architecture Detection Script
+
+Add this to your CLion build configuration to auto-detect architecture:
+```bash
+#!/bin/bash
+if [[ $(uname -m) == "arm64" ]]; then
+    export IOS_ARCH="arm64"
+else
+    export IOS_ARCH="x86_64"
+fi
+echo "Building for iOS Simulator architecture: $IOS_ARCH"
+```
+
+#### Using CMake Toolchain Files
+
+For easier CLion configuration, use the provided toolchain files:
+
+1. **iOS Simulator with auto-detection:**
+   ```
+   -DCMAKE_TOOLCHAIN_FILE=cmake/iOS-Simulator.cmake
+   ```
+
+2. **iOS Device:**
+   ```
+   -DCMAKE_TOOLCHAIN_FILE=cmake/iOS-Device.cmake
+   ```
+
+#### CLion Run/Debug Configuration
+
+1. **Create iOS Simulator run configuration:**
+   - Target: Select your OTTO target
+   - Executable: Path to generated .app bundle
+   - Working directory: Project root
+   - Environment variables:
+     ```
+     DYLD_ROOT_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk
+     DYLD_FRAMEWORK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks
+     ```
+
+2. **Testing different architectures:**
+   - Apple Silicon Mac: Use arm64 architecture
+   - Intel Mac: Use x86_64 architecture
+   - The toolchain files automatically detect the correct architecture
+
 ## Advanced Build Options
 
 ### Custom JUCE Installation
@@ -117,7 +210,10 @@ cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 # Device
 cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64
 
-# Simulator
+# Simulator (Apple Silicon Macs)
+cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=iphonesimulator
+
+# Simulator (Intel Macs - Legacy)
 cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_SYSROOT=iphonesimulator
 ```
 

@@ -107,14 +107,8 @@ cmake/Makefile
 ehthumbs.db
 Thumbs.db
 
-# IDE files
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/usage.statistics.xml
-.idea/dictionaries
-.idea/shelf
-.idea/zencoder/
-.idea/.DS_Store
+# IDE files - CLion/IntelliJ
+.idea/
 
 # Visual Studio Code
 .vscode/

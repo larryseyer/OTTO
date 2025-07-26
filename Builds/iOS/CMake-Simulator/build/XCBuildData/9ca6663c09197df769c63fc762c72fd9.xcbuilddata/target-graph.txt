@@ -1,0 +1,11 @@
+Target dependency graph (4 targets)
+Target 'ALL_BUILD' in project 'OTTO'
+➜ Explicit dependency on target 'OTTO' in project 'OTTO'
+➜ Explicit dependency on target 'OTTO_Standalone' in project 'OTTO'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'OTTO'
+Target 'OTTO_Standalone' in project 'OTTO'
+➜ Explicit dependency on target 'OTTO' in project 'OTTO'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'OTTO'
+Target 'OTTO' in project 'OTTO'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'OTTO'
+Target 'ZERO_CHECK' in project 'OTTO' (no dependencies)

@@ -6,7 +6,7 @@
             "displayName": "macOS Debug",
             "description": "Debug build for macOS with auto-detected architecture",
             "generator": "Xcode",
-            "binaryDir": "${sourceDir}/build-macos-debug",
+            "binaryDir": "${sourceDir}/Builds/MacOSX/CMake-Debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13"
@@ -22,7 +22,7 @@
             "displayName": "macOS Release",
             "description": "Release build for macOS with auto-detected architecture",
             "generator": "Xcode",
-            "binaryDir": "${sourceDir}/build-macos-release",
+            "binaryDir": "${sourceDir}/Builds/MacOSX/CMake-Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13"
@@ -38,7 +38,7 @@
             "displayName": "iOS Simulator Debug",
             "description": "Debug build for iOS Simulator with auto-detected architecture (arm64 on Apple Silicon, x86_64 on Intel)",
             "generator": "Xcode",
-            "binaryDir": "${sourceDir}/build-ios-simulator-debug",
+            "binaryDir": "${sourceDir}/Builds/iOS/CMake-Simulator-Debug",
             "toolchainFile": "${sourceDir}/cmake/iOS-Simulator.cmake",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -63,7 +63,7 @@
             "displayName": "iOS Device Debug",
             "description": "Debug build for iOS Device (arm64)",
             "generator": "Xcode",
-            "binaryDir": "${sourceDir}/build-ios-device-debug",
+            "binaryDir": "${sourceDir}/Builds/iOS/CMake-Device-Debug",
             "toolchainFile": "${sourceDir}/cmake/iOS-Device.cmake",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -77,6 +77,66 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "linux-debug",
+            "displayName": "Linux Debug",
+            "description": "Debug build for Linux",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/Builds/LinuxMakefile/CMake-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "linux-release",
+            "displayName": "Linux Release",
+            "description": "Release build for Linux",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/Builds/LinuxMakefile/CMake-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "windows-debug",
+            "displayName": "Windows Debug",
+            "description": "Debug build for Windows",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-release",
+            "displayName": "Windows Release",
+            "description": "Release build for Windows",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
             }
         }
     ],
@@ -100,6 +160,26 @@
             "name": "ios-device-debug",
             "configurePreset": "ios-device-debug",
             "displayName": "Build iOS Device Debug"
+        },
+        {
+            "name": "linux-debug",
+            "configurePreset": "linux-debug",
+            "displayName": "Build Linux Debug"
+        },
+        {
+            "name": "linux-release",
+            "configurePreset": "linux-release",
+            "displayName": "Build Linux Release"
+        },
+        {
+            "name": "windows-debug",
+            "configurePreset": "windows-debug",
+            "displayName": "Build Windows Debug"
+        },
+        {
+            "name": "windows-release",
+            "configurePreset": "windows-release",
+            "displayName": "Build Windows Release"
         }
     ],
     "testPresets": [
@@ -107,6 +187,11 @@
             "name": "macos-test",
             "configurePreset": "macos-debug",
             "displayName": "Test macOS"
+        },
+        {
+            "name": "linux-test",
+            "configurePreset": "linux-debug",
+            "displayName": "Test Linux"
         }
     ]
 }

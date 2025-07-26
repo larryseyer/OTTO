@@ -1,0 +1,12 @@
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/CMakeFiles/OTTO.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/CMakeFiles/OTTO_All.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/CMakeFiles/OTTO_Standalone.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/CMakeFiles/ALL_BUILD.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/CMakeFiles/ZERO_CHECK.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/JUCE/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/JUCE/CMakeFiles/ALL_BUILD.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/JUCE/CMakeFiles/ZERO_CHECK.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/JUCE/modules/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/JUCE/extras/Build/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/iOS/CMake-Simulator/JUCE/extras/Build/juceaide/CMakeFiles/install.dir

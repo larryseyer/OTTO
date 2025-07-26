@@ -5,17 +5,61 @@
   </component>
   <component name="BackendCodeEditorMiscSettings">
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
   <component name="CMakeProjectFlavorService">
     <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="OTTO" targetName="OTTO_VST3" />
+      <config projectName="OTTO" targetName="OTTO" />
+      <config projectName="OTTO" targetName="OTTO_All" />
+      <config projectName="OTTO" targetName="OTTO_AU" />
+      <config projectName="OTTO" targetName="juce_vst3_helper" />
+      <config projectName="OTTO" targetName="OTTO_Standalone" />
+    </generated>
   </component>
   <component name="CMakeSettings">
     <configurations>
       <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="macOS-Release" ENABLED="true" GENERATION_DIR="build-macos" CONFIG_NAME="Release" TOOLCHAIN_NAME="Default" GENERATION_OPTIONS="-DCMAKE_OSX_ARCHITECTURES=&quot;x86_64;arm64&quot; -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13" />
+      <configuration PROFILE_NAME="iOS-Simulator" ENABLED="true" GENERATION_DIR="build-ios-sim" CONFIG_NAME="Release" TOOLCHAIN_NAME="Default" GENERATION_OPTIONS="-DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=&quot;x86_64;arm64&quot; -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 -DCMAKE_OSX_SYSROOT=iphonesimulator" />
+      <configuration PROFILE_NAME="macos-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Debug" />
+      <configuration PROFILE_NAME="macos-release" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Release" />
+      <configuration PROFILE_NAME="ios-simulator-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/iOS/CMake-Simulator-Debug" />
+      <configuration PROFILE_NAME="ios-device-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/iOS/CMake-Device-Debug" />
+      <configuration PROFILE_NAME="macos-debug - macos-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Debug" />
+      <configuration PROFILE_NAME="macos-release - macos-release" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/MacOSX/CMake-Release" />
+      <configuration PROFILE_NAME="ios-simulator-debug - ios-simulator-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/iOS/CMake-Simulator-Debug" />
+      <configuration PROFILE_NAME="ios-device-debug - ios-device-debug" ENABLED="false" FROM_PRESET="true" GENERATION_DIR="$PROJECT_DIR$/Builds/iOS/CMake-Device-Debug" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e1b0f214-8b4a-4549-a89a-54cad696307e" name="Changes" comment="Clion Zencoder initial adds" />
+    <list default="true" id="e1b0f214-8b4a-4549-a89a-54cad696307e" name="Changes" comment="Clion Zencoder initial adds">
+      <change beforePath="$PROJECT_DIR$/.idea/OTTO.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/OTTO.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/zencoder-chat-index.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/zencoder-chat-index.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/zencoder/chats/9977ee9f-9d59-43d0-9972-f0f48858e1c0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/project.xcworkspace/xcuserdata/larryseyer.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/project.xcworkspace/xcuserdata/larryseyer.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/xcuserdata/larryseyer.xcuserdatad/xcschemes/xcschememanagement.plist" beforeDir="false" afterPath="$PROJECT_DIR$/Builds/MacOSX/OTTO.xcodeproj/xcuserdata/larryseyer.xcuserdatad/xcschemes/xcschememanagement.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakePresets.json" beforeDir="false" afterPath="$PROJECT_DIR$/CMakePresets.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_ios.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build_ios.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_linux.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build_linux.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_macos.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build_macos.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake/JuceConfig.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake/iOS-Device.cmake" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake/iOS-Simulator.cmake" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,8 +68,10 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -53,34 +99,82 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.zencoder-patch-add-chat-message-raw-content": "true",
-    "RunOnceActivity.zencoder-patch-chat-storage-migration": "true",
-    "RunOnceActivity.zencoder-patch-generate-chat-message-id": "true",
-    "RunOnceActivity.zencoder-patch-migrate-custom-instruction": "true",
-    "RunOnceActivity.zencoder-patch-migrate-repo-info-to-rules": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/larryseyer/AudioDevelopment/OTTO",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "ai.zencoder.plugin.settings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;CMake Application.OTTO_Standalone.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.zencoder-patch-add-chat-message-raw-content&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.zencoder-patch-chat-storage-migration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.zencoder-patch-generate-chat-message-id&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.zencoder-patch-migrate-custom-instruction&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.zencoder-patch-migrate-repo-info-to-rules&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;I do mind&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/larryseyer/AudioDevelopment/OTTO/CMakeLists.txt&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
+  <component name="RunManager" selected="CMake Application.OTTO_Standalone">
+    <configuration name="OTTO" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OTTO" TARGET_NAME="OTTO" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OTTO_AU" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OTTO" TARGET_NAME="OTTO_AU" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OTTO_All" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OTTO" TARGET_NAME="OTTO_All" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OTTO_Standalone" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OTTO" TARGET_NAME="OTTO_Standalone" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OTTO" RUN_TARGET_NAME="OTTO_Standalone">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OTTO_VST3" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OTTO" TARGET_NAME="OTTO_VST3" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="juce_vst3_helper" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OTTO" TARGET_NAME="juce_vst3_helper" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OTTO" RUN_TARGET_NAME="juce_vst3_helper">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.OTTO_AU" />
+      <item itemvalue="CMake Application.OTTO_All" />
+      <item itemvalue="CMake Application.OTTO_Standalone" />
+      <item itemvalue="CMake Application.OTTO_VST3" />
+      <item itemvalue="CMake Application.OTTO" />
+      <item itemvalue="CMake Application.juce_vst3_helper" />
+    </list>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e1b0f214-8b4a-4549-a89a-54cad696307e" name="Changes" comment="" />
@@ -93,6 +187,21 @@
       <workItem from="1753462787479" duration="231000" />
       <workItem from="1753463040995" duration="77000" />
       <workItem from="1753463126777" duration="529000" />
+      <workItem from="1753484125910" duration="179000" />
+      <workItem from="1753484306284" duration="76000" />
+      <workItem from="1753484638658" duration="334000" />
+      <workItem from="1753485079227" duration="297000" />
+      <workItem from="1753485589477" duration="307000" />
+      <workItem from="1753485905522" duration="79000" />
+      <workItem from="1753485996948" duration="4869000" />
+      <workItem from="1753512800535" duration="689000" />
+      <workItem from="1753547778245" duration="34000" />
+      <workItem from="1753547922289" duration="230000" />
+      <workItem from="1753549061299" duration="8000" />
+      <workItem from="1753549850561" duration="2131000" />
+      <workItem from="1753552091487" duration="39000" />
+      <workItem from="1753552203926" duration="40000" />
+      <workItem from="1753552316270" duration="1028000" />
     </task>
     <task id="LOCAL-00001" summary="Clion Zencoder initial adds">
       <option name="closed" value="true" />
@@ -107,6 +216,11 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Clion Zencoder initial adds" />
@@ -677,6 +791,6 @@
     </option>
   </component>
   <component name="ai.zencoder.plugin.rag.RepoInfoWarningState">
-    <option name="lastCheckTime" value="1753463198098" />
+    <option name="lastCheckTime" value="1753549851899" />
   </component>
 </project>

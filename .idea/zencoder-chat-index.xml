@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ai.zencoder.plugin.chat.index">
-    <option name="activeChatId" value="9977ee9f-9d59-43d0-9972-f0f48858e1c0" />
-    <option name="chatMetadata" value="{&quot;9977ee9f-9d59-43d0-9972-f0f48858e1c0&quot;:{&quot;id&quot;:&quot;9977ee9f-9d59-43d0-9972-f0f48858e1c0&quot;,&quot;title&quot;:&quot;Repository Documentation Creation&quot;,&quot;createdAt&quot;:1753463323137,&quot;updatedAt&quot;:1753463441964,&quot;isNameGenerated&quot;:true,&quot;messageCount&quot;:3,&quot;lastMessagePreview&quot;:&quot;&quot;}}" />
+    <option name="activeChatId" value="f008d6e9-853f-451c-8b6f-778a58940ed7" />
+    <option name="chatMetadata" value="{&quot;f008d6e9-853f-451c-8b6f-778a58940ed7&quot;:{&quot;id&quot;:&quot;f008d6e9-853f-451c-8b6f-778a58940ed7&quot;,&quot;title&quot;:&quot;CMake Consolidation for JUCE Project&quot;,&quot;createdAt&quot;:1753552669891,&quot;updatedAt&quot;:1753553591989,&quot;isAgent&quot;:true,&quot;isNameGenerated&quot;:true,&quot;messageCount&quot;:7,&quot;lastMessagePreview&quot;:&quot;Now let me update the Android build script to match our unified structure:&quot;}}" />
   </component>
 </project>

@@ -21,24 +21,22 @@ OTTO uses these core components:
 - **Reaper INI style .ini plain text database**
 
 #### Current Build Status ✅
-- **Graphics & Fonts**: All UI elements, custom fonts, and Phosphor icons properly embedded and displaying
-- **Cross-Platform Builds**: CMake-based build system supports macOS, Windows, Linux, iOS, Android
-- **Plugin Formats**: VST3, AU, and Standalone all building and installing correctly
-- **Asset Management**: Critical UI assets embedded in binary, user content (samples, patterns) still file-based
+- **Unified Build System**: Single CMakeLists.txt works with both ProJucer and CMake workflows
+- **Perfect IDE Integration**: Use ProJucer+Xcode OR CMake+CLion - both produce identical results
+- **Cross-Platform Builds**: Supports macOS, Windows, Linux, iOS, Android with consistent `/Builds` structure
+- **Plugin Formats**: VST3, AU, and Standalone all building and auto-installing correctly
+- **Asset Management**: BinaryData embedded properly, shared between ProJucer and CMake builds
 
-#### Quick Start Building
+#### Quick Start Building 🚀
 ```bash
-# Setup JUCE 8 and dependencies
-./setup_juce8.sh
+# One-line builds for each platform
+./build_macos.sh           # macOS Universal → Builds/MacOSX/Release/
+./build_ios.sh --simulator # iOS Simulator → Builds/iOS/Release/
+./build_linux.sh           # Linux → Builds/LinuxMakefile/Release/
+./build_android.sh          # Android → Builds/Android/Release/
+./build_all.sh --all       # All platforms → Organized Builds/ structure
 
-# Build for your platform (all builds output to Builds/ directory)
-./build_macos.sh      # macOS Universal Binary → Builds/MacOSX/Release/
-./build_ios.sh        # iOS → Builds/iOS/Release/
-./build_linux.sh      # Linux → Builds/Linux/Release/
-./build_android.sh    # Android → Builds/Android/Release/
-./build_all.sh --all  # All platforms → Organized in Builds/ subdirectories
-
-# See BUILD_INSTRUCTIONS.md for detailed build information
+# See BUILD_QUICK_START.md for complete reference
 ```
 
 #### Organized Build Structure 📁

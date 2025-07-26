@@ -1,0 +1,15 @@
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/OTTO.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/OTTO_All.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/OTTO_Standalone.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/OTTO_AU.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/OTTO_VST3.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/juce_vst3_helper.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/ALL_BUILD.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/CMakeFiles/ZERO_CHECK.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/JUCE/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/JUCE/CMakeFiles/ALL_BUILD.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/JUCE/CMakeFiles/ZERO_CHECK.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/JUCE/modules/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/JUCE/extras/Build/CMakeFiles/install.dir
+/Users/larryseyer/AudioDevelopment/OTTO/Builds/MacOSX/CMake/JUCE/extras/Build/juceaide/CMakeFiles/install.dir

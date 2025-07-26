@@ -18,16 +18,28 @@ if command -v apt-get &> /dev/null; then
         pkg-config
 fi
 
-# Create build directory
-mkdir -p build-linux
-cd build-linux
+# Create build directory in proper JUCE 8 structure
+BUILD_DIR="Builds/Linux/CMake"
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
 
-# Configure with CMake
-cmake .. \
+# Configure with CMake using JUCE 8 conventions
+cmake ../../.. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS="-fPIC"
 
 # Build
 cmake --build . --config Release --parallel $(nproc)
 
-echo "Linux build complete! Check build-linux directory for outputs."
+# Check build result
+if [ $? -eq 0 ]; then
+    echo "✅ Linux build complete!"
+    echo ""
+    echo "Build artifacts location:"
+    find ../Release -name "*.so" -o -name "OTTO" 2>/dev/null | head -10
+    echo ""
+    echo "📁 All Linux builds are now in: Builds/Linux/"
+else
+    echo "❌ Linux build failed!"
+    exit 1
+fi

@@ -155,5 +155,42 @@ else()
     message(WARNING "BinaryData files not found - assets may not be available")
 endif()
 
+# Set proper JUCE 8 build output directories to Builds folder
+set_target_properties(OTTO PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/CMake/Release"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/CMake/Release"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/CMake/Release"
+)
+
+# Platform-specific build output organization
+if(APPLE)
+    if(IOS)
+        set_target_properties(OTTO PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/iOS/Release"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/iOS/Release"
+        )
+    else()
+        set_target_properties(OTTO PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/MacOSX/Release"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/MacOSX/Release"
+        )
+    endif()
+elseif(WIN32)
+    set_target_properties(OTTO PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/VisualStudio2022/Release"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/VisualStudio2022/Release"
+    )
+elseif(ANDROID)
+    set_target_properties(OTTO PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/Android/Release"
+    )
+else()
+    # Linux and other platforms
+    set_target_properties(OTTO PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/Linux/Release"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Builds/Linux/Release"
+    )
+endif()
+
 # Copy plugin after build for easier testing
 juce_enable_copy_plugin_step(OTTO)

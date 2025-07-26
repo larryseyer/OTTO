@@ -17,12 +17,13 @@ if [ -z "$ANDROID_HOME" ]; then
     exit 1
 fi
 
-# Create build directory
-mkdir -p build-android
-cd build-android
+# Create build directory in proper JUCE 8 structure
+BUILD_DIR="Builds/Android/CMake"
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
 
-# Configure with CMake for Android
-cmake .. \
+# Configure with CMake for Android using JUCE 8 conventions
+cmake ../../.. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK=$ANDROID_NDK_ROOT \
@@ -33,5 +34,16 @@ cmake .. \
 # Build
 cmake --build . --config Release --parallel $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
-echo "Android build complete! Check build-android directory for outputs."
-echo "Note: Make sure Android NDK and SDK are properly installed and configured."
+# Check build result
+if [ $? -eq 0 ]; then
+    echo "✅ Android build complete!"
+    echo ""
+    echo "Build artifacts location:"
+    find ../Release -name "*.so" -o -name "*.apk" 2>/dev/null | head -10
+    echo ""
+    echo "📁 All Android builds are now in: Builds/Android/"
+    echo "Note: Make sure Android NDK and SDK are properly installed and configured."
+else
+    echo "❌ Android build failed!"
+    exit 1
+fi

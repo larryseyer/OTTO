@@ -138,13 +138,13 @@ if [ "$BUILD_WINDOWS" = true ]; then
     else
         print_warning "Cross-compiling for Windows from $OSTYPE..."
         # This would require MinGW-w64 or similar setup
-        mkdir -p build-windows-cross
-        cd build-windows-cross
-        cmake .. \
+        mkdir -p Builds/VisualStudio2022/CMake-Cross
+        cd Builds/VisualStudio2022/CMake-Cross
+        cmake ../../.. \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw-w64-toolchain.cmake
+            -DCMAKE_TOOLCHAIN_FILE=../../../cmake/mingw-w64-toolchain.cmake
         cmake --build . --config Release --parallel $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
-        cd ..
+        cd ../../..
     fi
     if [ $? -eq 0 ]; then
         print_status "✓ Windows build successful"
@@ -181,4 +181,11 @@ if [ "$BUILD_ANDROID" = true ]; then
 fi
 
 print_status "Build process complete!"
-print_status "Check the respective build-* directories for outputs."
+print_status "📁 All build outputs are now organized in the Builds/ directory:"
+echo ""
+echo "Build outputs by platform:"
+[ -d "Builds/MacOSX/Release" ] && echo "  📁 macOS: Builds/MacOSX/"
+[ -d "Builds/iOS/Release" ] && echo "  📁 iOS: Builds/iOS/"
+[ -d "Builds/Linux/Release" ] && echo "  📁 Linux: Builds/Linux/"
+[ -d "Builds/Android/Release" ] && echo "  📁 Android: Builds/Android/"
+[ -d "Builds/VisualStudio2022/Release" ] && echo "  📁 Windows: Builds/VisualStudio2022/"

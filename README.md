@@ -31,14 +31,29 @@ OTTO uses these core components:
 # Setup JUCE 8 and dependencies
 ./setup_juce8.sh
 
-# Build for your platform
-./build_macos.sh      # macOS Universal Binary
-./build_ios.sh        # iOS
-./build_linux.sh      # Linux
-./build_android.sh    # Android
-./build_all.sh --all  # All platforms
+# Build for your platform (all builds output to Builds/ directory)
+./build_macos.sh      # macOS Universal Binary → Builds/MacOSX/Release/
+./build_ios.sh        # iOS → Builds/iOS/Release/
+./build_linux.sh      # Linux → Builds/Linux/Release/
+./build_android.sh    # Android → Builds/Android/Release/
+./build_all.sh --all  # All platforms → Organized in Builds/ subdirectories
 
 # See BUILD_INSTRUCTIONS.md for detailed build information
+```
+
+#### Organized Build Structure 📁
+All build outputs are automatically organized in the `Builds/` directory:
+```
+Builds/
+├── MacOSX/Release/        # macOS Universal Binary (Intel + Apple Silicon)
+│   ├── VST3/OTTO.vst3     # VST3 plugin
+│   ├── AU/OTTO.component  # Audio Unit plugin  
+│   └── Standalone/OTTO.app # Standalone application
+├── iOS/Release/           # iOS builds
+│   └── Standalone/OTTO.app # iOS standalone app
+├── Linux/Release/         # Linux builds
+├── Android/Release/       # Android builds
+└── VisualStudio2022/Release/ # Windows builds
 ```
 
 OTTO uses 8 MIDI Player Playback engines consisting of:

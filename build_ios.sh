@@ -43,11 +43,11 @@ if [ "$BUILD_TARGET" = "simulator" ]; then
         IOS_ARCH="x86_64"
         echo "Building for iOS Simulator on Intel Mac"
     fi
-    BUILD_DIR="build-ios-simulator"
+    BUILD_DIR="Builds/iOS/CMake-Simulator"
     CMAKE_OSX_SYSROOT="iphonesimulator"
 else
     IOS_ARCH="arm64"
-    BUILD_DIR="build-ios-device"
+    BUILD_DIR="Builds/iOS/CMake-Device"
     CMAKE_OSX_SYSROOT="iphoneos"
     echo "Building for iOS Device"
 fi
@@ -64,10 +64,10 @@ fi
 echo "Using architecture: $IOS_ARCH"
 echo "Using Team ID: $TEAM_ID"
 
-# Configure with CMake for iOS
+# Configure with CMake for iOS using JUCE 8 conventions
 if [ "$BUILD_TARGET" = "simulator" ]; then
     echo "Configuring for iOS Simulator with SDK: $SIMULATOR_SDK_PATH"
-    cmake .. \
+    cmake ../../.. \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_SYSTEM_NAME=iOS \
         -DCMAKE_OSX_ARCHITECTURES="$IOS_ARCH" \
@@ -79,7 +79,7 @@ if [ "$BUILD_TARGET" = "simulator" ]; then
         -G Xcode
 else
     echo "Configuring for iOS Device"
-    cmake .. \
+    cmake ../../.. \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_SYSTEM_NAME=iOS \
         -DCMAKE_OSX_ARCHITECTURES="$IOS_ARCH" \
@@ -110,7 +110,9 @@ if [ $? -eq 0 ]; then
     echo "✅ iOS build complete! Check $BUILD_DIR directory for outputs."
     echo ""
     echo "Build artifacts location:"
-    find . -name "*.app" -o -name "*.appex" 2>/dev/null | head -5
+    find ../Release -name "*.app" -o -name "*.appex" 2>/dev/null | head -5
+    echo ""
+    echo "📁 All iOS builds are now in: Builds/iOS/"
     
     if [ "$BUILD_TARGET" = "simulator" ]; then
         echo ""

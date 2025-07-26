@@ -97,3 +97,27 @@ cmake/Makefile
 
 # Make sure our custom cmake toolchain files are tracked
 !cmake/*.cmake
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/shelf
+.idea/zencoder/
+.idea/.DS_Store
+
+# Visual Studio Code
+.vscode/
+
+# CLion
+cmake-build-*/

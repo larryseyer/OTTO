@@ -42,6 +42,9 @@
 
 # Build directories and artifacts
 build-*/
+build-macos/
+build-ios-sim/
+cmake-build-*/
 Builds/Linux*/
 
 # CMake build directories (keep ProJucer projects)

@@ -97,7 +97,13 @@ fi
 
 # Build
 echo "Starting build with $(sysctl -n hw.ncpu) parallel jobs..."
-cmake --build . --config Release --parallel $(sysctl -n hw.ncpu)
+if [ "$BUILD_TARGET" = "device" ]; then
+    echo "Building for iOS Device - enabling automatic provisioning..."
+    cmake --build . --config Release --parallel $(sysctl -n hw.ncpu) -- -allowProvisioningUpdates
+else
+    echo "Building for iOS Simulator..."
+    cmake --build . --config Release --parallel $(sysctl -n hw.ncpu)
+fi
 
 # Check build result
 if [ $? -eq 0 ]; then

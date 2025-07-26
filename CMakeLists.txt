@@ -65,12 +65,13 @@ endif()
 
 # Create the plugin target
 juce_add_plugin(OTTO
-    COMPANY_NAME "YourCompany"
-    PLUGIN_MANUFACTURER_CODE "Manu"
+    COMPANY_NAME "AudioDev"
+    PLUGIN_MANUFACTURER_CODE "AuDv"
     PLUGIN_CODE "Otto"
     FORMATS AU VST3 Standalone
     PRODUCT_NAME "OTTO"
     DESCRIPTION "OTTO Audio Plugin"
+    BUNDLE_ID "com.audiodev.OTTO"
     
     # Plugin characteristics
     IS_SYNTH TRUE
@@ -118,6 +119,31 @@ configure_juce8_target(OTTO)
 add_juce8_modules(OTTO)
 setup_platform_libraries(OTTO)
 configure_plugin_formats(OTTO)
+
+# iOS Code Signing Configuration
+if(IOS)
+    # Enable automatic code signing for development builds
+    set_target_properties(OTTO_Standalone PROPERTIES
+        XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
+        XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM}"
+        XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.audiodev.OTTO"
+        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
+        XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER ""
+        XCODE_ATTRIBUTE_ENABLE_BITCODE NO
+        XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO
+    )
+    
+    # Set iOS deployment target and other settings
+    set_target_properties(OTTO_Standalone PROPERTIES
+        XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "12.0"
+        XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2"
+        XCODE_ATTRIBUTE_SUPPORTS_MACCATALYST NO
+    )
+    
+    message(STATUS "iOS Code Signing configured for automatic signing")
+    message(STATUS "Bundle ID: com.audiodev.OTTO")
+    message(STATUS "Development Team: ${CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM}")
+endif()
 
 # Use existing BinaryData files (ProJucer generated - may be split into multiple files)
 file(GLOB BINARY_DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/JuceLibraryCode/BinaryData*.cpp")

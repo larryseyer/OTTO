@@ -14,8 +14,11 @@ This document provides comprehensive instructions for building OTTO on all suppo
    # macOS
    ./build_macos.sh
    
-   # iOS (macOS only)
-   ./build_ios.sh
+   # iOS Simulator (macOS only)
+   ./build_ios.sh --simulator
+   
+   # iOS Device (requires Apple Developer Team ID)
+   ./build_ios.sh --device --team-id YOUR_TEAM_ID
    
    # Linux
    ./build_linux.sh
@@ -183,6 +186,75 @@ For easier CLion configuration, use the provided toolchain files:
    - Apple Silicon Mac: Use arm64 architecture
    - Intel Mac: Use x86_64 architecture
    - The toolchain files automatically detect the correct architecture
+
+## iOS Device Builds & Code Signing
+
+### Apple Developer Requirements
+
+iOS device builds require a valid Apple Developer account and proper code signing setup:
+
+1. **Get your Apple Developer Team ID:**
+   ```bash
+   ./get_team_id.sh
+   ```
+
+2. **Set your Team ID as environment variable:**
+   ```bash
+   export APPLE_TEAM_ID='YOUR_ACTUAL_TEAM_ID'
+   ```
+
+3. **Sign in to Xcode:**
+   - Open Xcode → Settings → Accounts
+   - Add your Apple ID
+   - Download development certificates
+
+### iOS Build Commands
+
+```bash
+# iOS Simulator (no signing required) - Auto-detects architecture
+./build_ios.sh --simulator
+
+# iOS Device (requires Apple Developer Team ID)
+./build_ios.sh --device --team-id $APPLE_TEAM_ID
+
+# Or with explicit Team ID
+./build_ios.sh --device --team-id ABC123XYZ9
+```
+
+### Troubleshooting Code Signing
+
+If you get provisioning profile errors:
+
+1. **Verify your Team ID is correct:**
+   ```bash
+   ./get_team_id.sh
+   ```
+
+2. **Check Xcode accounts:**
+   - Xcode → Settings → Accounts
+   - Make sure your Apple ID is signed in
+   - Download manual profiles if needed
+
+3. **Clean and rebuild with correct Team ID:**
+   ```bash
+   rm -rf build-ios-device
+   ./build_ios.sh --device --team-id YOUR_ACTUAL_TEAM_ID
+   ```
+
+4. **Alternative: Use Xcode for manual signing:**
+   - Open `build-ios-device/OTTO.xcodeproj` in Xcode
+   - Select OTTO_Standalone target
+   - Go to Signing & Capabilities tab
+   - Set your Team and Bundle Identifier
+   - Build manually (⌘+B)
+
+### Bundle Identifier
+The app uses bundle ID: `com.audiodev.OTTO`
+
+You can modify this in `CMakeLists.txt` if needed:
+```cmake
+BUNDLE_ID "com.yourcompany.OTTO"
+```
 
 ## Advanced Build Options
 

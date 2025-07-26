@@ -1,0 +1,112 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "macos-debug",
+            "displayName": "macOS Debug",
+            "description": "Debug build for macOS with auto-detected architecture",
+            "generator": "Xcode",
+            "binaryDir": "${sourceDir}/build-macos-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "macos-release",
+            "displayName": "macOS Release",
+            "description": "Release build for macOS with auto-detected architecture",
+            "generator": "Xcode",
+            "binaryDir": "${sourceDir}/build-macos-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "ios-simulator-debug",
+            "displayName": "iOS Simulator Debug",
+            "description": "Debug build for iOS Simulator with auto-detected architecture (arm64 on Apple Silicon, x86_64 on Intel)",
+            "generator": "Xcode",
+            "binaryDir": "${sourceDir}/build-ios-simulator-debug",
+            "toolchainFile": "${sourceDir}/cmake/iOS-Simulator.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_SYSTEM_NAME": "iOS",
+                "CMAKE_OSX_SYSROOT": "iphonesimulator",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "12.0",
+                "CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM": "YOUR_TEAM_ID",
+                "CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY": "iPhone Developer"
+            },
+            "environment": {
+                "DYLD_ROOT_PATH": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk",
+                "DYLD_FRAMEWORK_PATH": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "ios-device-debug",
+            "displayName": "iOS Device Debug",
+            "description": "Debug build for iOS Device (arm64)",
+            "generator": "Xcode",
+            "binaryDir": "${sourceDir}/build-ios-device-debug",
+            "toolchainFile": "${sourceDir}/cmake/iOS-Device.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_SYSTEM_NAME": "iOS",
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "12.0",
+                "CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM": "YOUR_TEAM_ID",
+                "CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY": "iPhone Developer"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "macos-debug",
+            "configurePreset": "macos-debug",
+            "displayName": "Build macOS Debug"
+        },
+        {
+            "name": "macos-release",
+            "configurePreset": "macos-release",
+            "displayName": "Build macOS Release"
+        },
+        {
+            "name": "ios-simulator-debug",
+            "configurePreset": "ios-simulator-debug",
+            "displayName": "Build iOS Simulator Debug"
+        },
+        {
+            "name": "ios-device-debug",
+            "configurePreset": "ios-device-debug",
+            "displayName": "Build iOS Device Debug"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "macos-test",
+            "configurePreset": "macos-debug",
+            "displayName": "Test macOS"
+        }
+    ]
+}

@@ -109,9 +109,11 @@ public:
     bool largeTextMode = false;
     bool highContrastMode = false;
 
-private:
+protected:
     FontManager& fontManager;
     ColorScheme& colorScheme;
+
+private:
 
     juce::Image buttonImage;
     juce::Image sliderImage;

@@ -530,47 +530,27 @@
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" postbuildCommand="&#10;echo &quot;=== POST-BUILD SCRIPT STARTING ===&quot;&#10;echo &quot;Product type: ${PRODUCT_TYPE}&quot;&#10;echo &quot;Built products dir: ${BUILT_PRODUCTS_DIR}&quot;&#10;echo &quot;Product name: ${PRODUCT_NAME}&quot;&#10;echo &quot;Source Assets: /Users/larryseyer/AudioDevelopment/OTTO/Assets&quot;&#10;&#10;# Check if source Assets folder exists&#10;if [ -d &quot;/Users/larryseyer/AudioDevelopment/OTTO/Assets&quot; ]; then&#10;    echo &quot;&#10003; Source Assets folder exists&quot;&#10;    ls -la &quot;/Users/larryseyer/AudioDevelopment/OTTO/Assets&quot;&#10;else&#10;    echo &quot;&#10007; Source Assets folder NOT found!&quot;&#10;    exit 1&#10;fi&#10;&#10;# For all builds, copy to Resources&#10;TARGET_DIR=&quot;${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/Contents/Resources&quot;&#10;echo &quot;Target directory: ${TARGET_DIR}&quot;&#10;&#10;# Create Resources directory if it doesn't exist&#10;mkdir -p &quot;${TARGET_DIR}&quot;&#10;&#10;# Copy Assets&#10;cp -r &quot;/Users/larryseyer/AudioDevelopment/OTTO/Assets&quot; &quot;${TARGET_DIR}/&quot;&#10;&#10;if [ $? -eq 0 ]; then&#10;    echo &quot;&#10003; Assets copied successfully&quot;&#10;    echo &quot;Contents of target Resources:&quot;&#10;    ls -la &quot;${TARGET_DIR}&quot;&#10;else&#10;    echo &quot;&#10007; Failed to copy Assets&quot;&#10;    exit 1&#10;fi&#10;&#10;echo &quot;=== POST-BUILD SCRIPT COMPLETED ===&quot;&#10;"
-               customPList="&lt;key&gt;NSApplicationSupportsSecureRestorableState&lt;/key&gt;&#10;&lt;true/&gt;">
+    <XCODE_MAC targetFolder="Builds/MacOSX" bigIcon="icon.icns" smallIcon="icon.icns"
+               deployTarget="10.13" cppStandard="17" pluginFormats="buildVST3,buildAU,buildStandalone,buildCLAP">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="OTTO"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="0" targetName="OTTO"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="OTTO"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_audio_basics" path=""/>
-        <MODULEPATH id="juce_audio_devices" path=""/>
-        <MODULEPATH id="juce_audio_formats" path=""/>
-        <MODULEPATH id="juce_audio_plugin_client" path=""/>
-        <MODULEPATH id="juce_audio_processors" path=""/>
-        <MODULEPATH id="juce_audio_utils" path=""/>
-        <MODULEPATH id="juce_core" path=""/>
-        <MODULEPATH id="juce_data_structures" path=""/>
-        <MODULEPATH id="juce_events" path=""/>
-        <MODULEPATH id="juce_graphics" path=""/>
-        <MODULEPATH id="juce_gui_basics" path=""/>
-        <MODULEPATH id="juce_gui_extra" path=""/>
-        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <XCODE_IPHONE targetFolder="Builds/iOS">
+    <XCODE_IPHONE targetFolder="Builds/iOS" bigIcon="icon_ios.png" smallIcon="icon_ios.png"
+                  iosDeploymentTarget="12.0" iOSDeviceFamily="1,2" pluginFormats="buildAUv3,buildStandalone"
+                  cppStandard="17" auv3Category="AudioUnit" iosTeamID="YOUR_TEAM_ID">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug"/>
-        <CONFIGURATION isDebug="0" name="Release"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="0" targetName="OTTO"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="OTTO"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_audio_basics" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_core" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="~/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="~/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices"/>
       </MODULEPATHS>
     </XCODE_IPHONE>
     <VS2022 targetFolder="Builds/VisualStudio2022">
@@ -637,5 +617,10 @@
       </MODULEPATHS>
     </ANDROIDSTUDIO>
   </EXPORTFORMATS>
-  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0">
+    <OPTION name="JUCE_ENABLE_AUV3_APP_EXTENSIONS" value="1"/>
+    <OPTION name="JUCE_AUV3_MIDI_INPUT_SUPPORTED" value="1"/>
+    <OPTION name="JUCE_BUILD_EXAMPLES" value="0"/>
+    <OPTION name="JUCE_BUILD_EXTRAS" value="0"/>
+  </JUCEOPTIONS>
 </JUCERPROJECT>

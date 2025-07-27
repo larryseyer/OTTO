@@ -71,7 +71,7 @@ juce_add_plugin(OTTO
     COMPANY_NAME "Automagic Art"
     PLUGIN_MANUFACTURER_CODE "OTTO"
     PLUGIN_CODE "OTTO"
-    FORMATS AU VST3 Standalone
+    FORMATS AU VST3 CLAP Standalone
     PRODUCT_NAME "OTTO"
     DESCRIPTION "OTTO."
     BUNDLE_ID "com.automagicart.OTTO"
@@ -82,7 +82,7 @@ juce_add_plugin(OTTO
     NEEDS_MIDI_OUTPUT TRUE
     IS_MIDI_EFFECT TRUE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD TRUE
+    COPY_PLUGIN_AFTER_BUILD FALSE
     
     # Plugin characteristics value from ProJucer
     PLUGIN_CHARACTERISTICS_VALUE "pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
@@ -148,6 +148,7 @@ target_compile_definitions(OTTO PRIVATE
     JucePlugin_Build_VST=0
     JucePlugin_Build_VST3=1
     JucePlugin_Build_AU=1
+    JucePlugin_Build_CLAP=1
     JucePlugin_Build_Standalone=1
     JucePlugin_Build_AAX=0
     JucePlugin_Build_Unity=0

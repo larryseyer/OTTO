@@ -82,29 +82,32 @@ print_status "⚙️  Configuring CMake for Android..."
 
 # Configure with CMake for Android using unified settings
 cmake ../../.. \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_NDK="$ANDROID_NDK_ROOT" \
-    -DCMAKE_ANDROID_ARCH_ABI="$ANDROID_ABI" \
-    -DCMAKE_ANDROID_API="$ANDROID_API" \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
-    -G "Unix Makefiles"
+   -DCMAKE_BUILD_TYPE=Release \
+   -DCMAKE_SYSTEM_NAME=Android \
+   -DCMAKE_ANDROID_NDK="$ANDROID_NDK_ROOT" \
+   -DCMAKE_ANDROID_ARCH_ABI="$ANDROID_ABI" \
+   -DCMAKE_ANDROID_API="$ANDROID_API" \
+   -DCMAKE_ANDROID_STL_TYPE=c++_shared \
+   -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
+   -DJUCE_BUILD_EXAMPLES=OFF \
+   -DJUCE_BUILD_EXTRAS=OFF \
+   -DJUCE_ENABLE_MODULE_SOURCE_GROUPS=ON \
+   -G "Unix Makefiles"
 
 if [ $? -ne 0 ]; then
-    print_error "❌ CMake configuration failed!"
-    exit 1
+   print_error "❌ CMake configuration failed!"
+   exit 1
 fi
 
 print_status "🔧 Building OTTO..."
 
 # Build with proper parallel processing
 if command -v nproc &> /dev/null; then
-    NUM_CORES=$(nproc)
+   NUM_CORES=$(nproc)
 elif command -v sysctl &> /dev/null; then
-    NUM_CORES=$(sysctl -n hw.ncpu)
+   NUM_CORES=$(sysctl -n hw.ncpu)
 else
-    NUM_CORES=4
+   NUM_CORES=4
 fi
 
 print_status "🚀 Starting build with $NUM_CORES parallel jobs..."
@@ -113,54 +116,55 @@ cmake --build . --config Release --parallel $NUM_CORES
 
 # Check build result
 if [ $? -eq 0 ]; then
-    print_status "✅ Android build complete!"
-    echo ""
-    
-    # Show build artifacts
-    echo "📦 Build artifacts:"
-    echo "==================="
-    
-    # Look in the expected output directories
-    OUTPUT_DIRS=(
-        "../Release"
-        "Release"
-        "../../Release"
-    )
-    
-    FOUND_ARTIFACTS=false
-    for dir in "${OUTPUT_DIRS[@]}"; do
-        if [ -d "$dir" ]; then
-            echo "🔍 Checking $dir..."
-            ARTIFACTS=$(find "$dir" -name "*.so" -o -name "*.apk" -o -name "libOTTO.so" 2>/dev/null | head -10)
-            if [ -n "$ARTIFACTS" ]; then
-                echo "$ARTIFACTS"
-                FOUND_ARTIFACTS=true
-                break
-            fi
-        fi
-    done
-    
-    if [ "$FOUND_ARTIFACTS" = false ]; then
-        print_warning "⚠️  No Android artifacts found in expected locations"
-        echo "🔍 Searching for build outputs..."
-        find ../../.. -name "*.so" -o -name "*.apk" 2>/dev/null | head -10
-    fi
-    
-    echo ""
-    print_status "📁 All Android builds are organized in: Builds/Android/"
-    echo ""
-    print_status "💡 Next Steps:"
-    echo "  1. Copy .so files to your Android app's jniLibs/$ANDROID_ABI/ folder"
-    echo "  2. Or use the ProJucer Android exporter for full app generation"
-    echo ""
-    print_status "✨ Android build completed successfully!"
-    
+   print_status "✅ Android build complete!"
+   echo ""
+
+   # Show build artifacts
+   echo "📦 Build artifacts:"
+   echo "==================="
+
+   # Look in the expected output directories
+   OUTPUT_DIRS=(
+       "../Release"
+       "Release"
+       "../../Release"
+   )
+
+   FOUND_ARTIFACTS=false
+   for dir in "${OUTPUT_DIRS[@]}"; do
+       if [ -d "$dir" ]; then
+           echo "🔍 Checking $dir..."
+           ARTIFACTS=$(find "$dir" -name "*.so" -o -name "*.apk" -o -name "libOTTO.so" 2>/dev/null | head -10)
+           if [ -n "$ARTIFACTS" ]; then
+               echo "$ARTIFACTS"
+               FOUND_ARTIFACTS=true
+               break
+           fi
+       fi
+   done
+
+   if [ "$FOUND_ARTIFACTS" = false ]; then
+       print_warning "⚠️  No Android artifacts found in expected locations"
+       echo "🔍 Searching for build outputs..."
+       find ../../.. -name "*.so" -o -name "*.apk" 2>/dev/null | head -10
+   fi
+
+   echo ""
+   print_status "📁 All Android builds are organized in: Builds/Android/"
+   echo ""
+   print_status "💡 Next Steps:"
+   echo "  1. Copy .so files to your Android app's jniLibs/$ANDROID_ABI/ folder"
+   echo "  2. Or use the ProJucer Android exporter for full app generation"
+   echo ""
+   print_status "✨ Android build completed successfully!"
+
 else
-    print_error "❌ Android build failed!"
-    echo ""
-    echo "📋 Troubleshooting tips:"
-    echo "  - Ensure Android NDK and SDK are properly installed"
-    echo "  - Check that API level $ANDROID_API is available"
-    echo "  - Try different architecture: --abi armeabi-v7a"
-    exit 1
+   print_error "❌ Android build failed!"
+   echo ""
+   echo "📋 Troubleshooting tips:"
+   echo "  - Ensure Android NDK and SDK are properly installed"
+   echo "  - Check that API level $ANDROID_API is available"
+   echo "  - Try different architecture: --abi armeabi-v7a"
+   exit 1
 fi
+

@@ -55,7 +55,7 @@ fi
 # Install missing dependencies
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
     print_warning "📦 Missing dependencies: ${MISSING_DEPS[*]}"
-    
+
     if command -v apt-get &> /dev/null; then
         print_status "📥 Installing dependencies with apt-get..."
         sudo apt-get update
@@ -72,6 +72,8 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
             libxrandr-dev \
             libxinerama-dev \
             libxcursor-dev \
+            libjack-jackd2-dev \
+            lv2-dev \
             pkg-config
     elif command -v yum &> /dev/null; then
         print_status "📥 Installing dependencies with yum..."
@@ -88,6 +90,8 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
             libXrandr-devel \
             libXinerama-devel \
             libXcursor-devel \
+            jack-audio-connection-kit-devel \
+            lv2-devel \
             pkgconfig
     elif command -v pacman &> /dev/null; then
         print_status "📥 Installing dependencies with pacman..."
@@ -104,6 +108,8 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
             libxrandr \
             libxinerama \
             libxcursor \
+            jack \
+            lv2 \
             pkgconf
     else
         print_error "❌ Unsupported package manager. Please install dependencies manually:"
@@ -113,6 +119,8 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
         echo "  - GTK3 development headers"
         echo "  - freetype development headers"
         echo "  - X11 development headers"
+        echo "  - JACK development headers"
+        echo "  - LV2 development headers"
         exit 1
     fi
 else
@@ -136,6 +144,9 @@ print_status "⚙️  Configuring CMake..."
 cmake ../../.. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS="-fPIC -O3" \
+    -DJUCE_BUILD_EXAMPLES=OFF \
+    -DJUCE_BUILD_EXTRAS=OFF \
+    -DJUCE_COPY_PLUGIN_AFTER_BUILD=TRUE \
     -G "Unix Makefiles"
 
 if [ $? -ne 0 ]; then
@@ -155,23 +166,23 @@ cmake --build . --config Release --parallel $NUM_CORES
 if [ $? -eq 0 ]; then
     print_status "✅ Linux build complete!"
     echo ""
-    
+
     # Show build artifacts
     echo "📦 Build artifacts:"
     echo "==================="
-    
+
     # Look in the expected output directories
     OUTPUT_DIRS=(
         "../Release"
         "Release"
         "../../Release"
     )
-    
+
     FOUND_ARTIFACTS=false
     for dir in "${OUTPUT_DIRS[@]}"; do
         if [ -d "$dir" ]; then
             echo "🔍 Checking $dir..."
-            ARTIFACTS=$(find "$dir" -name "*.so" -o -name "OTTO" -o -name "*.vst3" 2>/dev/null | head -10)
+            ARTIFACTS=$(find "$dir" -name "*.so" -o -name "OTTO" -o -name "*.vst3" -o -name "*.clap" -o -name "*.lv2" 2>/dev/null | head -10)
             if [ -n "$ARTIFACTS" ]; then
                 echo "$ARTIFACTS"
                 FOUND_ARTIFACTS=true
@@ -179,24 +190,26 @@ if [ $? -eq 0 ]; then
             fi
         fi
     done
-    
+
     if [ "$FOUND_ARTIFACTS" = false ]; then
         print_warning "⚠️  No plugin artifacts found in expected locations"
         echo "🔍 Searching for build outputs..."
-        find ../../.. -name "*.so" -o -name "OTTO" -o -name "*.vst3" 2>/dev/null | head -10
+        find ../../.. -name "*.so" -o -name "OTTO" -o -name "*.vst3" -o -name "*.clap" -o -name "*.lv2" 2>/dev/null | head -10
     fi
-    
+
     echo ""
     print_status "📁 All Linux builds are organized in: Builds/LinuxMakefile/"
     echo ""
     print_status "✨ Linux build completed successfully!"
-    
+
     # Show installation instructions
     echo ""
     print_status "💡 Installation Tips:"
     echo "  VST3 plugins: ~/.vst3/ or /usr/lib/vst3/"
+    echo "  CLAP plugins: ~/.clap/ or /usr/lib/clap/"
+    echo "  LV2 plugins:  ~/.lv2/ or /usr/lib/lv2/"
     echo "  Standalone:   Run directly from build directory"
-    
+
 else
     print_error "❌ Linux build failed!"
     exit 1

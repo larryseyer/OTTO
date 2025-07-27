@@ -102,6 +102,10 @@ if [ "$BUILD_TARGET" = "simulator" ]; then
         -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="$TEAM_ID" \
         -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="iPhone Developer" \
         -DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=NO \
+        -DJUCE_ENABLE_AUV3_APP_EXTENSIONS=ON \
+        -DJUCE_AUV3_MIDI_INPUT_SUPPORTED=ON \
+        -DJUCE_BUILD_EXAMPLES=OFF \
+        -DJUCE_BUILD_EXTRAS=OFF \
         -G Xcode
 else
     print_status "📱 Configuring for iOS Device"
@@ -112,6 +116,10 @@ else
         -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
         -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="$TEAM_ID" \
         -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="iPhone Developer" \
+        -DJUCE_ENABLE_AUV3_APP_EXTENSIONS=ON \
+        -DJUCE_AUV3_MIDI_INPUT_SUPPORTED=ON \
+        -DJUCE_BUILD_EXAMPLES=OFF \
+        -DJUCE_BUILD_EXTRAS=OFF \
         -G Xcode
 fi
 
@@ -139,18 +147,18 @@ fi
 if [ $? -eq 0 ]; then
     print_status "✅ iOS build complete!"
     echo ""
-    
+
     # Show build artifacts
     echo "📦 Build artifacts:"
     echo "==================="
-    
+
     # Look in the expected output directories
     OUTPUT_DIRS=(
         "../Release"
         "Release"
         "../../Release"
     )
-    
+
     FOUND_ARTIFACTS=false
     for dir in "${OUTPUT_DIRS[@]}"; do
         if [ -d "$dir" ]; then
@@ -163,23 +171,37 @@ if [ $? -eq 0 ]; then
             fi
         fi
     done
-    
+
     if [ "$FOUND_ARTIFACTS" = false ]; then
         print_warning "⚠️  No app artifacts found in expected locations"
         echo "🔍 Searching for build outputs..."
         find ../../.. -name "*.app" -o -name "*.appex" 2>/dev/null | head -5
     fi
-    
+
     echo ""
     print_status "📁 All iOS builds are organized in: Builds/iOS/"
-    
+
     if [ "$BUILD_TARGET" = "simulator" ]; then
         echo ""
-        print_status "🔧 CLion iOS Simulator Configuration:"
-        echo "  DYLD_ROOT_PATH=$SIMULATOR_SDK_PATH"
-        echo "  Architecture: $IOS_ARCH"
+        print_status "🔧 CLion iOS Simulator Setup:"
+        echo "  ⚠️  IMPORTANT: iOS simulator builds cannot run directly in CLion!"
+        echo ""
+        print_status "  For CLion debugging, create a macOS target instead:"
+        echo "  1. In CLion: File → New CMake Application Configuration"
+        echo "  2. Set Target: OTTO_Standalone (macOS version)"
+        echo "  3. Set Executable: path/to/macOS/OTTO.app/Contents/MacOS/OTTO"
+        echo ""
+        print_status "  To test iOS build, use Xcode iOS Simulator:"
+        echo "  1. Open the generated .xcodeproj in Xcode"
+        echo "  2. Select iOS Simulator target"
+        echo "  3. Run with ⌘+R"
+        echo ""
+        print_status "  Or use command line simulator:"
+        echo "     xcrun simctl boot \"iPhone 15\""
+        echo "     xcrun simctl install booted \"/path/to/OTTO.app\""
+        echo "     xcrun simctl launch booted com.yourcompany.OTTO"
     fi
-    
+
     echo ""
     print_status "✨ iOS build completed successfully!"
 else
@@ -192,6 +214,11 @@ print_status "💡 Usage Tips:"
 echo "  Simulator: $0 --simulator --team-id YOUR_TEAM_ID"
 echo "  Device:    $0 --device --team-id YOUR_TEAM_ID"
 echo "  Env var:   export APPLE_TEAM_ID=YOUR_TEAM_ID"
+echo ""
+print_status "💡 CLion Development Tips:"
+echo "  - Use macOS target for CLion debugging and development"
+echo "  - Use iOS builds only for final testing in Xcode/Simulator"
+echo "  - JUCE 8 apps work similarly across macOS/iOS for audio/MIDI"
 
 if [ "$TEAM_ID" = "YOUR_TEAM_ID" ]; then
     print_warning "⚠️  Remember to set your Apple Developer Team ID!"

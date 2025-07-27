@@ -39,6 +39,10 @@ cmake ../../.. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
     -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 \
+    -DJUCE_BUILD_EXAMPLES=OFF \
+    -DJUCE_BUILD_EXTRAS=OFF \
+    -DJUCE_COPY_PLUGIN_AFTER_BUILD=TRUE \
+    -DJUCE_VST3_CAN_REPLACE_VST2=ON \
     -G Xcode
 
 if [ $? -ne 0 ]; then
@@ -56,23 +60,23 @@ cmake --build . --config Release --parallel $NUM_CORES
 if [ $? -eq 0 ]; then
     print_status "✅ macOS build complete!"
     echo ""
-    
+
     # Show build artifacts
     echo "📦 Build artifacts:"
     echo "==================="
-    
+
     # Look in the expected output directories
     OUTPUT_DIRS=(
         "../Release"
         "Release"
         "../../Release"
     )
-    
+
     FOUND_ARTIFACTS=false
     for dir in "${OUTPUT_DIRS[@]}"; do
         if [ -d "$dir" ]; then
             echo "🔍 Checking $dir..."
-            ARTIFACTS=$(find "$dir" -name "*.app" -o -name "*.vst3" -o -name "*.component" 2>/dev/null | head -10)
+            ARTIFACTS=$(find "$dir" -name "*.app" -o -name "*.vst3" -o -name "*.component" -o -name "*.clap" 2>/dev/null | head -10)
             if [ -n "$ARTIFACTS" ]; then
                 echo "$ARTIFACTS"
                 FOUND_ARTIFACTS=true
@@ -80,15 +84,21 @@ if [ $? -eq 0 ]; then
             fi
         fi
     done
-    
+
     if [ "$FOUND_ARTIFACTS" = false ]; then
         print_warning "⚠️  No plugin artifacts found in expected locations"
         echo "🔍 Searching for build outputs..."
-        find ../../.. -name "*.app" -o -name "*.vst3" -o -name "*.component" 2>/dev/null | head -10
+        find ../../.. -name "*.app" -o -name "*.vst3" -o -name "*.component" -o -name "*.clap" 2>/dev/null | head -10
     fi
-    
+
     echo ""
     print_status "📁 All macOS builds are organized in: Builds/MacOSX/"
+    echo ""
+    print_status "💡 Installation Tips:"
+    echo "  VST3 plugins: ~/Library/Audio/Plug-Ins/VST3/"
+    echo "  AU plugins:   ~/Library/Audio/Plug-Ins/Components/"
+    echo "  CLAP plugins: ~/Library/Audio/Plug-Ins/CLAP/"
+    echo "  Standalone:   Run directly from build directory"
     echo ""
     print_status "✨ macOS build completed successfully!"
 else

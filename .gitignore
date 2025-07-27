@@ -115,3 +115,7 @@ Thumbs.db
 
 # CLion
 cmake-build-*/
+
+#Safety Stuff
+OTTO copy.jucer
+

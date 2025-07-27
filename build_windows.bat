@@ -70,6 +70,10 @@ echo %STATUS_COLOR%⚙️  Configuring CMake...%RESET_COLOR%
 REM Configure with CMake using unified settings
 cmake ..\..\.. ^
     -DCMAKE_BUILD_TYPE=!BUILD_CONFIG! ^
+    -DJUCE_BUILD_EXAMPLES=OFF ^
+    -DJUCE_BUILD_EXTRAS=OFF ^
+    -DJUCE_COPY_PLUGIN_AFTER_BUILD=TRUE ^
+    -DJUCE_VST3_CAN_REPLACE_VST2=ON ^
     -G "!VS_GENERATOR!" ^
     -A !ARCHITECTURE!
 
@@ -93,39 +97,40 @@ REM Check build result
 if !ERRORLEVEL! equ 0 (
     echo %STATUS_COLOR%✅ Windows build complete!%RESET_COLOR%
     echo.
-    
+
     echo 📦 Build artifacts:
     echo ===================
-    
+
     REM Look for build artifacts in expected locations
     set "FOUND_ARTIFACTS=false"
     for %%d in (..\!BUILD_CONFIG! !BUILD_CONFIG! ..\..\!BUILD_CONFIG!) do (
         if exist "%%d" (
             echo 🔍 Checking %%d...
-            for /r "%%d" %%f in (*.exe *.dll *.vst3) do (
+            for /r "%%d" %%f in (*.exe *.dll *.vst3 *.clap) do (
                 echo %%f
                 set "FOUND_ARTIFACTS=true"
                 goto :found_artifacts
             )
         )
     )
-    
+
     :found_artifacts
     if "!FOUND_ARTIFACTS!"=="false" (
         echo %WARNING_COLOR%⚠️  No plugin artifacts found in expected locations%RESET_COLOR%
         echo 🔍 Searching for build outputs...
-        for /r ..\..\ %%f in (*.exe *.dll *.vst3) do echo %%f
+        for /r ..\..\ %%f in (*.exe *.dll *.vst3 *.clap) do echo %%f
     )
-    
+
     echo.
     echo %STATUS_COLOR%📁 All Windows builds are organized in: Builds\VisualStudio2022\%RESET_COLOR%
     echo.
     echo %STATUS_COLOR%💡 Installation Tips:%RESET_COLOR%
     echo   VST3 plugins: %%PROGRAMFILES%%\Common Files\VST3\
+    echo   CLAP plugins: %%PROGRAMFILES%%\Common Files\CLAP\
     echo   Standalone:   Run directly from build directory
     echo.
     echo %STATUS_COLOR%✨ Windows build completed successfully!%RESET_COLOR%
-    
+
 ) else (
     echo %ERROR_COLOR%❌ Windows build failed!%RESET_COLOR%
     echo.

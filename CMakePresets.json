@@ -9,12 +9,16 @@
             "binaryDir": "${sourceDir}/Builds/MacOSX/CMake-Debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13"
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Darwin"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             }
         },
         {
@@ -25,18 +29,62 @@
             "binaryDir": "${sourceDir}/Builds/MacOSX/CMake-Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13"
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Darwin"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "macos-ninja-debug",
+            "displayName": "macOS Ninja Debug (CLion Compatible)",
+            "description": "Debug build for macOS using Ninja generator for CLion",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/MacOSX/CMake-Ninja-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "macos-ninja-release",
+            "displayName": "macOS Ninja Release (CLion Compatible)",
+            "description": "Release build for macOS using Ninja generator for CLion",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/MacOSX/CMake-Ninja-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             }
         },
         {
             "name": "ios-simulator-debug",
             "displayName": "iOS Simulator Debug",
-            "description": "Debug build for iOS Simulator with auto-detected architecture (arm64 on Apple Silicon, x86_64 on Intel)",
+            "description": "Debug build for iOS Simulator with auto-detected architecture",
             "generator": "Xcode",
             "binaryDir": "${sourceDir}/Builds/iOS/CMake-Simulator-Debug",
             "toolchainFile": "${sourceDir}/cmake/iOS-Simulator.cmake",
@@ -45,12 +93,14 @@
                 "CMAKE_SYSTEM_NAME": "iOS",
                 "CMAKE_OSX_SYSROOT": "iphonesimulator",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "12.0",
-                "CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM": "YOUR_TEAM_ID",
-                "CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY": "iPhone Developer"
+                "CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM": "$penv{APPLE_DEVELOPMENT_TEAM}",
+                "CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY": "iPhone Developer",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "environment": {
                 "DYLD_ROOT_PATH": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk",
-                "DYLD_FRAMEWORK_PATH": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks"
+                "DYLD_FRAMEWORK_PATH": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks",
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             },
             "condition": {
                 "type": "equals",
@@ -70,8 +120,12 @@
                 "CMAKE_SYSTEM_NAME": "iOS",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "12.0",
-                "CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM": "YOUR_TEAM_ID",
-                "CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY": "iPhone Developer"
+                "CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM": "$penv{APPLE_DEVELOPMENT_TEAM}",
+                "CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY": "iPhone Developer",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             },
             "condition": {
                 "type": "equals",
@@ -82,61 +136,189 @@
         {
             "name": "linux-debug",
             "displayName": "Linux Debug",
-            "description": "Debug build for Linux",
+            "description": "Debug build for Linux (devin.ai compatible)",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/Builds/LinuxMakefile/CMake-Debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             }
         },
         {
             "name": "linux-release",
             "displayName": "Linux Release",
-            "description": "Release build for Linux",
+            "description": "Release build for Linux (devin.ai compatible)",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/Builds/LinuxMakefile/CMake-Release",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "linux-ninja-debug",
+            "displayName": "Linux Ninja Debug (CLion Compatible)",
+            "description": "Debug build for Linux using Ninja generator for CLion",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/LinuxMakefile/CMake-Ninja-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "linux-ninja-release",
+            "displayName": "Linux Ninja Release (CLion Compatible)",
+            "description": "Release build for Linux using Ninja generator for CLion",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/LinuxMakefile/CMake-Ninja-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             }
         },
         {
             "name": "windows-debug",
             "displayName": "Windows Debug",
-            "description": "Debug build for Windows",
+            "description": "Debug build for Windows (Parallels compatible)",
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             }
         },
         {
             "name": "windows-release",
             "displayName": "Windows Release",
-            "description": "Release build for Windows",
+            "description": "Release build for Windows (Parallels compatible)",
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Release",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "windows-ninja-debug",
+            "displayName": "Windows Ninja Debug (CLion on Parallels)",
+            "description": "Debug build for Windows using Ninja generator for CLion on Parallels",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Ninja-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "windows-ninja-release",
+            "displayName": "Windows Ninja Release (CLion on Parallels)",
+            "description": "Release build for Windows using Ninja generator for CLion on Parallels",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Ninja-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "android-debug",
+            "displayName": "Android Debug",
+            "description": "Debug build for Android (arm64-v8a)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/Android/CMake-Debug-arm64-v8a",
+            "toolchainFile": "$penv{ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ANDROID_ABI": "arm64-v8a",
+                "ANDROID_PLATFORM": "android-23",
+                "ANDROID_NDK": "$penv{ANDROID_NDK_ROOT}",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
+            }
+        },
+        {
+            "name": "android-release",
+            "displayName": "Android Release",
+            "description": "Release build for Android (arm64-v8a)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Builds/Android/CMake-Release-arm64-v8a",
+            "toolchainFile": "$penv{ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "ANDROID_ABI": "arm64-v8a",
+                "ANDROID_PLATFORM": "android-23",
+                "ANDROID_NDK": "$penv{ANDROID_NDK_ROOT}",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            },
+            "environment": {
+                "CLION_DISABLE_AUTO_RELOAD": "1"
             }
         }
     ],
@@ -150,6 +332,16 @@
             "name": "macos-release",
             "configurePreset": "macos-release",
             "displayName": "Build macOS Release"
+        },
+        {
+            "name": "macos-ninja-debug",
+            "configurePreset": "macos-ninja-debug",
+            "displayName": "Build macOS Ninja Debug"
+        },
+        {
+            "name": "macos-ninja-release",
+            "configurePreset": "macos-ninja-release",
+            "displayName": "Build macOS Ninja Release"
         },
         {
             "name": "ios-simulator-debug",
@@ -172,6 +364,16 @@
             "displayName": "Build Linux Release"
         },
         {
+            "name": "linux-ninja-debug",
+            "configurePreset": "linux-ninja-debug",
+            "displayName": "Build Linux Ninja Debug"
+        },
+        {
+            "name": "linux-ninja-release",
+            "configurePreset": "linux-ninja-release",
+            "displayName": "Build Linux Ninja Release"
+        },
+        {
             "name": "windows-debug",
             "configurePreset": "windows-debug",
             "displayName": "Build Windows Debug"
@@ -180,6 +382,26 @@
             "name": "windows-release",
             "configurePreset": "windows-release",
             "displayName": "Build Windows Release"
+        },
+        {
+            "name": "windows-ninja-debug",
+            "configurePreset": "windows-ninja-debug",
+            "displayName": "Build Windows Ninja Debug"
+        },
+        {
+            "name": "windows-ninja-release",
+            "configurePreset": "windows-ninja-release",
+            "displayName": "Build Windows Ninja Release"
+        },
+        {
+            "name": "android-debug",
+            "configurePreset": "android-debug",
+            "displayName": "Build Android Debug"
+        },
+        {
+            "name": "android-release",
+            "configurePreset": "android-release",
+            "displayName": "Build Android Release"
         }
     ],
     "testPresets": [
@@ -192,6 +414,11 @@
             "name": "linux-test",
             "configurePreset": "linux-debug",
             "displayName": "Test Linux"
+        },
+        {
+            "name": "windows-test",
+            "configurePreset": "windows-debug",
+            "displayName": "Test Windows"
         }
     ]
 }

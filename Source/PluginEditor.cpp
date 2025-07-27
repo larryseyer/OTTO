@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "INIConfig.h"
+#include "ErrorHandling.h"
 
 class OTTOSplashOverlay : public juce::Component, private juce::Timer
 {
@@ -201,114 +202,218 @@ OTTOAudioProcessorEditor::~OTTOAudioProcessorEditor()
 
 void OTTOAudioProcessorEditor::initializeManagers()
 {
-    ResponsiveLayoutManager::LayoutConfig layoutConfig;
-    layoutConfig.baseWidth = INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH;
-    layoutConfig.baseHeight = INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT;
-    layoutConfig.aspectRatio = static_cast<float>(INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH) /
-                               static_cast<float>(INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT);
-    layoutConfig.minScale = INIConfig::Validation::MIN_INTERFACE_SCALE;
-    layoutConfig.maxScale = INIConfig::Validation::MAX_INTERFACE_SCALE;
+    try {
+        // Initialize layout configuration with safe defaults
+        ResponsiveLayoutManager::LayoutConfig layoutConfig;
+        layoutConfig.baseWidth = INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH;
+        layoutConfig.baseHeight = INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT;
+        layoutConfig.aspectRatio = static_cast<float>(INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH) /
+                                   static_cast<float>(INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT);
+        layoutConfig.minScale = INIConfig::Validation::MIN_INTERFACE_SCALE;
+        layoutConfig.maxScale = INIConfig::Validation::MAX_INTERFACE_SCALE;
 
-    colorScheme = std::make_unique<ColorScheme>();
+        // Null-pointer safety: Create ColorScheme with exception handling
+        colorScheme = ErrorHandler::safeCreate<ColorScheme>(
+            []() { return std::make_unique<ColorScheme>(); },
+            "ColorScheme"
+        );
+        if (!colorScheme) {
+            DBG("PluginEditor: Failed to create ColorScheme, using fallback");
+            return;
+        }
 
-    layoutManager = std::make_unique<ResponsiveLayoutManager>(layoutConfig);
+        // Null-pointer safety: Create ResponsiveLayoutManager with exception handling
+        layoutManager = ErrorHandler::safeCreate<ResponsiveLayoutManager>(
+            [&layoutConfig]() { return std::make_unique<ResponsiveLayoutManager>(layoutConfig); },
+            "ResponsiveLayoutManager"
+        );
+        if (!layoutManager) {
+            DBG("PluginEditor: Failed to create ResponsiveLayoutManager");
+            return;
+        }
 
-    fontManager = std::make_unique<FontManager>();
+        // Null-pointer safety: Create FontManager with exception handling
+        fontManager = ErrorHandler::safeCreate<FontManager>(
+            []() { return std::make_unique<FontManager>(); },
+            "FontManager"
+        );
+        if (!fontManager) {
+            DBG("PluginEditor: Failed to create FontManager");
+            return;
+        }
 
-    auto assetsPath = FontManager::getAssetsPath();
-    
-    // Always load fonts from BinaryData (assetsPath no longer required)
-    fontManager->loadCustomFonts(assetsPath);
-    
-    // Debug: Check if fonts loaded
-    if (fontManager->hasError()) {
-        DBG("FontManager Error: " + fontManager->getLastError());
+        // Null-pointer safety: Load fonts with error handling
+        auto assetsPath = FontManager::getAssetsPath();
+        
+        ErrorHandler::safeExecute([&]() {
+            fontManager->loadCustomFonts(assetsPath);
+        }, "FontManager font loading");
+        
+        // Validate font loading results
+        if (fontManager->hasError()) {
+            DBG("FontManager Error: " + fontManager->getLastError());
+        }
+        
+        if (!fontManager->arePhosphorFontsLoaded()) {
+            DBG("Warning: No Phosphor fonts loaded - using system defaults");
+        } else {
+            DBG("Phosphor fonts loaded successfully");
+        }
+        
+        auto loadedFonts = fontManager->getLoadedFontNames();
+        DBG("Loaded fonts: " + loadedFonts.joinIntoString(", "));
+
+        // Null-pointer safety: Create INIDataManager with exception handling
+        dataManager = ErrorHandler::safeCreate<INIDataManager>(
+            []() { return std::make_unique<INIDataManager>(); },
+            "INIDataManager"
+        );
+        if (!dataManager) {
+            DBG("PluginEditor: Failed to create INIDataManager");
+            return;
+        }
+
+        // Null-pointer safety: Create CustomLookAndFeel with exception handling
+        if (fontManager && colorScheme) {
+            customLookAndFeel = ErrorHandler::safeCreate<CustomLookAndFeel>(
+                [&]() { return std::make_unique<CustomLookAndFeel>(*fontManager, *colorScheme); },
+                "CustomLookAndFeel"
+            );
+            
+            if (customLookAndFeel) {
+                ErrorHandler::safeExecute([&]() {
+                    setLookAndFeel(customLookAndFeel.get());
+                    juce::LookAndFeel::setDefaultLookAndFeel(customLookAndFeel.get());
+                }, "LookAndFeel setup");
+            } else {
+                DBG("PluginEditor: Failed to create CustomLookAndFeel, using default");
+            }
+        }
+
+        // Null-pointer safety: Add listener only if colorScheme is valid
+        if (colorScheme) {
+            colorScheme->addListener(this);
+        }
+
+    } catch (const std::exception& e) {
+        DBG("PluginEditor: Exception in initializeManagers - " + juce::String(e.what()));
     }
-    
-    if (!fontManager->arePhosphorFontsLoaded()) {
-        DBG("Warning: No Phosphor fonts loaded!");
-    } else {
-        DBG("Phosphor fonts loaded successfully");
-    }
-    
-    auto loadedFonts = fontManager->getLoadedFontNames();
-    DBG("Loaded fonts: " + loadedFonts.joinIntoString(", "));
-
-    dataManager = std::make_unique<INIDataManager>();
-
-    customLookAndFeel = std::make_unique<CustomLookAndFeel>(*fontManager, *colorScheme);
-
-    setLookAndFeel(customLookAndFeel.get());
-
-    juce::LookAndFeel::setDefaultLookAndFeel(customLookAndFeel.get());
-
-    colorScheme->addListener(this);
 }
 
 void OTTOAudioProcessorEditor::createComponents()
 {
+    // Null-pointer safety: Validate all required managers
     if (!layoutManager || !fontManager || !colorScheme) {
-
+        DBG("PluginEditor: Cannot create components - missing required managers");
+        DBG("  layoutManager: " + juce::String(layoutManager ? "OK" : "NULL"));
+        DBG("  fontManager: " + juce::String(fontManager ? "OK" : "NULL"));
+        DBG("  colorScheme: " + juce::String(colorScheme ? "OK" : "NULL"));
         return;
     }
 
-    topBar = std::make_unique<TopBarComponent>(
-        audioProcessor.getMidiEngine(),
-        audioProcessor.getValueTreeState(),
-        *layoutManager,
-        *fontManager,
-        *colorScheme
-    );
-    if (topBar) {
-        topBar->setINIDataManager(dataManager.get());
-        addAndMakeVisible(topBar.get());
+    try {
+        // Null-pointer safety: Create TopBarComponent with error handling
+        topBar = ErrorHandler::safeCreate<TopBarComponent>(
+            [&]() {
+                return std::make_unique<TopBarComponent>(
+                    audioProcessor.getMidiEngine(),
+                    audioProcessor.getValueTreeState(),
+                    *layoutManager,
+                    *fontManager,
+                    *colorScheme
+                );
+            },
+            "TopBarComponent"
+        );
+        
+        if (topBar) {
+            if (dataManager) {
+                topBar->setINIDataManager(dataManager.get());
+            }
+            ErrorHandler::safeExecute([&]() {
+                addAndMakeVisible(topBar.get());
+            }, "TopBar visibility");
+        } else {
+            DBG("PluginEditor: Failed to create TopBarComponent");
+        }
 
-    } else {
+        // Null-pointer safety: Create PlayerTabsComponent with error handling
+        playerTabs = ErrorHandler::safeCreate<PlayerTabsComponent>(
+            [&]() {
+                return std::make_unique<PlayerTabsComponent>(
+                    audioProcessor.getMidiEngine(),
+                    *layoutManager,
+                    *fontManager,
+                    *colorScheme
+                );
+            },
+            "PlayerTabsComponent"
+        );
+        
+        if (playerTabs) {
+            ErrorHandler::safeExecute([&]() {
+                addAndMakeVisible(playerTabs.get());
+            }, "PlayerTabs visibility");
+        } else {
+            DBG("PluginEditor: Failed to create PlayerTabsComponent");
+        }
 
-    }
+        // Null-pointer safety: Create DrumKitSectionComponent with error handling
+        if (dataManager) {
+            drumKitSection = ErrorHandler::safeCreate<DrumKitSectionComponent>(
+                [&]() {
+                    return std::make_unique<DrumKitSectionComponent>(
+                        audioProcessor.getPresetManager(),
+                        audioProcessor.getSFZEngine(),
+                        *layoutManager,
+                        *fontManager,
+                        *colorScheme,
+                        *dataManager,
+                        &audioProcessor.getMixer()
+                    );
+                },
+                "DrumKitSectionComponent"
+            );
+            
+            if (drumKitSection) {
+                ErrorHandler::safeExecute([&]() {
+                    addAndMakeVisible(drumKitSection.get());
+                }, "DrumKitSection visibility");
+            } else {
+                DBG("PluginEditor: Failed to create DrumKitSectionComponent");
+            }
+        } else {
+            DBG("PluginEditor: Cannot create DrumKitSection - dataManager is null");
+        }
 
-    playerTabs = std::make_unique<PlayerTabsComponent>(
-        audioProcessor.getMidiEngine(),
-        *layoutManager,
-        *fontManager,
-        *colorScheme
-    );
-    if (playerTabs) {
-        addAndMakeVisible(playerTabs.get());
+        // Null-pointer safety: Create MainContentComponent with error handling
+        mainContent = ErrorHandler::safeCreate<MainContentComponent>(
+            [&]() {
+                return std::make_unique<MainContentComponent>(
+                    audioProcessor.getMidiEngine(),
+                    audioProcessor.getMixer(),
+                    audioProcessor.getValueTreeState(),
+                    *layoutManager,
+                    *fontManager,
+                    *colorScheme
+                );
+            },
+            "MainContentComponent"
+        );
+        
+        if (mainContent) {
+            if (dataManager) {
+                mainContent->setINIDataManager(dataManager.get());
+            }
+            ErrorHandler::safeExecute([&]() {
+                addAndMakeVisible(mainContent.get());
+            }, "MainContent visibility");
+        } else {
+            DBG("PluginEditor: Failed to create MainContentComponent");
+        }
 
-    } else {
-
-    }
-
-    drumKitSection = std::make_unique<DrumKitSectionComponent>(
-        audioProcessor.getPresetManager(),
-        audioProcessor.getSFZEngine(),
-        *layoutManager,
-        *fontManager,
-        *colorScheme,
-        *dataManager,
-        &audioProcessor.getMixer()
-    );
-    if (drumKitSection) {
-        addAndMakeVisible(drumKitSection.get());
-
-    } else {
-
-    }
-
-    mainContent = std::make_unique<MainContentComponent>(
-        audioProcessor.getMidiEngine(),
-        audioProcessor.getMixer(),
-        audioProcessor.getValueTreeState(),
-        *layoutManager,
-        *fontManager,
-        *colorScheme
-    );
-    if (mainContent) {
-        mainContent->setINIDataManager(dataManager.get());
-        addAndMakeVisible(mainContent.get());
-    } else {
-
+    } catch (const std::exception& e) {
+        DBG("PluginEditor: Exception in createComponents - " + juce::String(e.what()));
     }
 }
 

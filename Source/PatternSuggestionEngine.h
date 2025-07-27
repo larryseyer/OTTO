@@ -3,6 +3,7 @@
 #include "MidiAnalysisTypes.h"
 #include "MidiFileManager.h"
 #include "INIConfig.h"
+#include "ErrorHandling.h"
 
 class PatternSuggestionEngine {
 public:
@@ -17,6 +18,15 @@ public:
         int timeSignature = INIConfig::Defaults::TIME_SIGNATURE_NUMERATOR;
         float tempo = INIConfig::Defaults::DEFAULT_TEMPO;
         int bars = static_cast<int>(INIConfig::Defaults::DEFAULT_PATTERN_BARS);
+        
+        // Validation method for exception safety
+        bool isValid() const noexcept {
+            return complexity >= 0.0f && complexity <= 1.0f &&
+                   humanization >= 0.0f && humanization <= 1.0f &&
+                   timeSignature > 0 && timeSignature <= 16 &&
+                   tempo > 0.0f && tempo <= 300.0f &&
+                   bars > 0 && bars <= 16;
+        }
     };
 
     struct PatternSuggestion {
@@ -29,21 +39,32 @@ public:
     PatternSuggestionEngine();
     ~PatternSuggestionEngine() = default;
 
-    juce::Array<PatternSuggestion> suggestPatterns(const SuggestionParams& params, int numSuggestions = INIConfig::Defaults::DEFAULT_NUM_SUGGESTIONS);
-    PatternSuggestion generatePattern(const SuggestionParams& params);
+    // Exception-safe pattern generation methods
+    juce::Array<PatternSuggestion> suggestPatterns(const SuggestionParams& params, int numSuggestions = INIConfig::Defaults::DEFAULT_NUM_SUGGESTIONS) noexcept;
+    PatternSuggestion generatePattern(const SuggestionParams& params) noexcept;
+    
+    // Fallback methods for when AI generation fails
+    PatternSuggestion createFallbackPattern(const SuggestionParams& params) const noexcept;
+    juce::Array<PatternSuggestion> createBasicPatterns(Genre genre, int numSuggestions) const noexcept;
 
+    // Exception-safe advanced methods
     juce::MidiMessageSequence transferStyle(const juce::MidiMessageSequence& source,
-                                           const juce::MidiMessageSequence& styleReference);
+                                           const juce::MidiMessageSequence& styleReference) noexcept;
 
     juce::Array<PatternSuggestion> findSimilarGrooves(const MidiGrooveAnalysis& targetGroove,
-                                                      const juce::Array<MidiGrooveAnalysis>& library);
+                                                      const juce::Array<MidiGrooveAnalysis>& library) noexcept;
 
-    void adaptToPerformance(const juce::Array<float>& recentVelocities,
-                           const juce::Array<float>& recentTimings);
+    bool adaptToPerformance(const juce::Array<float>& recentVelocities,
+                           const juce::Array<float>& recentTimings) noexcept;
 
-    void learnFromPattern(const juce::MidiMessageSequence& pattern, Genre genre);
-    void saveLearnedData(const juce::File& file);
-    void loadLearnedData(const juce::File& file);
+    bool learnFromPattern(const juce::MidiMessageSequence& pattern, Genre genre) noexcept;
+    bool saveLearnedData(const juce::File& file) noexcept;
+    bool loadLearnedData(const juce::File& file) noexcept;
+    
+    // Error state and recovery methods
+    bool hasError() const noexcept { return hasInternalError; }
+    juce::String getLastError() const noexcept { return lastErrorMessage; }
+    void clearError() noexcept { hasInternalError = false; lastErrorMessage.clear(); }
 
 private:
     struct GenreProfile {
@@ -59,18 +80,28 @@ private:
 
     juce::Array<GenreProfile> genreProfiles;
     juce::Array<MidiGrooveAnalysis> patternLibrary;
+    
+    // Error state management
+    mutable bool hasInternalError = false;
+    mutable juce::String lastErrorMessage;
 
+    // Exception-safe internal methods
     juce::MidiMessageSequence generateDrumPattern(const GenreProfile& profile,
-                                                  int bars, int timeSignature);
+                                                  int bars, int timeSignature) noexcept;
 
     float calculatePatternSimilarity(const MidiGrooveAnalysis& a,
-                                   const MidiGrooveAnalysis& b);
+                                   const MidiGrooveAnalysis& b) const noexcept;
 
-    juce::Array<float> generateKickPattern(Genre genre, int steps);
-    juce::Array<float> generateSnarePattern(Genre genre, int steps);
-    juce::Array<float> generateHiHatPattern(Genre genre, int steps);
+    juce::Array<float> generateKickPattern(Genre genre, int steps) const noexcept;
+    juce::Array<float> generateSnarePattern(Genre genre, int steps) const noexcept;
+    juce::Array<float> generateHiHatPattern(Genre genre, int steps) const noexcept;
 
-    void initializeGenreProfiles();
+    void initializeGenreProfiles() noexcept;
+    
+    // Error handling utilities
+    void setError(const juce::String& message) const noexcept;
+    bool validateParams(const SuggestionParams& params) const noexcept;
+    SuggestionParams sanitizeParams(const SuggestionParams& params) const noexcept;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PatternSuggestionEngine)
 };

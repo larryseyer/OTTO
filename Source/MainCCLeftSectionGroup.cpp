@@ -175,9 +175,9 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
     if (!topLevel) return;
 
     for (int i = topLevel->getNumChildComponents() - 1; i >= 0; --i) {
-        if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
-            auto* popup = topLevel->getChildComponent(i);
+        if (auto* popup = dynamic_cast<CustomGroupManagerPopup*>(topLevel->getChildComponent(i))) {
             topLevel->removeChildComponent(popup);
+            delete popup; // Properly delete the popup
             break;
         }
     }

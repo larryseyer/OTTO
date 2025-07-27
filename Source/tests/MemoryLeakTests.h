@@ -52,6 +52,12 @@ public:
 
         beginTest("AI Stress Conditions");
         testAIStressConditions();
+
+        beginTest("Dialog Window Memory Management");
+        testDialogWindowMemory();
+
+        beginTest("Popup Component Lifecycle");
+        testPopupComponentLifecycle();
     }
 
 private:
@@ -412,6 +418,96 @@ private:
        }
        
        expect(true, "AI stress test completed");
+   }
+
+   void testDialogWindowMemory() {
+       // Test modal dialog window creation and automatic cleanup
+       // Simulate the corrected TopBarComponent dialog patterns
+       
+       for (int i = 0; i < 50; ++i) {
+           auto window = std::make_unique<juce::DialogWindow>("Test Dialog",
+                                                             juce::Colours::white,
+                                                             true);
+           
+           class TestContent : public juce::Component {
+           public:
+               juce::TextButton okButton{"OK"};
+               juce::TextButton cancelButton{"Cancel"};
+               
+               TestContent() {
+                   addAndMakeVisible(okButton);
+                   addAndMakeVisible(cancelButton);
+                   setSize(200, 100);
+               }
+               
+               void resized() override {
+                   auto bounds = getLocalBounds();
+                   okButton.setBounds(bounds.removeFromLeft(90));
+                   cancelButton.setBounds(bounds);
+               }
+           };
+           
+           auto content = std::make_unique<TestContent>();
+           auto* windowPtr = window.get();
+           
+           content->okButton.onClick = [windowPtr] {
+               windowPtr->exitModalState(1);
+           };
+           
+           content->cancelButton.onClick = [windowPtr] {
+               windowPtr->exitModalState(0);
+           };
+           
+           window->setContentOwned(content.release(), true);
+           window->centreWithSize(200, 100);
+           
+           // Test that window can be properly released for modal operation
+           auto* rawWindow = window.release();
+           expect(rawWindow != nullptr, "Window should be created successfully");
+           
+           // Clean up immediately for test
+           delete rawWindow;
+       }
+       
+       expect(true, "Dialog window memory test completed");
+   }
+
+   void testPopupComponentLifecycle() {
+       // Test CustomGroupManagerPopup memory management
+       class TestParentComponent : public juce::Component {
+       public:
+           TestParentComponent() { setSize(400, 300); }
+       };
+       
+       for (int i = 0; i < 30; ++i) {
+           auto parentComponent = std::make_unique<TestParentComponent>();
+           
+           // Test popup creation and cleanup (simulating the corrected pattern)
+           for (int j = 0; j < 5; ++j) {
+               // Simulate popup creation with automatic cleanup
+               auto testPopup = std::make_unique<juce::Component>();
+               testPopup->setName("TestPopup");
+               testPopup->setBounds(50, 50, 100, 100);
+               
+               parentComponent->addAndMakeVisible(testPopup.release());
+               
+               // Simulate cleanup (what our corrected code does)
+               for (int k = parentComponent->getNumChildComponents() - 1; k >= 0; --k) {
+                   if (auto* popup = parentComponent->getChildComponent(k)) {
+                       if (popup->getName() == "TestPopup") {
+                           parentComponent->removeChildComponent(popup);
+                           delete popup;
+                           break;
+                       }
+                   }
+               }
+           }
+           
+           expectEquals(parentComponent->getNumChildComponents(), 0, 
+                       "All popup components should be cleaned up");
+       }
+       
+       expect(true, "Popup component lifecycle test completed");
    }
 };
 

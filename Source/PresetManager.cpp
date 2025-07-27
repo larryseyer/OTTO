@@ -1,5 +1,6 @@
 #include "PresetManager.h"
 #include "INIConfig.h"
+#include "ErrorHandling.h"
 
 PresetManager::PresetManager(MidiEngine& me, Mixer& m)
     : midiEngine(me), mixer(m) {
@@ -8,12 +9,24 @@ PresetManager::PresetManager(MidiEngine& me, Mixer& m)
 }
 
 void PresetManager::prepare() {
-    if (dataManager) {
-        updatePresetList();
+    // Null-pointer safety: Validate dataManager before use
+    if (dataManager == nullptr) {
+        DBG("PresetManager: Cannot prepare - dataManager is null");
+        return;
+    }
+
+    try {
+        ErrorHandler::safeExecute([&]() {
+            updatePresetList();
+        }, "PresetManager preset list update");
 
         if (!presetExists("Default")) {
-            ensureDefaultPreset();
+            ErrorHandler::safeExecute([&]() {
+                ensureDefaultPreset();
+            }, "PresetManager default preset creation");
         }
+    } catch (const std::exception& e) {
+        DBG("PresetManager: Exception in prepare - " + juce::String(e.what()));
     }
 }
 
@@ -28,23 +41,56 @@ void PresetManager::saveStates(ComponentState& state) {
 }
 
 void PresetManager::loadStates(const ComponentState& state) {
-    currentPresetIndex = INIConfig::clampPresetIndex(state.currentPreset);
-    currentPresetName = "Default";
+    try {
+        // Null-pointer safety: Validate preset index before use
+        currentPresetIndex = INIConfig::clampPresetIndex(state.currentPreset);
+        currentPresetName = "Default";
 
-    if (state.sliderValues.count("currentPresetIndex") > 0) {
-        currentPresetIndex = INIConfig::clampPresetIndex(
-            static_cast<int>(state.sliderValues.at("currentPresetIndex"))
-        );
+        // Null-pointer safety: Safe access to slider values map
+        if (state.sliderValues.count("currentPresetIndex") > 0) {
+            try {
+                float indexValue = state.sliderValues.at("currentPresetIndex");
+                if (std::isfinite(indexValue)) {
+                    currentPresetIndex = INIConfig::clampPresetIndex(static_cast<int>(indexValue));
+                } else {
+                    DBG("PresetManager: Invalid preset index value, using default");
+                }
+            } catch (const std::exception& e) {
+                DBG("PresetManager: Exception accessing preset index - " + juce::String(e.what()));
+            }
+        }
+
+        // Null-pointer safety: Validate preset list before accessing
+        auto presets = getAvailablePresets();
+        if (currentPresetIndex >= 0 && currentPresetIndex < presets.size()) {
+            currentPresetName = presets[currentPresetIndex];
+            if (currentPresetName.isEmpty()) {
+                DBG("PresetManager: Empty preset name at index " + juce::String(currentPresetIndex));
+                currentPresetName = "Default";
+            }
+        } else {
+            DBG("PresetManager: Invalid preset index " + juce::String(currentPresetIndex) + 
+                ", preset count: " + juce::String(presets.size()));
+            currentPresetIndex = 0;
+            currentPresetName = "Default";
+        }
+
+        // Null-pointer safety: Apply preset with error handling
+        ErrorHandler::safeExecute([&]() {
+            applyPresetToEngine(state);
+        }, "PresetManager apply preset");
+
+        // Null-pointer safety: Load mixer state with error handling
+        ErrorHandler::safeExecute([&]() {
+            mixer.loadState(state);
+        }, "PresetManager mixer state loading");
+
+    } catch (const std::exception& e) {
+        DBG("PresetManager: Exception in loadStates - " + juce::String(e.what()));
+        // Set safe defaults on error
+        currentPresetIndex = 0;
+        currentPresetName = "Default";
     }
-
-    auto presets = getAvailablePresets();
-    if (currentPresetIndex < presets.size()) {
-        currentPresetName = presets[currentPresetIndex];
-    }
-
-    applyPresetToEngine(state);
-
-    mixer.loadState(state);
 }
 
 void PresetManager::saveCurrentPreset() {

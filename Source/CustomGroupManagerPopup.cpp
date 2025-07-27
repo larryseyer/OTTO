@@ -186,11 +186,23 @@ void CustomGroupManagerPopup::showCreateGroupPopup(juce::Component* parent,
                                                   ComponentState& componentState,
                                                   std::function<void(const juce::String&)> onCreateGroup,
                                                   std::function<void()> onCancel) {
-    auto* popup = new CustomGroupManagerPopup(Mode::CreateGroup, "", layoutManager, fontManager, colorScheme, componentState);
+    // Remove any existing popup first
+    for (int i = parent->getNumChildComponents() - 1; i >= 0; --i) {
+        if (auto* existingPopup = dynamic_cast<CustomGroupManagerPopup*>(parent->getChildComponent(i))) {
+            parent->removeChildComponent(existingPopup);
+            delete existingPopup;
+            break;
+        }
+    }
+    
+    auto popup = std::make_unique<CustomGroupManagerPopup>(Mode::CreateGroup, "", layoutManager, fontManager, colorScheme, componentState);
     popup->setBounds(bounds);
     popup->onCreateGroup = onCreateGroup;
     popup->onCancel = onCancel;
-    parent->addAndMakeVisible(popup);
+    popup->setName("CustomGroupManagerPopup");
+    
+    // Transfer ownership to parent component
+    parent->addAndMakeVisible(popup.release());
 }
 
 void CustomGroupManagerPopup::showDeleteGroupPopup(juce::Component* parent,
@@ -202,11 +214,23 @@ void CustomGroupManagerPopup::showDeleteGroupPopup(juce::Component* parent,
                                                   ComponentState& componentState,
                                                   std::function<void()> onDeleteGroup,
                                                   std::function<void()> onCancel) {
-    auto* popup = new CustomGroupManagerPopup(Mode::DeleteGroup, groupName, layoutManager, fontManager, colorScheme, componentState);
+    // Remove any existing popup first
+    for (int i = parent->getNumChildComponents() - 1; i >= 0; --i) {
+        if (auto* existingPopup = dynamic_cast<CustomGroupManagerPopup*>(parent->getChildComponent(i))) {
+            parent->removeChildComponent(existingPopup);
+            delete existingPopup;
+            break;
+        }
+    }
+    
+    auto popup = std::make_unique<CustomGroupManagerPopup>(Mode::DeleteGroup, groupName, layoutManager, fontManager, colorScheme, componentState);
     popup->setBounds(bounds);
     popup->onDeleteGroup = onDeleteGroup;
     popup->onCancel = onCancel;
-    parent->addAndMakeVisible(popup);
+    popup->setName("CustomGroupManagerPopup");
+    
+    // Transfer ownership to parent component
+    parent->addAndMakeVisible(popup.release());
 }
 
 void CustomGroupManagerPopup::showEditGroupPopup(juce::Component* parent,
@@ -218,9 +242,21 @@ void CustomGroupManagerPopup::showEditGroupPopup(juce::Component* parent,
                                                 ComponentState& componentState,
                                                 std::function<void()> onEditGroup,
                                                 std::function<void()> onCancel) {
-    auto* popup = new CustomGroupManagerPopup(Mode::EditGroup, groupName, layoutManager, fontManager, colorScheme, componentState);
+    // Remove any existing popup first
+    for (int i = parent->getNumChildComponents() - 1; i >= 0; --i) {
+        if (auto* existingPopup = dynamic_cast<CustomGroupManagerPopup*>(parent->getChildComponent(i))) {
+            parent->removeChildComponent(existingPopup);
+            delete existingPopup;
+            break;
+        }
+    }
+    
+    auto popup = std::make_unique<CustomGroupManagerPopup>(Mode::EditGroup, groupName, layoutManager, fontManager, colorScheme, componentState);
     popup->setBounds(bounds);
     popup->onEditGroup = onEditGroup;
     popup->onCancel = onCancel;
-    parent->addAndMakeVisible(popup);
+    popup->setName("CustomGroupManagerPopup");
+    
+    // Transfer ownership to parent component
+    parent->addAndMakeVisible(popup.release());
 }

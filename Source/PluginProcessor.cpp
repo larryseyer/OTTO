@@ -69,16 +69,49 @@ void OTTOAudioProcessor::setupMidiEngine() {
 }
 
 void OTTOAudioProcessor::handleMidiParameterChange(const juce::String& parameterID, float value) {
-    if (auto* param = parameters.getParameter(parameterID)) {
-        const juce::MessageManagerLock mmLock;
-        param->setValueNotifyingHost(param->convertTo0to1(value));
+    // Null-pointer safety: Validate parameter ID
+    if (parameterID.isEmpty()) {
+        DBG("AudioProcessor: Empty parameter ID in MIDI parameter change");
+        return;
     }
 
+    // Null-pointer safety: Validate parameter value range
+    if (!std::isfinite(value)) {
+        DBG("AudioProcessor: Invalid parameter value: " + juce::String(value) + " for parameter: " + parameterID);
+        return;
+    }
+
+    // Null-pointer safety: Check parameter exists before use
+    if (auto* param = parameters.getParameter(parameterID)) {
+        try {
+            const juce::MessageManagerLock mmLock;
+            // Null-pointer safety: Verify param is still valid after lock
+            if (param != nullptr) {
+                float normalizedValue = param->convertTo0to1(value);
+                // Additional validation for normalized value
+                if (std::isfinite(normalizedValue) && normalizedValue >= 0.0f && normalizedValue <= 1.0f) {
+                    param->setValueNotifyingHost(normalizedValue);
+                } else {
+                    DBG("AudioProcessor: Invalid normalized value for parameter: " + parameterID);
+                }
+            }
+        } catch (const std::exception& e) {
+            DBG("AudioProcessor: Exception in parameter change - " + juce::String(e.what()));
+        }
+    } else {
+        DBG("AudioProcessor: Parameter not found: " + parameterID);
+    }
+
+    // Handle special playback state parameter
     if (parameterID == "playState") {
-        if (value > 0.5f) {
-            midiEngine.startPlayback();
-        } else {
-            midiEngine.stopPlayback();
+        try {
+            if (value > 0.5f) {
+                midiEngine.startPlayback();
+            } else {
+                midiEngine.stopPlayback();
+            }
+        } catch (const std::exception& e) {
+            DBG("AudioProcessor: Exception in playback state change - " + juce::String(e.what()));
         }
     }
 }
@@ -134,23 +167,49 @@ juce::StringArray OTTOAudioProcessor::getAvailableMidiOutputs() const {
 void OTTOAudioProcessor::setMidiInput(const juce::String& deviceName) {
     if (deviceName == currentMidiInput) return;
 
-    if (midiInput) {
-        midiInput->stop();
-        midiInput.reset();
+    // Null-pointer safety: Safely close existing MIDI input
+    if (midiInput != nullptr) {
+        try {
+            midiInput->stop();
+            midiInput.reset();
+        } catch (const std::exception& e) {
+            DBG("AudioProcessor: Error stopping MIDI input - " + juce::String(e.what()));
+        }
     }
 
     currentMidiInput = deviceName;
 
     if (deviceName.isNotEmpty()) {
-        auto devices = juce::MidiInput::getAvailableDevices();
-        for (const auto& device : devices) {
-            if (device.name == deviceName) {
-                midiInput = juce::MidiInput::openDevice(device.identifier, nullptr);
-                if (midiInput) {
-                    midiInput->start();
+        try {
+            auto devices = juce::MidiInput::getAvailableDevices();
+            bool deviceFound = false;
+            
+            for (const auto& device : devices) {
+                if (device.name == deviceName) {
+                    // Null-pointer safety: Try to open MIDI device with error handling
+                    midiInput = juce::MidiInput::openDevice(device.identifier, nullptr);
+                    if (midiInput != nullptr) {
+                        try {
+                            midiInput->start();
+                            DBG("AudioProcessor: Successfully opened MIDI input: " + deviceName);
+                        } catch (const std::exception& e) {
+                            DBG("AudioProcessor: Error starting MIDI input - " + juce::String(e.what()));
+                            midiInput.reset();
+                        }
+                    } else {
+                        DBG("AudioProcessor: Failed to open MIDI input device: " + deviceName);
+                    }
+                    break;
                 }
-                break;
             }
+            
+            if (!deviceFound) {
+                DBG("AudioProcessor: MIDI input device not found: " + deviceName);
+                currentMidiInput.clear();
+            }
+        } catch (const std::exception& e) {
+            DBG("AudioProcessor: Exception in MIDI input setup - " + juce::String(e.what()));
+            currentMidiInput.clear();
         }
     }
 }
@@ -158,16 +217,43 @@ void OTTOAudioProcessor::setMidiInput(const juce::String& deviceName) {
 void OTTOAudioProcessor::setMidiOutput(const juce::String& deviceName) {
     if (deviceName == currentMidiOutput) return;
 
-    midiOutput.reset();
+    // Null-pointer safety: Safely reset existing MIDI output
+    if (midiOutput != nullptr) {
+        try {
+            midiOutput.reset();
+        } catch (const std::exception& e) {
+            DBG("AudioProcessor: Error closing MIDI output - " + juce::String(e.what()));
+        }
+    }
+    
     currentMidiOutput = deviceName;
 
     if (deviceName.isNotEmpty()) {
-        auto devices = juce::MidiOutput::getAvailableDevices();
-        for (const auto& device : devices) {
-            if (device.name == deviceName) {
-                midiOutput = juce::MidiOutput::openDevice(device.identifier);
-                break;
+        try {
+            auto devices = juce::MidiOutput::getAvailableDevices();
+            bool deviceFound = false;
+            
+            for (const auto& device : devices) {
+                if (device.name == deviceName) {
+                    deviceFound = true;
+                    // Null-pointer safety: Try to open MIDI output device with error handling
+                    midiOutput = juce::MidiOutput::openDevice(device.identifier);
+                    if (midiOutput != nullptr) {
+                        DBG("AudioProcessor: Successfully opened MIDI output: " + deviceName);
+                    } else {
+                        DBG("AudioProcessor: Failed to open MIDI output device: " + deviceName);
+                    }
+                    break;
+                }
             }
+            
+            if (!deviceFound) {
+                DBG("AudioProcessor: MIDI output device not found: " + deviceName);
+                currentMidiOutput.clear();
+            }
+        } catch (const std::exception& e) {
+            DBG("AudioProcessor: Exception in MIDI output setup - " + juce::String(e.what()));
+            currentMidiOutput.clear();
         }
     }
 }
@@ -232,29 +318,92 @@ void OTTOAudioProcessor::initializeParameters() {
 }
 
 void OTTOAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue) {
-    if (parameterID == "masterVolume") {
-        mixer.setMasterVolume(newValue);
+    // Null-pointer safety: Validate parameter ID and value
+    if (parameterID.isEmpty()) {
+        DBG("AudioProcessor: Empty parameter ID in parameter change callback");
+        return;
     }
-    else if (parameterID == "tempo") {
-        midiEngine.setTempo(newValue);
+
+    if (!std::isfinite(newValue)) {
+        DBG("AudioProcessor: Invalid parameter value: " + juce::String(newValue) + " for parameter: " + parameterID);
+        return;
     }
-    else if (parameterID == "swing") {
-        midiEngine.setSwing(midiEngine.getCurrentPlayer(), newValue);
-    }
-    else if (parameterID == "energy") {
-        midiEngine.setEnergy(midiEngine.getCurrentPlayer(), newValue);
-    }
-    else {
-        for (int i = 1; i <= 8; ++i) {
-            if (parameterID == "player" + juce::String(i) + "Volume") {
-                mixer.setChannelVolume(i - 1, newValue);
-                break;
-            }
-            else if (parameterID == "player" + juce::String(i) + "Pan") {
-                mixer.setChannelPan(i - 1, newValue);
-                break;
+
+    try {
+        if (parameterID == "masterVolume") {
+            // Validate volume range before applying
+            float clampedVolume = juce::jlimit(0.0f, 1.0f, newValue);
+            mixer.setMasterVolume(clampedVolume);
+        }
+        else if (parameterID == "tempo") {
+            // Validate tempo range before applying
+            float clampedTempo = juce::jlimit(
+                static_cast<float>(INIConfig::Validation::MIN_TEMPO),
+                static_cast<float>(INIConfig::Validation::MAX_TEMPO),
+                newValue
+            );
+            midiEngine.setTempo(clampedTempo);
+        }
+        else if (parameterID == "swing") {
+            // Null-pointer safety: Validate current player before use
+            int currentPlayer = midiEngine.getCurrentPlayer();
+            if (currentPlayer >= 0 && currentPlayer < 8) {  // Assuming 8 players max
+                float clampedSwing = juce::jlimit(
+                    INIConfig::Validation::MIN_SWING,
+                    INIConfig::Validation::MAX_SWING,
+                    newValue
+                );
+                midiEngine.setSwing(currentPlayer, clampedSwing);
+            } else {
+                DBG("AudioProcessor: Invalid current player index: " + juce::String(currentPlayer));
             }
         }
+        else if (parameterID == "energy") {
+            // Null-pointer safety: Validate current player before use
+            int currentPlayer = midiEngine.getCurrentPlayer();
+            if (currentPlayer >= 0 && currentPlayer < 8) {  // Assuming 8 players max
+                float clampedEnergy = juce::jlimit(
+                    INIConfig::Validation::MIN_ENERGY,
+                    INIConfig::Validation::MAX_ENERGY,
+                    newValue
+                );
+                midiEngine.setEnergy(currentPlayer, clampedEnergy);
+            } else {
+                DBG("AudioProcessor: Invalid current player index: " + juce::String(currentPlayer));
+            }
+        }
+        else {
+            // Handle player-specific parameters with null-pointer safety
+            for (int i = 1; i <= 8; ++i) {
+                if (parameterID == "player" + juce::String(i) + "Volume") {
+                    // Validate player index and volume range
+                    int playerIndex = i - 1;
+                    if (playerIndex >= 0 && playerIndex < 8) {
+                        float clampedVolume = juce::jlimit(0.0f, 1.0f, newValue);
+                        mixer.setChannelVolume(playerIndex, clampedVolume);
+                    } else {
+                        DBG("AudioProcessor: Invalid player index: " + juce::String(playerIndex));
+                    }
+                    return;  // Exit loop early once parameter is found
+                }
+                else if (parameterID == "player" + juce::String(i) + "Pan") {
+                    // Validate player index and pan range
+                    int playerIndex = i - 1;
+                    if (playerIndex >= 0 && playerIndex < 8) {
+                        float clampedPan = juce::jlimit(-1.0f, 1.0f, newValue);
+                        mixer.setChannelPan(playerIndex, clampedPan);
+                    } else {
+                        DBG("AudioProcessor: Invalid player index: " + juce::String(playerIndex));
+                    }
+                    return;  // Exit loop early once parameter is found
+                }
+            }
+            // If we reach here, parameter wasn't recognized
+            DBG("AudioProcessor: Unrecognized parameter: " + parameterID);
+        }
+    } catch (const std::exception& e) {
+        DBG("AudioProcessor: Exception in parameter change - " + juce::String(e.what()) + 
+            " for parameter: " + parameterID);
     }
 }
 
@@ -520,11 +669,27 @@ bool OTTOAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) cons
 #endif
 
 void OTTOAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
+    // Null-pointer safety: Verify buffer integrity
+    if (buffer.getNumChannels() == 0 || buffer.getNumSamples() == 0) {
+        DBG("AudioProcessor: Invalid buffer dimensions - channels: " + juce::String(buffer.getNumChannels()) + 
+            ", samples: " + juce::String(buffer.getNumSamples()));
+        return;
+    }
+
+    // Null-pointer safety: Check for valid buffer data
+    for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+        if (buffer.getReadPointer(ch) == nullptr) {
+            DBG("AudioProcessor: Null buffer data pointer for channel " + juce::String(ch));
+            return;
+        }
+    }
+
     juce::ScopedNoDenormals noDenormals;
     
     #if JUCE_MAC || JUCE_IOS
         juce::FloatVectorOperations::disableDenormalisedNumberSupport();
     #elif JUCE_WINDOWS
+        // Null-pointer safety: Verify current thread before setting priority
         if (juce::Thread::getCurrentThread() != nullptr) {
             juce::Thread::getCurrentThread()->setPriority(10);
         }
@@ -538,20 +703,52 @@ void OTTOAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mi
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear(i, 0, buffer.getNumSamples());
-
-    if (midiInput) {
+    // Null-pointer safety: Validate channel counts
+    if (totalNumInputChannels < 0 || totalNumOutputChannels < 0) {
+        DBG("AudioProcessor: Invalid channel configuration");
+        return;
     }
 
-    midiEngine.process(midiMessages);
+    // Clear any unused output channels
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
+        if (i < buffer.getNumChannels()) {
+            buffer.clear(i, 0, buffer.getNumSamples());
+        }
+    }
 
-    sfzEngine.process(buffer, midiMessages);
+    // Process MIDI input - null-pointer safety handled in MidiEngine::process
+    try {
+        midiEngine.process(midiMessages);
+    } catch (const std::exception& e) {
+        DBG("AudioProcessor: MIDI processing error - " + juce::String(e.what()));
+        // Continue processing to avoid audio dropouts
+    }
 
-    mixer.processBlock(buffer);
+    // Process SFZ engine - null-pointer safety handled in SFZEngine::process
+    try {
+        sfzEngine.process(buffer, midiMessages);
+    } catch (const std::exception& e) {
+        DBG("AudioProcessor: SFZ processing error - " + juce::String(e.what()));
+        // Clear buffer on error to prevent audio artifacts
+        buffer.clear();
+    }
 
-    if (midiOutput && midiMessages.getNumEvents() > 0) {
-        midiOutput->sendBlockOfMessages(midiMessages, juce::Time::getMillisecondCounterHiRes(), sampleRate);
+    // Process mixer - null-pointer safety handled in Mixer::processBlock
+    try {
+        mixer.processBlock(buffer);
+    } catch (const std::exception& e) {
+        DBG("AudioProcessor: Mixer processing error - " + juce::String(e.what()));
+        // Apply emergency volume reduction to prevent damage
+        buffer.applyGain(0.1f);
+    }
+
+    // Send MIDI output with null-pointer safety
+    if (midiOutput != nullptr && midiMessages.getNumEvents() > 0) {
+        try {
+            midiOutput->sendBlockOfMessages(midiMessages, juce::Time::getMillisecondCounterHiRes(), sampleRate);
+        } catch (const std::exception& e) {
+            DBG("AudioProcessor: MIDI output error - " + juce::String(e.what()));
+        }
     }
 }
 
@@ -560,37 +757,94 @@ bool OTTOAudioProcessor::hasEditor() const {
 }
 
 juce::AudioProcessorEditor* OTTOAudioProcessor::createEditor() {
-    return new OTTOAudioProcessorEditor(*this);
+    // Null-pointer safety: Safely create editor with exception handling
+    try {
+        auto* editor = new OTTOAudioProcessorEditor(*this);
+        if (editor != nullptr) {
+            DBG("AudioProcessor: Successfully created editor");
+            return editor;
+        } else {
+            DBG("AudioProcessor: Failed to create editor - null pointer returned");
+            return nullptr;
+        }
+    } catch (const std::exception& e) {
+        DBG("AudioProcessor: Exception creating editor - " + juce::String(e.what()));
+        return nullptr;
+    } catch (...) {
+        DBG("AudioProcessor: Unknown exception creating editor");
+        return nullptr;
+    }
 }
 
 void OTTOAudioProcessor::saveStates(ComponentState& state) {
-    if (auto* tempoParam = parameters.getRawParameterValue("tempo")) {
-        state.globalSettings.tempo = INIConfig::clampTempo(static_cast<int>(*tempoParam));
-    }
-
-    if (auto* masterVolParam = parameters.getRawParameterValue("masterVolume")) {
-        state.sliderValues["masterVolume"] = INIConfig::clampVolume(*masterVolParam);
-    }
-
-    if (auto* swingParam = parameters.getRawParameterValue("swing")) {
-        state.sliderValues["swing"] = INIConfig::clampSwing(*swingParam);
-    }
-
-    if (auto* energyParam = parameters.getRawParameterValue("energy")) {
-        state.sliderValues["energy"] = INIConfig::clampEnergy(*energyParam);
-    }
-
-    for (int i = 0; i < 8; ++i) {
-        auto& player = state.playerSettings[i];
-
-        if (auto* volParam = parameters.getRawParameterValue("player" + juce::String(i + 1) + "Volume")) {
-            player.volume = INIConfig::clampVolume(*volParam);
-            player.volumeValue = player.volume;
+    try {
+        // Null-pointer safety: Check each parameter before dereferencing
+        if (auto* tempoParam = parameters.getRawParameterValue("tempo")) {
+            if (tempoParam != nullptr) {
+                float tempoValue = *tempoParam;
+                if (std::isfinite(tempoValue)) {
+                    state.globalSettings.tempo = INIConfig::clampTempo(static_cast<int>(tempoValue));
+                } else {
+                    DBG("AudioProcessor: Invalid tempo value, using default");
+                    state.globalSettings.tempo = INIConfig::Defaults::DEFAULT_TEMPO;
+                }
+            }
+        } else {
+            DBG("AudioProcessor: Tempo parameter not found, using default");
+            state.globalSettings.tempo = INIConfig::Defaults::DEFAULT_TEMPO;
         }
 
-        if (auto* panParam = parameters.getRawParameterValue("player" + juce::String(i + 1) + "Pan")) {
-            player.pan = INIConfig::clampPan(*panParam);
+        if (auto* masterVolParam = parameters.getRawParameterValue("masterVolume")) {
+            if (masterVolParam != nullptr && std::isfinite(*masterVolParam)) {
+                state.sliderValues["masterVolume"] = INIConfig::clampVolume(*masterVolParam);
+            } else {
+                state.sliderValues["masterVolume"] = INIConfig::Defaults::VOLUME;
+            }
         }
+
+        if (auto* swingParam = parameters.getRawParameterValue("swing")) {
+            if (swingParam != nullptr && std::isfinite(*swingParam)) {
+                state.sliderValues["swing"] = INIConfig::clampSwing(*swingParam);
+            } else {
+                state.sliderValues["swing"] = INIConfig::Defaults::SWING;
+            }
+        }
+
+        if (auto* energyParam = parameters.getRawParameterValue("energy")) {
+            if (energyParam != nullptr && std::isfinite(*energyParam)) {
+                state.sliderValues["energy"] = INIConfig::clampEnergy(*energyParam);
+            } else {
+                state.sliderValues["energy"] = INIConfig::Defaults::ENERGY;
+            }
+        }
+
+        // Null-pointer safety: Validate player settings array bounds
+        for (int i = 0; i < juce::jmin(8, INIConfig::Defaults::MAX_PLAYERS); ++i) {
+            auto& player = state.playerSettings[i];
+
+            if (auto* volParam = parameters.getRawParameterValue("player" + juce::String(i + 1) + "Volume")) {
+                if (volParam != nullptr && std::isfinite(*volParam)) {
+                    player.volume = INIConfig::clampVolume(*volParam);
+                    player.volumeValue = player.volume;
+                } else {
+                    player.volume = INIConfig::Defaults::VOLUME;
+                    player.volumeValue = player.volume;
+                }
+            }
+
+            if (auto* panParam = parameters.getRawParameterValue("player" + juce::String(i + 1) + "Pan")) {
+                if (panParam != nullptr && std::isfinite(*panParam)) {
+                    player.pan = INIConfig::clampPan(*panParam);
+                } else {
+                    player.pan = 0.0f;
+                }
+            }
+        }
+    } catch (const std::exception& e) {
+        DBG("AudioProcessor: Exception in saveStates - " + juce::String(e.what()));
+        // Set safe defaults on error
+        state.globalSettings.tempo = INIConfig::Defaults::DEFAULT_TEMPO;
+        state.sliderValues["masterVolume"] = INIConfig::Defaults::VOLUME;
     }
 
     state.audioSettings.midiInputDevice = currentMidiInput;

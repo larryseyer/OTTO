@@ -2,6 +2,7 @@
 #include <JuceHeader.h>
 #include "Mixer.h"
 #include "INIConfig.h"
+#include "ErrorHandling.h"
 
 class SFZEngine;
 
@@ -39,19 +40,28 @@ public:
     AutoMixAssistant(Mixer& mixerRef, SFZEngine& sfzEngineRef);
     ~AutoMixAssistant();
 
-    MixSuggestion analyzeMix();
-    void applyMixSuggestion(const MixSuggestion& suggestion, float blendAmount = INIConfig::Validation::MAX_VOLUME);
+    // Exception-safe main methods
+    MixSuggestion analyzeMix() noexcept;
+    bool applyMixSuggestion(const MixSuggestion& suggestion, float blendAmount = INIConfig::Validation::MAX_VOLUME) noexcept;
 
-    MixPreset getCurrentMixAsPreset(const juce::String& name);
-    void loadMixPreset(const MixPreset& preset);
+    MixPreset getCurrentMixAsPreset(const juce::String& name) noexcept;
+    bool loadMixPreset(const MixPreset& preset) noexcept;
 
-    float analyzeMixBalance();
-    void createSpace();
-    void preventFrequencyMasking();
-    void applyGenreSpecificMixing(const juce::String& genre);
-    void optimizeHeadroom();
-    void adaptMixToRoom(const RoomAnalysis& roomAnalysis);
-    void learnFromUserAdjustments();
+    float analyzeMixBalance() noexcept;
+    bool createSpace() noexcept;
+    bool preventFrequencyMasking() noexcept;
+    bool applyGenreSpecificMixing(const juce::String& genre) noexcept;
+    bool optimizeHeadroom() noexcept;
+    bool adaptMixToRoom(const RoomAnalysis& roomAnalysis) noexcept;
+    bool learnFromUserAdjustments() noexcept;
+    
+    // Error state and recovery methods
+    bool hasError() const noexcept { return hasInternalError; }
+    juce::String getLastError() const noexcept { return lastErrorMessage; }
+    void clearError() noexcept { hasInternalError = false; lastErrorMessage.clear(); }
+    
+    // Fallback methods
+    MixSuggestion createFallbackSuggestion() const noexcept;
 
     juce::Array<MixPreset> getPresets() const { return mixPresets; }
 
@@ -59,6 +69,10 @@ private:
     Mixer& mixer;
     SFZEngine& sfzEngine;
     juce::Array<MixPreset> mixPresets;
+    
+    // Error state management
+    mutable bool hasInternalError = false;
+    mutable juce::String lastErrorMessage;
 
     struct MixAnalysis {
         struct FrequencyBalance {
@@ -81,12 +95,16 @@ private:
     UserPreferences userPreferences;
     juce::Array<MixPreset> userAdjustmentHistory;
 
-    void initializePresets();
-    MixAnalysis analyzeCurrentMix();
-    MixSuggestion generateSuggestions(const MixAnalysis& analysis);
-    float calculateConfidence(const MixAnalysis& analysis);
-    float calculateStereoWidth();
-    float calculateDynamicRange();
+    // Exception-safe internal methods
+    void initializePresets() noexcept;
+    MixAnalysis analyzeCurrentMix() noexcept;
+    MixSuggestion generateSuggestions(const MixAnalysis& analysis) noexcept;
+    float calculateConfidence(const MixAnalysis& analysis) const noexcept;
+    float calculateStereoWidth() const noexcept;
+    float calculateDynamicRange() const noexcept;
+    
+    // Error handling utilities
+    void setError(const juce::String& message) const noexcept;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AutoMixAssistant)
 };

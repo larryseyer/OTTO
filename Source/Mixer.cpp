@@ -1,6 +1,7 @@
 #include "Mixer.h"
 #include <cmath>
 #include "INIConfig.h"
+#include "ErrorHandling.h"
 
 Mixer::Mixer() {
     loadDefaultPresets();
@@ -94,79 +95,151 @@ void Mixer::reset() {
 }
 
 void Mixer::processBlock(juce::AudioBuffer<float>& buffer) {
+    // Null-pointer safety: Validate buffer integrity
+    if (buffer.getNumChannels() == 0 || buffer.getNumSamples() == 0) {
+        DBG("Mixer: Invalid buffer dimensions - channels: " + juce::String(buffer.getNumChannels()) + 
+            ", samples: " + juce::String(buffer.getNumSamples()));
+        return;
+    }
+
+    // Null-pointer safety: Check for valid buffer data
+    for (int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+        if (buffer.getReadPointer(ch) == nullptr) {
+            DBG("Mixer: Null buffer data pointer for channel " + juce::String(ch));
+            return;
+        }
+    }
+
     const int numSamples = buffer.getNumSamples();
 
-    sendBuffer.clear();
-    reverbBuffer.clear();
-    delayBuffer.clear();
+    try {
+        // Null-pointer safety: Clear buffers with error handling
+        ErrorHandler::safeExecute([&]() {
+            sendBuffer.clear();
+            reverbBuffer.clear();
+            delayBuffer.clear();
+        }, "Mixer buffer clearing");
 
-    bool hasSolo = anySolo();
+        bool hasSolo = anySolo();
 
-    for (int ch = 0; ch < NUM_CHANNELS; ++ch) {
-        if (channelStates[ch].mute.load()) continue;
-        if (hasSolo && !channelStates[ch].solo.load()) continue;
+        // Null-pointer safety: Validate channel count
+        int safeChannelCount = juce::jmin(NUM_CHANNELS, static_cast<int>(channelStates.size()));
+        
+        for (int ch = 0; ch < safeChannelCount; ++ch) {
+            // Null-pointer safety: Validate channel state access
+            if (ch >= static_cast<int>(channelStates.size())) {
+                DBG("Mixer: Channel index out of bounds: " + juce::String(ch));
+                break;
+            }
 
-        juce::AudioBuffer<float> channelBuffer(2, numSamples);
+            if (channelStates[ch].mute.load()) continue;
+            if (hasSolo && !channelStates[ch].solo.load()) continue;
 
-        if (buffer.getNumChannels() > ch) {
-            channelBuffer.copyFrom(0, 0, buffer, ch, 0, numSamples);
-            channelBuffer.copyFrom(1, 0, buffer, ch, 0, numSamples);
+            // Null-pointer safety: Create channel buffer with validation
+            try {
+                juce::AudioBuffer<float> channelBuffer(2, numSamples);
+
+                if (buffer.getNumChannels() > ch && ch >= 0) {
+                    // Null-pointer safety: Validate buffer copying
+                    if (channelBuffer.getNumChannels() >= 2 && 
+                        channelBuffer.getNumSamples() >= numSamples) {
+                        
+                        channelBuffer.copyFrom(0, 0, buffer, ch, 0, numSamples);
+                        channelBuffer.copyFrom(1, 0, buffer, ch, 0, numSamples);
+                    } else {
+                        DBG("Mixer: Invalid channel buffer dimensions");
+                        continue;
+                    }
+                }
+
+                // Null-pointer safety: Process channel with error handling
+                ErrorHandler::safeExecute([&]() {
+                    processChannel(ch, channelBuffer);
+                }, "Mixer channel processing");
+
+                // Null-pointer safety: Validate send array bounds
+                if (static_cast<size_t>(ch) < channelStates.size() &&
+                    static_cast<int>(SendType::Reverb) < static_cast<int>(channelStates[ch].sends.size()) &&
+                    static_cast<int>(SendType::Delay) < static_cast<int>(channelStates[ch].sends.size())) {
+                    
+                    float reverbSend = channelStates[ch].sends[static_cast<int>(SendType::Reverb)].load();
+                    float delaySend = channelStates[ch].sends[static_cast<int>(SendType::Delay)].load();
+                    
+                    // Validate send values
+                    if (std::isfinite(reverbSend) && std::isfinite(delaySend)) {
+                        // Process send effects
+                        if (reverbSend > 0.0f) {
+                            reverbBuffer.addFrom(0, 0, channelBuffer, 0, 0, numSamples, reverbSend);
+                            reverbBuffer.addFrom(1, 0, channelBuffer, 1, 0, numSamples, reverbSend);
+                        }
+
+                        if (delaySend > 0.0f) {
+                            delayBuffer.addFrom(0, 0, channelBuffer, 0, 0, numSamples, delaySend);
+                            delayBuffer.addFrom(1, 0, channelBuffer, 1, 0, numSamples, delaySend);
+                        }
+                        
+                        // Mix channel into main buffer
+                        if (ch == 0) {
+                            buffer.copyFrom(0, 0, channelBuffer, 0, 0, numSamples);
+                            buffer.copyFrom(1, 0, channelBuffer, 1, 0, numSamples);
+                        } else {
+                            buffer.addFrom(0, 0, channelBuffer, 0, 0, numSamples);
+                            buffer.addFrom(1, 0, channelBuffer, 1, 0, numSamples);
+                        }
+
+                        updateMetering(ch, channelBuffer);
+                    } else {
+                        DBG("Mixer: Invalid send values for channel " + juce::String(ch));
+                    }
+                } else {
+                    DBG("Mixer: Invalid send array access for channel " + juce::String(ch));
+                }
+            } catch (const std::exception& e) {
+                DBG("Mixer: Exception in channel processing - " + juce::String(e.what()));
+            }
         }
 
-        processChannel(ch, channelBuffer);
-
-        float reverbSend = channelStates[ch].sends[static_cast<int>(SendType::Reverb)].load();
-        float delaySend = channelStates[ch].sends[static_cast<int>(SendType::Delay)].load();
-
-        if (reverbSend > 0.0f) {
-            reverbBuffer.addFrom(0, 0, channelBuffer, 0, 0, numSamples, reverbSend);
-            reverbBuffer.addFrom(1, 0, channelBuffer, 1, 0, numSamples, reverbSend);
+        // Process global effects
+        if (reverbState.enabled.load()) {
+            processReverb(reverbBuffer);
+            buffer.addFrom(0, 0, reverbBuffer, 0, 0, numSamples);
+            buffer.addFrom(1, 0, reverbBuffer, 1, 0, numSamples);
         }
 
-        if (delaySend > 0.0f) {
-            delayBuffer.addFrom(0, 0, channelBuffer, 0, 0, numSamples, delaySend);
-            delayBuffer.addFrom(1, 0, channelBuffer, 1, 0, numSamples, delaySend);
+        if (delayState.enabled.load()) {
+            processDelay(delayBuffer);
+            buffer.addFrom(0, 0, delayBuffer, 0, 0, numSamples);
+            buffer.addFrom(1, 0, delayBuffer, 1, 0, numSamples);
         }
 
-        if (ch == 0) {
-            buffer.copyFrom(0, 0, channelBuffer, 0, 0, numSamples);
-            buffer.copyFrom(1, 0, channelBuffer, 1, 0, numSamples);
+        if (compressorState.enabled.load()) {
+            processCompressor(buffer);
+        }
+
+        if (distortionState.enabled.load()) {
+            processDistortion(buffer);
+        }
+
+        // Apply master volume
+        float masterVol = masterState.volume.load();
+        if (std::isfinite(masterVol) && masterVol >= 0.0f) {
+            buffer.applyGain(masterVol);
         } else {
-            buffer.addFrom(0, 0, channelBuffer, 0, 0, numSamples);
-            buffer.addFrom(1, 0, channelBuffer, 1, 0, numSamples);
+            DBG("Mixer: Invalid master volume, applying safety gain");
+            buffer.applyGain(0.5f);
         }
 
-        updateMetering(ch, channelBuffer);
+        if (masterState.limiterEnabled.load()) {
+            processLimiter(buffer);
+        }
+
+        updateMasterMetering(buffer);
+        
+    } catch (const std::exception& e) {
+        DBG("Mixer: Critical exception in processBlock - " + juce::String(e.what()));
+        // Emergency: Clear buffer to prevent audio artifacts
+        buffer.clear();
     }
-
-    if (reverbState.enabled.load()) {
-        processReverb(reverbBuffer);
-        buffer.addFrom(0, 0, reverbBuffer, 0, 0, numSamples);
-        buffer.addFrom(1, 0, reverbBuffer, 1, 0, numSamples);
-    }
-
-    if (delayState.enabled.load()) {
-        processDelay(delayBuffer);
-        buffer.addFrom(0, 0, delayBuffer, 0, 0, numSamples);
-        buffer.addFrom(1, 0, delayBuffer, 1, 0, numSamples);
-    }
-
-    if (compressorState.enabled.load()) {
-        processCompressor(buffer);
-    }
-
-    if (distortionState.enabled.load()) {
-        processDistortion(buffer);
-    }
-
-    float masterVol = masterState.volume.load();
-    buffer.applyGain(masterVol);
-
-    if (masterState.limiterEnabled.load()) {
-        processLimiter(buffer);
-    }
-
-    updateMasterMetering(buffer);
 }
 
 void Mixer::processChannel(int channel, juce::AudioBuffer<float>& buffer) {

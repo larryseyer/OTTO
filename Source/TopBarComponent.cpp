@@ -212,9 +212,9 @@ void TopBarComponent::showCloudMenu() {
 }
 
 void TopBarComponent::showCloudAuthDialog() {
-    auto* window = new juce::DialogWindow("Cloud Sign In",
-                                         colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
-                                         true);
+    auto window = std::make_unique<juce::DialogWindow>("Cloud Sign In",
+                                                      colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
+                                                      true);
 
     class AuthContent : public juce::Component {
     public:
@@ -255,33 +255,38 @@ void TopBarComponent::showCloudAuthDialog() {
         }
     };
 
-    auto* content = new AuthContent(colorScheme);
+    auto content = std::make_unique<AuthContent>(colorScheme);
     content->setSize(INIConfig::LayoutConstants::authDialogWidth, INIConfig::LayoutConstants::authDialogHeight);
 
-    content->signInButton.onClick = [this, window, content] {
-        cloudAuthenticated = true;
-        cloudUsername = content->emailInput.getText();
-        updateCloudButtonVisuals();
-        window->exitModalState(1);
-        delete window;
+    // Capture raw pointer for lambda - window will manage its own lifetime
+    auto* windowPtr = window.get();
+    
+    content->signInButton.onClick = [this, windowPtr] {
+        if (auto* contentPtr = dynamic_cast<AuthContent*>(windowPtr->getContentComponent())) {
+            cloudAuthenticated = true;
+            cloudUsername = contentPtr->emailInput.getText();
+            updateCloudButtonVisuals();
+        }
+        windowPtr->exitModalState(1);
         notifyStateChanged();
     };
 
-    content->cancelButton.onClick = [window] {
-        window->exitModalState(0);
-        delete window;
+    content->cancelButton.onClick = [windowPtr] {
+        windowPtr->exitModalState(0);
     };
 
-    window->setContentOwned(content, false);
+    window->setContentOwned(content.release(), true); // Transfer ownership to window
     window->centreWithSize(INIConfig::LayoutConstants::authDialogWidth, INIConfig::LayoutConstants::authDialogHeight);
     window->setVisible(true);
-    window->enterModalState(true);
+    
+    // JUCE automatically manages modal window lifecycle - release from smart pointer
+    window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
 
 void TopBarComponent::shareCurrentPattern() {
-    auto* window = new juce::DialogWindow("Share Pattern",
-                                         colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
-                                         true);
+    auto window = std::make_unique<juce::DialogWindow>("Share Pattern",
+                                                      colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
+                                                      true);
 
     class ShareContent : public juce::Component {
     public:
@@ -335,24 +340,27 @@ void TopBarComponent::shareCurrentPattern() {
         }
     };
 
-    auto* content = new ShareContent(colorScheme);
+    auto content = std::make_unique<ShareContent>(colorScheme);
     content->setSize(INIConfig::LayoutConstants::shareDialogWidth, INIConfig::LayoutConstants::shareDialogHeight);
 
-    content->shareButton.onClick = [this, window] {
-        window->exitModalState(1);
-        delete window;
+    // Capture raw pointer for lambda - window will manage its own lifetime
+    auto* windowPtr = window.get();
+    
+    content->shareButton.onClick = [this, windowPtr] {
+        windowPtr->exitModalState(1);
         showShareSuccessMessage();
     };
 
-    content->cancelButton.onClick = [window] {
-        window->exitModalState(0);
-        delete window;
+    content->cancelButton.onClick = [windowPtr] {
+        windowPtr->exitModalState(0);
     };
 
-    window->setContentOwned(content, false);
+    window->setContentOwned(content.release(), true);
     window->centreWithSize(INIConfig::LayoutConstants::shareDialogWidth, INIConfig::LayoutConstants::shareDialogHeight);
     window->setVisible(true);
-    window->enterModalState(true);
+    
+    // JUCE automatically manages modal window lifecycle - release from smart pointer
+    window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
 
 void TopBarComponent::shareCurrentDrumKit() {
@@ -362,9 +370,9 @@ void TopBarComponent::shareCurrentDrumKit() {
 }
 
 void TopBarComponent::startCollaborationSession() {
-    auto* window = new juce::DialogWindow("Start Collaboration",
-                                         colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
-                                         true);
+    auto window = std::make_unique<juce::DialogWindow>("Start Collaboration",
+                                                      colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
+                                                      true);
 
     class CollabContent : public juce::Component {
     public:
@@ -397,33 +405,38 @@ void TopBarComponent::startCollaborationSession() {
         }
     };
 
-    auto* content = new CollabContent(colorScheme);
+    auto content = std::make_unique<CollabContent>(colorScheme);
     content->setSize(INIConfig::LayoutConstants::collabDialogWidth, INIConfig::LayoutConstants::collabDialogHeight);
 
-    content->startButton.onClick = [this, window, content] {
-        collaborationActive = true;
-        collaborationSessionName = content->nameInput.getText();
-        updateCloudButtonVisuals();
-        window->exitModalState(1);
-        delete window;
+    // Capture raw pointer for lambda - window will manage its own lifetime
+    auto* windowPtr = window.get();
+    
+    content->startButton.onClick = [this, windowPtr] {
+        if (auto* contentPtr = dynamic_cast<CollabContent*>(windowPtr->getContentComponent())) {
+            collaborationActive = true;
+            collaborationSessionName = contentPtr->nameInput.getText();
+            updateCloudButtonVisuals();
+        }
+        windowPtr->exitModalState(1);
         showCollaborationCode();
     };
 
-    content->cancelButton.onClick = [window] {
-        window->exitModalState(0);
-        delete window;
+    content->cancelButton.onClick = [windowPtr] {
+        windowPtr->exitModalState(0);
     };
 
-    window->setContentOwned(content, false);
+    window->setContentOwned(content.release(), true);
     window->centreWithSize(INIConfig::LayoutConstants::collabDialogWidth, INIConfig::LayoutConstants::collabDialogHeight);
     window->setVisible(true);
-    window->enterModalState(true);
+    
+    // JUCE automatically manages modal window lifecycle - release from smart pointer
+    window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
 
 void TopBarComponent::joinCollaborationSession() {
-    auto* window = new juce::DialogWindow("Join Collaboration",
-                                         colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
-                                         true);
+    auto window = std::make_unique<juce::DialogWindow>("Join Collaboration",
+                                                      colorScheme.getColor(ColorScheme::ColorRole::WindowBackground),
+                                                      true);
 
     class JoinContent : public juce::Component {
     public:
@@ -456,26 +469,31 @@ void TopBarComponent::joinCollaborationSession() {
         }
     };
 
-    auto* content = new JoinContent(colorScheme);
+    auto content = std::make_unique<JoinContent>(colorScheme);
     content->setSize(INIConfig::LayoutConstants::collabDialogWidth, INIConfig::LayoutConstants::collabDialogHeight);
 
-    content->joinButton.onClick = [this, window, content] {
-        collaborationActive = true;
-        collaborationSessionName = "Session " + content->codeInput.getText();
-        updateCloudButtonVisuals();
-        window->exitModalState(1);
-        delete window;
+    // Capture raw pointer for lambda - window will manage its own lifetime
+    auto* windowPtr = window.get();
+    
+    content->joinButton.onClick = [this, windowPtr] {
+        if (auto* contentPtr = dynamic_cast<JoinContent*>(windowPtr->getContentComponent())) {
+            collaborationActive = true;
+            collaborationSessionName = "Session " + contentPtr->codeInput.getText();
+            updateCloudButtonVisuals();
+        }
+        windowPtr->exitModalState(1);
     };
 
-    content->cancelButton.onClick = [window] {
-        window->exitModalState(0);
-        delete window;
+    content->cancelButton.onClick = [windowPtr] {
+        windowPtr->exitModalState(0);
     };
 
-    window->setContentOwned(content, false);
+    window->setContentOwned(content.release(), true);
     window->centreWithSize(INIConfig::LayoutConstants::collabDialogWidth, INIConfig::LayoutConstants::collabDialogHeight);
     window->setVisible(true);
-    window->enterModalState(true);
+    
+    // JUCE automatically manages modal window lifecycle - release from smart pointer
+    window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
 
 void TopBarComponent::leaveCollaborationSession() {

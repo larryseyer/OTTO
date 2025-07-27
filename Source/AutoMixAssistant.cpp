@@ -4,47 +4,89 @@
 
 AutoMixAssistant::AutoMixAssistant(Mixer& mixerRef, SFZEngine& sfzEngineRef)
     : mixer(mixerRef), sfzEngine(sfzEngineRef) {
-    initializePresets();
+    try {
+        initializePresets();
+    } catch (const std::exception& e) {
+        setError("Failed to initialize AutoMixAssistant: " + juce::String(e.what()));
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Critical,
+            "AutoMixAssistant initialization failed", "AutoMixAssistant");
+    } catch (...) {
+        setError("Unknown error during AutoMixAssistant initialization");
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Critical,
+            "Unknown AutoMixAssistant initialization error", "AutoMixAssistant");
+    }
 }
 
 AutoMixAssistant::~AutoMixAssistant() {
 }
 
-AutoMixAssistant::MixSuggestion AutoMixAssistant::analyzeMix() {
-    MixSuggestion suggestion;
+AutoMixAssistant::MixSuggestion AutoMixAssistant::analyzeMix() noexcept {
+    clearError();
+    
+    try {
+        MixSuggestion suggestion;
 
-    auto analysis = analyzeCurrentMix();
+        auto analysis = analyzeCurrentMix();
+        suggestion = generateSuggestions(analysis);
+        suggestion.confidence = calculateConfidence(analysis);
 
-    suggestion = generateSuggestions(analysis);
-
-    suggestion.confidence = calculateConfidence(analysis);
-
-    return suggestion;
-}
-
-void AutoMixAssistant::applyMixSuggestion(const MixSuggestion& suggestion, float blendAmount) {
-    for (int channel = 0; channel < INIConfig::Defaults::MAX_PLAYERS; ++channel) {
-        float currentVolume = mixer.getChannelVolume(channel);
-        float targetVolume = suggestion.channelVolumes[channel];
-        float blendedVolume = currentVolume + (targetVolume - currentVolume) * blendAmount;
-        mixer.setChannelVolume(channel, blendedVolume);
-
-        float currentPan = mixer.getChannelPan(channel);
-        float targetPan = suggestion.channelPans[channel];
-        float blendedPan = currentPan + (targetPan - currentPan) * blendAmount;
-        mixer.setChannelPan(channel, blendedPan);
-
-        for (int band = 0; band < 3; ++band) {
-            float currentGain = mixer.getChannelEQ(channel, static_cast<Mixer::EQBand>(band));
-            float targetGain = suggestion.eqSettings[channel][band];
-            float blendedGain = currentGain + (targetGain - currentGain) * blendAmount;
-            mixer.setChannelEQ(channel, static_cast<Mixer::EQBand>(band), blendedGain);
-        }
-
+        return suggestion;
+        
+    } catch (const std::exception& e) {
+        setError("Exception in analyzeMix: " + juce::String(e.what()));
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "analyzeMix failed: " + juce::String(e.what()), "AutoMixAssistant");
+        return createFallbackSuggestion();
+    } catch (...) {
+        setError("Unknown error in analyzeMix");
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Unknown error in analyzeMix", "AutoMixAssistant");
+        return createFallbackSuggestion();
     }
 }
 
-AutoMixAssistant::MixPreset AutoMixAssistant::getCurrentMixAsPreset(const juce::String& name) {
+bool AutoMixAssistant::applyMixSuggestion(const MixSuggestion& suggestion, float blendAmount) noexcept {
+    clearError();
+    
+    try {
+        // Sanitize blend amount
+        float sanitizedBlend = juce::jlimit(0.0f, 1.0f, blendAmount);
+        
+        for (int channel = 0; channel < INIConfig::Defaults::MAX_PLAYERS; ++channel) {
+            float currentVolume = mixer.getChannelVolume(channel);
+            float targetVolume = suggestion.channelVolumes[channel];
+            float blendedVolume = currentVolume + (targetVolume - currentVolume) * sanitizedBlend;
+            mixer.setChannelVolume(channel, blendedVolume);
+
+            float currentPan = mixer.getChannelPan(channel);
+            float targetPan = suggestion.channelPans[channel];
+            float blendedPan = currentPan + (targetPan - currentPan) * sanitizedBlend;
+            mixer.setChannelPan(channel, blendedPan);
+
+            for (int band = 0; band < 3; ++band) {
+                float currentGain = mixer.getChannelEQ(channel, static_cast<Mixer::EQBand>(band));
+                float targetGain = suggestion.eqSettings[channel][band];
+                float blendedGain = currentGain + (targetGain - currentGain) * sanitizedBlend;
+                mixer.setChannelEQ(channel, static_cast<Mixer::EQBand>(band), blendedGain);
+            }
+        }
+        
+        return true;
+        
+    } catch (const std::exception& e) {
+        setError("Exception in applyMixSuggestion: " + juce::String(e.what()));
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "applyMixSuggestion failed: " + juce::String(e.what()), "AutoMixAssistant");
+        return false;
+    } catch (...) {
+        setError("Unknown error in applyMixSuggestion");
+        ErrorHandler::getInstance().reportError(ErrorHandler::ErrorLevel::Error,
+            "Unknown error in applyMixSuggestion", "AutoMixAssistant");
+        return false;
+    }
+}
+
+AutoMixAssistant::MixPreset AutoMixAssistant::getCurrentMixAsPreset(const juce::String& name) noexcept {
     MixPreset preset;
     preset.name = name;
     preset.createdTime = juce::Time::getCurrentTime();
@@ -71,7 +113,7 @@ AutoMixAssistant::MixPreset AutoMixAssistant::getCurrentMixAsPreset(const juce::
     return preset;
 }
 
-void AutoMixAssistant::loadMixPreset(const MixPreset& preset) {
+bool AutoMixAssistant::loadMixPreset(const MixPreset& preset) noexcept {
     for (int channel = 0; channel < INIConfig::Defaults::MAX_PLAYERS; ++channel) {
         mixer.setChannelVolume(channel, preset.channelVolumes[channel]);
         mixer.setChannelPan(channel, preset.channelPans[channel]);
@@ -87,9 +129,10 @@ void AutoMixAssistant::loadMixPreset(const MixPreset& preset) {
     }
 
     mixer.setMasterVolume(preset.masterVolume);
+    return true;
 }
 
-float AutoMixAssistant::analyzeMixBalance() {
+float AutoMixAssistant::analyzeMixBalance() noexcept {
     float leftSum = 0.0f;
     float rightSum = 0.0f;
     int activeChannels = 0;
@@ -116,7 +159,7 @@ float AutoMixAssistant::analyzeMixBalance() {
     return balance;
 }
 
-void AutoMixAssistant::createSpace() {
+bool AutoMixAssistant::createSpace() noexcept {
     struct ChannelFreqInfo {
         int channel;
         float lowEnergy;
@@ -166,9 +209,10 @@ void AutoMixAssistant::createSpace() {
             }
         }
     }
+    return true;
 }
 
-void AutoMixAssistant::preventFrequencyMasking() {
+bool AutoMixAssistant::preventFrequencyMasking() noexcept {
 
     for (int ch1 = 0; ch1 < INIConfig::Defaults::MAX_PLAYERS - 1; ++ch1) {
         if (mixer.isChannelMuted(ch1)) continue;
@@ -202,9 +246,10 @@ void AutoMixAssistant::preventFrequencyMasking() {
             }
         }
     }
+    return true;
 }
 
-void AutoMixAssistant::applyGenreSpecificMixing(const juce::String& genre) {
+bool AutoMixAssistant::applyGenreSpecificMixing(const juce::String& genre) noexcept {
     if (genre == "Rock") {
         for (int ch = 0; ch < INIConfig::Defaults::MAX_PLAYERS; ++ch) {
             if (ch < 2) {
@@ -232,9 +277,10 @@ void AutoMixAssistant::applyGenreSpecificMixing(const juce::String& genre) {
             mixer.setChannelEQ(ch, Mixer::EQBand::High, 0.0f);
         }
     }
+    return true;
 }
 
-void AutoMixAssistant::optimizeHeadroom() {
+bool AutoMixAssistant::optimizeHeadroom() noexcept {
     float peakLevel = 0.0f;
 
     for (int channel = 0; channel < INIConfig::Defaults::MAX_PLAYERS; ++channel) {
@@ -254,9 +300,10 @@ void AutoMixAssistant::optimizeHeadroom() {
             mixer.setChannelVolume(channel, currentVolume * reductionFactor);
         }
     }
+    return true;
 }
 
-void AutoMixAssistant::initializePresets() {
+void AutoMixAssistant::initializePresets() noexcept {
     MixPreset balanced;
     balanced.name = "Balanced";
     balanced.type = "Default";
@@ -277,7 +324,7 @@ void AutoMixAssistant::initializePresets() {
 
 }
 
-AutoMixAssistant::MixAnalysis AutoMixAssistant::analyzeCurrentMix() {
+AutoMixAssistant::MixAnalysis AutoMixAssistant::analyzeCurrentMix() noexcept {
     MixAnalysis analysis;
 
     for (int ch = 0; ch < INIConfig::Defaults::MAX_PLAYERS; ++ch) {
@@ -319,7 +366,7 @@ AutoMixAssistant::MixAnalysis AutoMixAssistant::analyzeCurrentMix() {
     return analysis;
 }
 
-AutoMixAssistant::MixSuggestion AutoMixAssistant::generateSuggestions(const MixAnalysis& analysis) {
+AutoMixAssistant::MixSuggestion AutoMixAssistant::generateSuggestions(const MixAnalysis& analysis) noexcept {
     MixSuggestion suggestion;
 
     float idealLow = 0.4f;
@@ -387,7 +434,7 @@ AutoMixAssistant::MixSuggestion AutoMixAssistant::generateSuggestions(const MixA
     return suggestion;
 }
 
-float AutoMixAssistant::calculateConfidence(const MixAnalysis& analysis) {
+float AutoMixAssistant::calculateConfidence(const MixAnalysis& analysis) const noexcept {
     float confidence = 1.0f;
 
     if (analysis.activeChannels < 3) {
@@ -407,7 +454,7 @@ float AutoMixAssistant::calculateConfidence(const MixAnalysis& analysis) {
     return juce::jmax(0.0f, confidence);
 }
 
-float AutoMixAssistant::calculateStereoWidth() {
+float AutoMixAssistant::calculateStereoWidth() const noexcept {
     float leftSum = 0.0f;
     float rightSum = 0.0f;
     float monoSum = 0.0f;
@@ -432,7 +479,7 @@ float AutoMixAssistant::calculateStereoWidth() {
     return juce::jlimit(0.0f, 1.0f, width);
 }
 
-float AutoMixAssistant::calculateDynamicRange() {
+float AutoMixAssistant::calculateDynamicRange() const noexcept {
     float minLevel = 1.0f;
     float maxLevel = 0.0f;
 
@@ -454,7 +501,7 @@ float AutoMixAssistant::calculateDynamicRange() {
     return juce::jlimit(0.0f, 1.0f, range);
 }
 
-void AutoMixAssistant::adaptMixToRoom(const RoomAnalysis& roomAnalysis) {
+bool AutoMixAssistant::adaptMixToRoom(const RoomAnalysis& roomAnalysis) noexcept {
 
     for (int ch = 0; ch < INIConfig::Defaults::MAX_PLAYERS; ++ch) {
         if (ch < 2) {
@@ -478,9 +525,10 @@ void AutoMixAssistant::adaptMixToRoom(const RoomAnalysis& roomAnalysis) {
             mixer.setChannelPan(ch, currentPan * 0.7f);
         }
     }
+    return true;
 }
 
-void AutoMixAssistant::learnFromUserAdjustments() {
+bool AutoMixAssistant::learnFromUserAdjustments() noexcept {
     MixPreset currentState = getCurrentMixAsPreset("User Adjustment");
 
     if (userAdjustmentHistory.size() > 0) {
@@ -505,4 +553,42 @@ void AutoMixAssistant::learnFromUserAdjustments() {
     if (userAdjustmentHistory.size() > static_cast<int>(INIConfig::LayoutConstants::drumButtonRows * INIConfig::LayoutConstants::drumKitEditorPadColumns)) {
         userAdjustmentHistory.remove(0);
     }
+    return true;
+}
+
+// Exception-safe helper methods implementation
+
+void AutoMixAssistant::setError(const juce::String& message) const noexcept {
+    hasInternalError = true;
+    lastErrorMessage = message;
+}
+
+AutoMixAssistant::MixSuggestion AutoMixAssistant::createFallbackSuggestion() const noexcept {
+    MixSuggestion fallback;
+    
+    try {
+        // Create basic, safe mixing suggestion
+        for (int ch = 0; ch < INIConfig::Defaults::MAX_PLAYERS; ++ch) {
+            fallback.channelVolumes[ch] = 0.7f; // Safe default volume
+            fallback.channelPans[ch] = 0.0f;    // Center panning
+            
+            // Basic EQ - flat response
+            for (int band = 0; band < 3; ++band) {
+                fallback.eqSettings[ch][band] = 0.0f;
+            }
+            
+            // Conservative compression
+            fallback.compressionSettings[ch] = 0.3f;
+        }
+        
+        fallback.confidence = 0.5f; // Medium confidence for fallback
+        fallback.description = "Safe mix settings (fallback)";
+        
+    } catch (...) {
+        // If even fallback creation fails, return empty suggestion
+        fallback.confidence = 0.0f;
+        fallback.description = "Empty mix suggestion";
+    }
+    
+    return fallback;
 }

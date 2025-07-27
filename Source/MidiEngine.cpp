@@ -1,7 +1,7 @@
 #include "MidiEngine.h"
 #include "INIConfig.h"
-#include "MidiFileManager.h"
 #include "ErrorHandling.h"
+#include "MidiFileManager.h"
 
 MidiEngine::MidiEngine() : currentPlayerIndex(0), isPlaying(false), tempo(120.0f), hostTempo(0.0) {
     for (int i = 0; i < INIConfig::Defaults::MAX_PLAYERS; ++i) {
@@ -469,50 +469,135 @@ void MidiEngine::triggerFill(int playerIndex) {
 }
 
 void MidiEngine::processMidiInput(const juce::MidiBuffer& midiMessages) {
-    for (const auto metadata : midiMessages) {
-        const auto message = metadata.getMessage();
-
-        if (message.isController()) {
-            handleMidiCC(message.getChannel(),
-                        message.getControllerNumber(),
-                        message.getControllerValue());
+    try {
+        // Null-pointer safety: Validate MIDI buffer
+        if (midiMessages.getNumEvents() == 0) {
+            return;
         }
+
+        for (const auto metadata : midiMessages) {
+            // Null-pointer safety: Validate MIDI message
+            if (!metadata.data) {
+                continue;
+            }
+
+            const auto message = metadata.getMessage();
+            
+            // Null-pointer safety: Validate message before processing
+            if (message.getRawDataSize() == 0) {
+                continue;
+            }
+
+            if (message.isController()) {
+                // Null-pointer safety: Validate controller values
+                int channel = message.getChannel();
+                int ccNumber = message.getControllerNumber();
+                int value = message.getControllerValue();
+                
+                if (channel >= 1 && channel <= 16 && 
+                    ccNumber >= 0 && ccNumber <= 127 &&
+                    value >= 0 && value <= 127) {
+                    
+                    ErrorHandler::safeExecute([&]() {
+                        handleMidiCC(channel, ccNumber, value);
+                    }, "MidiEngine MIDI CC handling");
+                } else {
+                    DBG("MidiEngine: Invalid MIDI CC values - channel: " + 
+                        juce::String(channel) + ", CC: " + juce::String(ccNumber) + 
+                        ", value: " + juce::String(value));
+                }
+            }
+        }
+    } catch (const std::exception& e) {
+        DBG("MidiEngine: Exception in processMidiInput - " + juce::String(e.what()));
     }
 }
 
 void MidiEngine::handleMidiCC(int channel, int ccNumber, int value) {
-    if (midiLearnActive && currentLearnParameter.isNotEmpty()) {
-        MidiMapping newMapping;
-        newMapping.ccNumber = ccNumber;
-        newMapping.channel = channel;
-        newMapping.parameterID = currentLearnParameter;
-        newMapping.minValue = 0.0f;
-        newMapping.maxValue = 1.0f;
-        newMapping.enabled = true;
-
-        addMidiMapping(newMapping);
-        midiLearnActive = false;
-        currentLearnParameter.clear();
-
-        if (onMidiLearnComplete) {
-            onMidiLearnComplete(newMapping);
+    try {
+        // Null-pointer safety: Validate input parameters
+        if (channel < 1 || channel > 16 ||
+            ccNumber < 0 || ccNumber > 127 ||
+            value < 0 || value > 127) {
+            DBG("MidiEngine: Invalid MIDI CC parameters - channel: " + 
+                juce::String(channel) + ", CC: " + juce::String(ccNumber) + 
+                ", value: " + juce::String(value));
+            return;
         }
-        return;
-    }
 
-    for (const auto& mapping : midiMappings) {
-        if (mapping.enabled &&
-            mapping.ccNumber == ccNumber &&
-            (mapping.channel == 0 || mapping.channel == channel)) {
+        // Handle MIDI learn mode with null-pointer safety
+        if (midiLearnActive && currentLearnParameter.isNotEmpty()) {
+            MidiMapping newMapping;
+            newMapping.ccNumber = ccNumber;
+            newMapping.channel = channel;
+            newMapping.parameterID = currentLearnParameter;
+            newMapping.minValue = 0.0f;
+            newMapping.maxValue = 1.0f;
+            newMapping.enabled = true;
 
-            float normalizedValue = value / static_cast<float>(INIConfig::LayoutConstants::midiEngineMaxMidiVelocity);
-            float mappedValue = mapping.minValue +
-                               (normalizedValue * (mapping.maxValue - mapping.minValue));
+            ErrorHandler::safeExecute([&]() {
+                addMidiMapping(newMapping);
+            }, "MidiEngine add mapping");
+            
+            midiLearnActive = false;
+            currentLearnParameter.clear();
 
+            // Null-pointer safety: Check callback before calling
+            if (onMidiLearnComplete) {
+                try {
+                    onMidiLearnComplete(newMapping);
+                } catch (const std::exception& e) {
+                    DBG("MidiEngine: Exception in MIDI learn callback - " + juce::String(e.what()));
+                }
+            }
+            return;
+        }
+
+        // Process existing MIDI mappings with null-pointer safety
+        if (midiMappings.isEmpty()) {
+            return;
+        }
+
+        for (const auto& mapping : midiMappings) {
+            // Null-pointer safety: Validate mapping data
+            if (!mapping.enabled ||
+                mapping.ccNumber != ccNumber ||
+                (mapping.channel != 0 && mapping.channel != channel) ||
+                mapping.parameterID.isEmpty()) {
+                continue;
+            }
+
+            // Null-pointer safety: Safe value conversion with bounds checking
+            float maxVelocity = static_cast<float>(INIConfig::LayoutConstants::midiEngineMaxMidiVelocity);
+            if (maxVelocity <= 0.0f) {
+                DBG("MidiEngine: Invalid max MIDI velocity configuration");
+                continue;
+            }
+
+            float normalizedValue = juce::jlimit(0.0f, 1.0f, value / maxVelocity);
+            float valueRange = mapping.maxValue - mapping.minValue;
+            
+            // Validate mapping range
+            if (!std::isfinite(mapping.minValue) || !std::isfinite(mapping.maxValue) ||
+                !std::isfinite(valueRange)) {
+                DBG("MidiEngine: Invalid mapping range for parameter: " + mapping.parameterID);
+                continue;
+            }
+
+            float mappedValue = mapping.minValue + (normalizedValue * valueRange);
+            mappedValue = juce::jlimit(mapping.minValue, mapping.maxValue, mappedValue);
+
+            // Null-pointer safety: Check callback before calling
             if (onMidiParameterChanged) {
-                onMidiParameterChanged(mapping.parameterID, mappedValue);
+                try {
+                    onMidiParameterChanged(mapping.parameterID, mappedValue);
+                } catch (const std::exception& e) {
+                    DBG("MidiEngine: Exception in parameter change callback - " + juce::String(e.what()));
+                }
             }
         }
+    } catch (const std::exception& e) {
+        DBG("MidiEngine: Exception in handleMidiCC - " + juce::String(e.what()));
     }
 }
 

@@ -100,7 +100,7 @@ void ResponsiveIntegrationComponent::setupControls()
     // Info label showing current responsive state
     infoLabel = std::make_unique<juce::Label>("Info", "");
     infoLabel->setJustificationType(juce::Justification::topLeft);
-    infoLabel->setColour(juce::Label::textColourId, colorScheme.getTextColor());
+    infoLabel->setColour(juce::Label::textColourId, colorScheme.getLabelTextColor());
     addAndMakeVisible(*infoLabel);
 }
 
@@ -111,7 +111,7 @@ void ResponsiveIntegrationComponent::paint(juce::Graphics& g)
     g.fillAll(backgroundColor);
     
     // Draw platform-appropriate separators
-    auto separatorColor = colorScheme.getBorderColor();
+    auto separatorColor = colorScheme.getColor(ColorScheme::ColorRole::Separator);
     g.setColour(separatorColor);
     
     // Responsive line thickness
@@ -131,7 +131,7 @@ void ResponsiveIntegrationComponent::paint(juce::Graphics& g)
     if (responsiveManager.getPlatformConfig().hasTouchInput)
     {
         // Show touch indicators
-        g.setColour(colorScheme.getAccentColor().withAlpha(0.3f));
+        g.setColour(colorScheme.getColor(ColorScheme::ColorRole::Accent).withAlpha(0.3f));
         auto cornerRadius = responsiveManager.scaled(8.0f);
         
         for (auto* component : getChildren())
@@ -279,22 +279,22 @@ void ResponsiveIntegrationComponent::applyResponsiveStyles()
         return;
     
     // Apply responsive fonts
-    auto titleFont = fontManager.getFont(FontManager::FontType::Header);
+    auto titleFont = fontManager.getFont(FontManager::FontRole::Header);
     titleLabel->setFont(responsiveManager.scaled(titleFont));
     
-    auto bodyFont = fontManager.getFont(FontManager::FontType::Body);
+    auto bodyFont = fontManager.getFont(FontManager::FontRole::Body);
     infoLabel->setFont(responsiveManager.scaled(bodyFont));
     
     // Update component colors for platform
     titleLabel->setColour(juce::Label::textColourId, 
-                         responsiveManager.adaptColorForPlatform(colorScheme.getTextColor()));
+                         responsiveManager.adaptColorForPlatform(colorScheme.getLabelTextColor()));
     
     // Touch-optimized controls get different styling
     if (touchOptimized)
     {
         // Larger touch targets, different visual feedback
         demoButton->setColour(juce::TextButton::buttonColourId,
-                             responsiveManager.adaptColorForPlatform(colorScheme.getButtonColor()));
+                             responsiveManager.adaptColorForPlatform(colorScheme.getButtonBackgroundColor()));
         
         demoSlider->setColour(juce::Slider::trackColourId,
                              responsiveManager.adaptColorForPlatform(colorScheme.getSliderTrackColor()));

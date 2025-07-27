@@ -13,8 +13,9 @@ ResponsiveMainDemo::ResponsiveMainDemo(FontManager& fontManager, ColorScheme& co
     addAndMakeVisible(*responsiveDemo);
     
     // Create the original main content for comparison
-    originalMainContent = std::make_unique<MainContentComponent>(fontManager, colorScheme);
-    addAndMakeVisible(*originalMainContent);
+    // TODO: Temporarily disabled until proper dependencies are available
+    // originalMainContent = std::make_unique<MainContentComponent>(fontManager, colorScheme);
+    // addAndMakeVisible(*originalMainContent);
     
     // Setup responsive callbacks
     setupResponsiveCallbacks();
@@ -101,27 +102,24 @@ void ResponsiveMainDemo::prepareForPluginHost()
     // Plugin hosts often have limited space
     // Hide demo component in plugin mode for more space
     responsiveDemo->setVisible(false);
-    originalMainContent->setVisible(true);
+    // originalMainContent->setVisible(true);  // Disabled for now
     
     // Use more compact spacing
-    if (auto* constrainer = getConstrainer())
-    {
-        responsiveManager->setupConstrainer(*constrainer);
-    }
+    // TODO: Add constrainer setup when needed
 }
 
 void ResponsiveMainDemo::prepareForStandalone()
 {
     // Show both components side by side for comparison
     responsiveDemo->setVisible(true);
-    originalMainContent->setVisible(true);
+    // originalMainContent->setVisible(true);  // Disabled for now
 }
 
 void ResponsiveMainDemo::prepareForMobile()
 {
     // On mobile, prioritize the responsive demo
     responsiveDemo->setVisible(true);
-    originalMainContent->setVisible(false);
+    // originalMainContent->setVisible(false);  // Disabled for now
     
     // Ensure touch-friendly minimum sizes
     auto minSize = responsiveManager->touchTarget(320);
@@ -139,8 +137,8 @@ void ResponsiveMainDemo::paint(juce::Graphics& g)
     auto indicatorArea = bounds.removeFromTop(responsiveManager->scaled(20))
                               .removeFromRight(responsiveManager->scaled(150));
     
-    g.setColour(colorScheme.getTextColor().withAlpha(0.7f));
-    g.setFont(responsiveManager->scaled(fontManager.getFont(FontManager::FontType::Body).withHeight(12.0f)));
+    g.setColour(colorScheme.getLabelTextColor().withAlpha(0.7f));
+    g.setFont(responsiveManager->scaled(fontManager.getFont(FontManager::FontRole::Body).withHeight(12.0f)));
     
     juce::String platformText;
     switch (responsiveManager->getPlatformConfig().platform)
@@ -165,9 +163,9 @@ void ResponsiveMainDemo::paint(juce::Graphics& g)
     g.drawText(platformText, indicatorArea, juce::Justification::centredRight);
     
     // Draw separator between demo and main content
-    if (responsiveDemo->isVisible() && originalMainContent->isVisible())
+    if (responsiveDemo->isVisible() && originalMainContent && originalMainContent->isVisible())
     {
-        g.setColour(colorScheme.getBorderColor());
+        g.setColour(colorScheme.getColor(ColorScheme::ColorRole::Separator));
         auto separatorX = demoArea.getRight();
         g.fillRect(separatorX, 0, responsiveManager->scaled(1), getHeight());
     }
@@ -198,7 +196,7 @@ void ResponsiveMainDemo::resized()
         case LayoutMode::Desktop:
         default:
             // Split screen for comparison
-            if (responsiveDemo->isVisible() && originalMainContent->isVisible())
+            if (responsiveDemo->isVisible() && originalMainContent && originalMainContent->isVisible())
             {
                 auto demoWidth = bounds.getWidth() / 2;
                 demoArea = bounds.removeFromLeft(demoWidth);
@@ -221,7 +219,7 @@ void ResponsiveMainDemo::resized()
     if (responsiveDemo->isVisible())
         responsiveDemo->setBounds(demoArea);
     
-    if (originalMainContent->isVisible())
+    if (originalMainContent && originalMainContent->isVisible())
         originalMainContent->setBounds(mainContentArea);
     
     // Update responsive manager with new size
@@ -240,6 +238,12 @@ void ResponsiveMainDemo::visibilityChanged()
 
 // ResponsiveApplicationSetup implementation
 std::unique_ptr<PlatformResponsiveManager> ResponsiveApplicationSetup::globalManager;
+
+void ResponsiveApplicationSetup::initializeResponsiveSystem()
+{
+    ResponsiveConfig config;
+    initializeResponsiveSystem(config);
+}
 
 void ResponsiveApplicationSetup::initializeResponsiveSystem(const ResponsiveConfig& config)
 {
@@ -309,9 +313,10 @@ void ResponsiveApplicationSetup::setupPluginEditorForPlatform(juce::AudioProcess
     auto& responsiveManager = getGlobalResponsiveManager();
     
     // Plugin editors have different constraints
-    auto& config = responsiveManager.getPlatformConfig();
+    auto config = responsiveManager.getPlatformConfig();
     config.formFactor = PlatformResponsiveManager::DeviceFormFactor::PluginHost;
     config.supportsWindowResize = true; // Most modern hosts support resizable editors
+    responsiveManager.setPlatformConfig(config);
     
     // Set appropriate size for plugin
     auto optimalBounds = responsiveManager.getOptimalBounds(400, 300);

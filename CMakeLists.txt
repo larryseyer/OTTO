@@ -136,6 +136,13 @@ target_link_libraries(OTTO PRIVATE
 
 # JUCE 8 compile definitions matching ProJucer JUCEOPTIONS
 target_compile_definitions(OTTO PRIVATE
+    # JUCE global header definition (required for JUCE 8)
+    JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+    
+    # Build type definitions
+    $<$<CONFIG:Debug>:DEBUG=1>
+    $<$<CONFIG:Release>:NDEBUG=1>
+    
     # JUCE 8 specific definitions
     JUCE_STRICT_REFCOUNTEDPOINTER=1
     JUCE_VST3_CAN_REPLACE_VST2=0

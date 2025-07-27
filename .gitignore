@@ -42,6 +42,7 @@
 
 # Build directories and artifacts
 build-*/
+build/
 build-macos/
 build-ios-sim/
 cmake-build-*/

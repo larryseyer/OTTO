@@ -73,7 +73,8 @@ public:
         bool enableAccessibilityFeatures = true;
     };
 
-    static void initializeResponsiveSystem(const ResponsiveConfig& config = {});
+    static void initializeResponsiveSystem(const ResponsiveConfig& config);
+    static void initializeResponsiveSystem();
     static PlatformResponsiveManager& getGlobalResponsiveManager();
     static void setupWindowForPlatform(juce::DocumentWindow& window);
     static void setupPluginEditorForPlatform(juce::AudioProcessorEditor& editor);

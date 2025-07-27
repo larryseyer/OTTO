@@ -1,0 +1,139 @@
+# OTTO Phase 2.3.2 - Docker Compose Configuration
+# Manages Linux build containers and cross-platform development
+
+version: '3.8'
+
+#==============================================================================
+# Services Configuration
+#==============================================================================
+
+services:
+  # Main Linux build service
+  otto-linux-build:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.linux
+      target: production
+    container_name: otto-linux-builder
+    volumes:
+      # Mount source code (read-only for security)
+      - ..:/workspace/otto:ro
+      # Mount output directory for artifacts
+      - ../Builds/LinuxDocker:/workspace/output:rw
+      # Mount JUCE cache for faster builds
+      - juce-cache:/workspace/JUCE:rw
+    environment:
+      - OTTO_PLATFORM=Linux
+      - OTTO_BUILD_MODE=Docker
+      - CMAKE_BUILD_TYPE=Release
+      - JUCE8_PROJECT=ON
+      - OTTO_DOCKER_BUILD=ON
+    working_dir: /workspace/otto
+    command: ["./build_otto.sh"]
+    networks:
+      - otto-build-network
+
+  # Development environment with shell access
+  otto-linux-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.linux
+      target: build-stage
+    container_name: otto-linux-dev
+    volumes:
+      # Mount source code (read-write for development)
+      - ..:/workspace/otto:rw
+      - ../Builds/LinuxDocker:/workspace/output:rw
+      - juce-cache:/workspace/JUCE:rw
+    environment:
+      - OTTO_PLATFORM=Linux
+      - OTTO_BUILD_MODE=Docker
+      - CMAKE_BUILD_TYPE=Debug
+      - JUCE8_PROJECT=ON
+      - OTTO_DOCKER_BUILD=ON
+    working_dir: /workspace/otto
+    command: ["/bin/bash"]
+    stdin_open: true
+    tty: true
+    networks:
+      - otto-build-network
+
+  # Testing environment
+  otto-linux-test:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.linux
+      target: production
+    container_name: otto-linux-tester
+    volumes:
+      - ..:/workspace/otto:ro
+      - ../Builds/LinuxDocker:/workspace/output:rw
+      - juce-cache:/workspace/JUCE:rw
+    environment:
+      - OTTO_PLATFORM=Linux
+      - OTTO_BUILD_MODE=Docker
+      - CMAKE_BUILD_TYPE=Release
+      - JUCE8_PROJECT=ON
+      - OTTO_DOCKER_BUILD=ON
+    working_dir: /workspace/otto
+    command: ["./test_otto.sh"]
+    networks:
+      - otto-build-network
+    depends_on:
+      - otto-linux-build
+
+  # Multi-architecture build service (ARM64)
+  otto-linux-arm64:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.linux
+      target: production
+    container_name: otto-linux-arm64
+    platform: linux/arm64
+    volumes:
+      - ..:/workspace/otto:ro
+      - ../Builds/LinuxDocker-ARM64:/workspace/output:rw
+      - juce-cache-arm64:/workspace/JUCE:rw
+    environment:
+      - OTTO_PLATFORM=Linux
+      - OTTO_BUILD_MODE=Docker
+      - OTTO_ARCHITECTURE=ARM64
+      - CMAKE_BUILD_TYPE=Release
+      - JUCE8_PROJECT=ON
+      - OTTO_DOCKER_BUILD=ON
+    working_dir: /workspace/otto
+    command: ["./build_otto.sh"]
+    networks:
+      - otto-build-network
+
+#==============================================================================
+# Volumes Configuration
+#==============================================================================
+
+volumes:
+  # JUCE cache for faster builds (x86_64)
+  juce-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/.docker-cache/juce-x86_64
+
+  # JUCE cache for ARM64 builds
+  juce-cache-arm64:
+    driver: local
+    driver_opts:
+      type: none  
+      o: bind
+      device: ${PWD}/.docker-cache/juce-arm64
+
+#==============================================================================
+# Networks Configuration
+#==============================================================================
+
+networks:
+  otto-build-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

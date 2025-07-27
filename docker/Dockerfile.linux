@@ -1,0 +1,284 @@
+# OTTO Phase 2.3.2 - Docker Linux Build Environment (JUCE 8)
+# Multi-stage build for optimal container size and build performance
+
+#==============================================================================
+# Stage 1: Base Linux Development Environment
+#==============================================================================
+FROM ubuntu:22.04 AS linux-base
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install essential development packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    ninja-build \
+    git \
+    curl \
+    wget \
+    pkg-config \
+    libasound2-dev \
+    libjack-jackd2-dev \
+    ladspa-sdk \
+    libcurl4-openssl-dev \
+    libfreetype6-dev \
+    libx11-dev \
+    libxcomposite-dev \
+    libxcursor-dev \
+    libxcursor-dev \
+    libxext-dev \
+    libxinerama-dev \
+    libxrandr-dev \
+    libxrender-dev \
+    libwebkit2gtk-4.0-dev \
+    libglu1-mesa-dev \
+    mesa-common-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up development environment
+WORKDIR /workspace
+
+# Create non-root user for security
+RUN useradd -m -s /bin/bash otto && \
+    chown -R otto:otto /workspace
+
+USER otto
+
+#==============================================================================
+# Stage 2: JUCE 8 Integration
+#==============================================================================
+FROM linux-base AS juce-builder
+
+# Clone and setup JUCE 8 (use specific version for consistency)
+RUN git clone --depth 1 --branch 8.0.8 https://github.com/juce-framework/JUCE.git /workspace/JUCE
+
+# Verify JUCE 8 installation
+RUN cd /workspace/JUCE && \
+    cmake --version && \
+    echo "JUCE 8.0.8 installed successfully"
+
+#==============================================================================
+# Stage 3: OTTO Build Environment
+#==============================================================================
+FROM juce-builder AS otto-builder
+
+# Set up OTTO-specific environment variables
+ENV OTTO_PLATFORM=Linux
+ENV OTTO_BUILD_MODE=Docker
+ENV JUCE_PATH=/workspace/JUCE
+ENV CMAKE_BUILD_TYPE=Release
+
+# Install additional OTTO dependencies
+USER root
+RUN apt-get update && apt-get install -y \
+    libgtk-3-dev \
+    libwebkit2gtk-4.0-dev \
+    libsoup2.4-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER otto
+
+# Copy OTTO source code (will be mounted or copied during build)
+COPY --chown=otto:otto . /workspace/otto/
+
+# Set up build directory structure
+RUN mkdir -p /workspace/otto/Builds/LinuxMakefile/CMake-Release
+
+WORKDIR /workspace/otto
+
+#==============================================================================
+# Stage 4: Build Configuration
+#==============================================================================
+FROM otto-builder AS build-stage
+
+# Create CMake configuration script
+RUN cat > configure_build.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🐧 OTTO Phase 2.3.2 - Docker Linux Build Configuration"
+echo "====================================================="
+echo "🎯 JUCE 8 + Docker optimized build"
+
+# Detect system information
+echo "📋 System Information:"
+echo "  OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2)"
+echo "  Kernel: $(uname -r)"
+echo "  Architecture: $(uname -m)"
+echo "  CMake: $(cmake --version | head -n1)"
+echo "  GCC: $(gcc --version | head -n1)"
+
+# Check JUCE installation
+if [ -d "$JUCE_PATH" ]; then
+    echo "✅ JUCE 8 found at: $JUCE_PATH"
+else
+    echo "❌ JUCE not found!"
+    exit 1
+fi
+
+# Configure CMake
+echo "⚙️ Configuring CMake..."
+cd /workspace/otto
+
+cmake -B Builds/LinuxMakefile/CMake-Release \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+      -DJUCE8_PROJECT=ON \
+      -DJUCE_MAJOR_VERSION_REQUIRED=8 \
+      -DOTTO_DOCKER_BUILD=ON \
+      -DOTTO_ENABLE_ALL_SAFETY_FEATURES=ON \
+      -G "Unix Makefiles"
+
+if [ $? -eq 0 ]; then
+    echo "✅ CMake configuration successful"
+else
+    echo "❌ CMake configuration failed"
+    exit 1
+fi
+
+echo "🚀 Ready to build OTTO"
+EOF
+
+RUN chmod +x configure_build.sh
+
+# Create build script
+RUN cat > build_otto.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🏗️ OTTO Phase 2.3.2 - Docker Linux Build Process"
+echo "================================================="
+
+# Run configuration
+./configure_build.sh
+
+# Build with optimal parallel processing
+echo "🔧 Building OTTO..."
+CORES=$(nproc)
+echo "Using $CORES parallel jobs"
+
+cmake --build Builds/LinuxMakefile/CMake-Release \
+      --config Release \
+      --parallel $CORES
+
+if [ $? -eq 0 ]; then
+    echo "✅ OTTO build successful!"
+    
+    # List build artifacts
+    echo "📦 Build artifacts:"
+    find Builds/LinuxMakefile/CMake-Release -name "*.so" -o -name "OTTO" -type f | while read file; do
+        echo "  - $file"
+        ls -la "$file"
+    done
+    
+else
+    echo "❌ OTTO build failed!"
+    exit 1
+fi
+EOF
+
+RUN chmod +x build_otto.sh
+
+# Create testing script
+RUN cat > test_otto.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🧪 OTTO Phase 2.3.2 - Docker Linux Testing"
+echo "==========================================="
+
+# Check if plugins were built
+echo "🔍 Checking build artifacts..."
+
+VST3_PLUGIN=""
+CLAP_PLUGIN=""
+STANDALONE=""
+
+# Find VST3
+if find Builds/LinuxMakefile/CMake-Release -name "OTTO.vst3" -type d | head -n1 | read vst3_path; then
+    VST3_PLUGIN="$vst3_path"
+    echo "✅ VST3 plugin found: $VST3_PLUGIN"
+else
+    echo "⚠️ VST3 plugin not found"
+fi
+
+# Find CLAP
+if find Builds/LinuxMakefile/CMake-Release -name "OTTO.clap" -type f | head -n1 | read clap_path; then
+    CLAP_PLUGIN="$clap_path"
+    echo "✅ CLAP plugin found: $CLAP_PLUGIN"
+else
+    echo "⚠️ CLAP plugin not found"
+fi
+
+# Find Standalone
+if find Builds/LinuxMakefile/CMake-Release -name "OTTO" -type f -executable | head -n1 | read standalone_path; then
+    STANDALONE="$standalone_path"
+    echo "✅ Standalone app found: $STANDALONE"
+else
+    echo "⚠️ Standalone app not found"
+fi
+
+# Basic validation tests
+echo "🧪 Running basic validation..."
+
+if [ -n "$STANDALONE" ]; then
+    echo "📋 Testing standalone application..."
+    if ldd "$STANDALONE" | grep -q "not found"; then
+        echo "⚠️ Standalone has missing dependencies:"
+        ldd "$STANDALONE" | grep "not found"
+    else
+        echo "✅ Standalone dependencies OK"
+    fi
+fi
+
+if [ -n "$VST3_PLUGIN" ]; then
+    echo "📋 Testing VST3 plugin..."
+    if [ -f "$VST3_PLUGIN/Contents/x86_64-linux/OTTO.so" ]; then
+        echo "✅ VST3 binary found"
+        if ldd "$VST3_PLUGIN/Contents/x86_64-linux/OTTO.so" | grep -q "not found"; then
+            echo "⚠️ VST3 has missing dependencies:"
+            ldd "$VST3_PLUGIN/Contents/x86_64-linux/OTTO.so" | grep "not found"
+        else
+            echo "✅ VST3 dependencies OK"
+        fi
+    else
+        echo "⚠️ VST3 binary not found"
+    fi
+fi
+
+if [ -n "$CLAP_PLUGIN" ]; then
+    echo "📋 Testing CLAP plugin..."
+    if ldd "$CLAP_PLUGIN" | grep -q "not found"; then
+        echo "⚠️ CLAP has missing dependencies:"
+        ldd "$CLAP_PLUGIN" | grep "not found"
+    else
+        echo "✅ CLAP dependencies OK"
+    fi
+fi
+
+echo "✅ Docker Linux testing complete"
+EOF
+
+RUN chmod +x test_otto.sh
+
+#==============================================================================
+# Stage 5: Production Build
+#==============================================================================
+FROM build-stage AS production
+
+# Expose volumes for mounting source and collecting artifacts
+VOLUME ["/workspace/otto", "/workspace/output"]
+
+# Default command
+CMD ["./build_otto.sh"]
+
+# Build metadata
+LABEL maintainer="OTTO Development Team"
+LABEL version="2.3.2"
+LABEL description="OTTO Phase 2.3.2 - Docker Linux Build Environment"
+LABEL platform="Linux"
+LABEL juce.version="8.0.8"

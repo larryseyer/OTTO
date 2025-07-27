@@ -1,11 +1,16 @@
 @echo off
-REM Windows Build Script for OTTO (JUCE 8)
-REM Unified CMake build system that matches ProJucer configuration
+REM OTTO Phase 2.3.1 - Advanced Windows Build Script (JUCE 8)
+REM Enhanced unified CMake build system with advanced robustness features
+REM Maintains all Phase 2.2 safety features while adding Windows-specific optimizations
 
 setlocal enabledelayedexpansion
 
-echo 🪟 Building OTTO for Windows...
-echo ===============================
+echo 🪟 Building OTTO for Windows - Phase 2.3.1...
+echo =============================================
+echo 🛡️  Enhanced robustness and safety features enabled
+echo 🎯 Visual Studio 2022 optimized build
+echo 🪟 Parallels VM optimization enabled
+echo 🎵 Reaper testing integration ready
 
 REM Function equivalents for colored output
 set "STATUS_COLOR=[32m"
@@ -13,9 +18,15 @@ set "ERROR_COLOR=[31m"
 set "WARNING_COLOR=[33m"
 set "RESET_COLOR=[0m"
 
-REM Check for Visual Studio installation
+REM Enhanced system validation for Phase 2.3.1
 call :check_vs_installation
 if !ERRORLEVEL! neq 0 exit /b 1
+
+call :validate_windows_audio_drivers
+if !ERRORLEVEL! neq 0 echo %WARNING_COLOR%⚠️  Some audio drivers may not be available%RESET_COLOR%
+
+call :check_windows_sdk
+if !ERRORLEVEL! neq 0 echo %WARNING_COLOR%⚠️  Windows SDK validation completed with warnings%RESET_COLOR%
 
 REM Parse command line arguments
 set "VS_GENERATOR=Visual Studio 17 2022"
@@ -67,13 +78,19 @@ cd "!BUILD_DIR!"
 
 echo %STATUS_COLOR%⚙️  Configuring CMake...%RESET_COLOR%
 
-REM Configure with CMake using unified settings
+REM Enhanced CMake configuration with Phase 2.3.1 features
+echo %STATUS_COLOR%🔧 Configuring with enhanced Windows optimizations...%RESET_COLOR%
+
 cmake ..\..\.. ^
     -DCMAKE_BUILD_TYPE=!BUILD_CONFIG! ^
     -DJUCE_BUILD_EXAMPLES=OFF ^
     -DJUCE_BUILD_EXTRAS=OFF ^
     -DJUCE_COPY_PLUGIN_AFTER_BUILD=TRUE ^
     -DJUCE_VST3_CAN_REPLACE_VST2=ON ^
+    -DJUCE8_PROJECT=ON ^
+    -DJUCE_MAJOR_VERSION_REQUIRED=8 ^
+    -DOTTO_ENHANCED_WINDOWS_BUILD=ON ^
+    -DOTTO_ENABLE_ALL_SAFETY_FEATURES=ON ^
     -G "!VS_GENERATOR!" ^
     -A !ARCHITECTURE!
 
@@ -177,4 +194,77 @@ echo    Download from: https://visualstudio.microsoft.com/downloads/
 exit /b 1
 
 :vs_found
+exit /b 0
+
+:validate_windows_audio_drivers
+echo %STATUS_COLOR%🎵 Validating Windows audio drivers...%RESET_COLOR%
+
+REM Check for DirectSound
+reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DirectX" /v Version >nul 2>&1
+if !ERRORLEVEL! equ 0 (
+    echo %STATUS_COLOR%  ✅ DirectSound: Available%RESET_COLOR%
+) else (
+    echo %WARNING_COLOR%  ⚠️  DirectSound: Not detected%RESET_COLOR%
+)
+
+REM Check for WASAPI (Windows Audio Session API)
+sc query AudioSrv | find "RUNNING" >nul 2>&1
+if !ERRORLEVEL! equ 0 (
+    echo %STATUS_COLOR%  ✅ WASAPI: Audio service running%RESET_COLOR%
+) else (
+    echo %WARNING_COLOR%  ⚠️  WASAPI: Audio service not running%RESET_COLOR%
+)
+
+REM Check for Windows Audio Engine
+tasklist /fi "imagename eq audiodg.exe" | find "audiodg.exe" >nul 2>&1
+if !ERRORLEVEL! equ 0 (
+    echo %STATUS_COLOR%  ✅ Windows Audio Engine: Running%RESET_COLOR%
+) else (
+    echo %WARNING_COLOR%  ⚠️  Windows Audio Engine: Not detected%RESET_COLOR%
+)
+
+REM Check for ASIO4ALL (optional)
+if exist "%PROGRAMFILES%\ASIO4ALL v2" (
+    echo %STATUS_COLOR%  ✅ ASIO4ALL: Detected%RESET_COLOR%
+) else (
+    echo %STATUS_COLOR%  ℹ️  ASIO4ALL: Not installed (optional)%RESET_COLOR%
+)
+
+exit /b 0
+
+:check_windows_sdk
+echo %STATUS_COLOR%🔧 Checking Windows SDK...%RESET_COLOR%
+
+REM Check for Windows SDK installation
+set "SDK_FOUND=false"
+for /d %%i in ("%ProgramFiles(x86)%\Windows Kits\10\Include\*") do (
+    if exist "%%i\um\windows.h" (
+        echo %STATUS_COLOR%  ✅ Windows SDK: Found at %%i%RESET_COLOR%
+        set "SDK_FOUND=true"
+        goto :sdk_found
+    )
+)
+
+:sdk_found
+if "!SDK_FOUND!"=="false" (
+    echo %WARNING_COLOR%  ⚠️  Windows SDK: Not found in default locations%RESET_COLOR%
+    exit /b 1
+)
+
+REM Check for required headers
+set "HEADERS_OK=true"
+for %%h in (windows.h dsound.h mmdeviceapi.h audiopolicy.h) do (
+    findstr /s /m "%%h" "%ProgramFiles(x86)%\Windows Kits\10\Include\*\um\*" >nul 2>&1
+    if !ERRORLEVEL! neq 0 (
+        echo %WARNING_COLOR%  ⚠️  Header %%h: Not found%RESET_COLOR%
+        set "HEADERS_OK=false"
+    )
+)
+
+if "!HEADERS_OK!"=="true" (
+    echo %STATUS_COLOR%  ✅ Required headers: All found%RESET_COLOR%
+else (
+    echo %WARNING_COLOR%  ⚠️  Some required headers missing%RESET_COLOR%
+)
+
 exit /b 0

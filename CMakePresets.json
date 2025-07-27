@@ -211,13 +211,19 @@
         },
         {
             "name": "windows-debug",
-            "displayName": "Windows Debug",
-            "description": "Debug build for Windows (Parallels compatible)",
+            "displayName": "Windows Debug (Phase 2.3.1 Enhanced)",
+            "description": "Debug build for Windows with enhanced robustness features",
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "JUCE8_PROJECT": "ON",
+                "JUCE_MAJOR_VERSION_REQUIRED": "8",
+                "OTTO_ENHANCED_WINDOWS_BUILD": "ON",
+                "OTTO_ENABLE_ALL_SAFETY_FEATURES": "ON",
+                "JUCE_CHECK_MEMORY_LEAKS": "ON",
+                "JUCE_LOG_ASSERTIONS": "ON"
             },
             "condition": {
                 "type": "equals",
@@ -230,13 +236,18 @@
         },
         {
             "name": "windows-release",
-            "displayName": "Windows Release",
-            "description": "Release build for Windows (Parallels compatible)",
+            "displayName": "Windows Release (Phase 2.3.1 Optimized)",
+            "description": "Release build for Windows with advanced optimizations",
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/Builds/VisualStudio2022/CMake-Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "JUCE8_PROJECT": "ON",
+                "JUCE_MAJOR_VERSION_REQUIRED": "8",
+                "OTTO_ENHANCED_WINDOWS_BUILD": "ON",
+                "OTTO_ENABLE_ALL_SAFETY_FEATURES": "ON",
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
             },
             "condition": {
                 "type": "equals",

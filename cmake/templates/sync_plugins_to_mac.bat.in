@@ -1,0 +1,63 @@
+@echo off
+REM OTTO Phase 2.3.1 - Plugin Sync to macOS via Parallels Shared Folders
+REM Generated automatically by CMake configuration
+
+echo 🔄 Syncing OTTO Plugins to macOS
+echo =================================
+
+set "BUILD_DIR=@CMAKE_BINARY_DIR@"
+set "SHARED_FOLDER=@OTTO_PARALLELS_SHARED_FOLDER@"
+set "MAC_PLUGIN_DIR=%SHARED_FOLDER%OTTO_Plugins"
+
+echo 📁 Build Directory: %BUILD_DIR%
+echo 📁 Shared Folder: %SHARED_FOLDER%
+echo 📁 Mac Plugin Directory: %MAC_PLUGIN_DIR%
+
+REM Create Mac plugin directory
+if not exist "%MAC_PLUGIN_DIR%" (
+    echo 📂 Creating Mac plugin directory...
+    mkdir "%MAC_PLUGIN_DIR%"
+    mkdir "%MAC_PLUGIN_DIR%\VST3"
+    mkdir "%MAC_PLUGIN_DIR%\CLAP"
+    mkdir "%MAC_PLUGIN_DIR%\Standalone"
+)
+
+echo.
+echo 🔄 Syncing plugins...
+
+REM Sync VST3
+if exist "%BUILD_DIR%\*_artefacts\Release\VST3\OTTO.vst3" (
+    echo   Syncing VST3 plugin...
+    xcopy "%BUILD_DIR%\*_artefacts\Release\VST3\OTTO.vst3" "%MAC_PLUGIN_DIR%\VST3\OTTO.vst3" /E /I /Y
+    echo   ✅ VST3 synced to Mac
+) else (
+    echo   ⚠️  VST3 plugin not found
+)
+
+REM Sync CLAP
+if exist "%BUILD_DIR%\*_artefacts\Release\CLAP\OTTO.clap" (
+    echo   Syncing CLAP plugin...
+    copy "%BUILD_DIR%\*_artefacts\Release\CLAP\OTTO.clap" "%MAC_PLUGIN_DIR%\CLAP\OTTO.clap"
+    echo   ✅ CLAP synced to Mac
+) else (
+    echo   ⚠️  CLAP plugin not found
+)
+
+REM Sync Standalone
+if exist "%BUILD_DIR%\*_artefacts\Release\Standalone\OTTO.exe" (
+    echo   Syncing Standalone application...
+    copy "%BUILD_DIR%\*_artefacts\Release\Standalone\OTTO.exe" "%MAC_PLUGIN_DIR%\Standalone\OTTO.exe"
+    echo   ✅ Standalone synced to Mac
+) else (
+    echo   ⚠️  Standalone application not found
+)
+
+REM Create sync info file
+echo OTTO Plugin Sync - %date% %time% > "%MAC_PLUGIN_DIR%\sync_info.txt"
+echo Build Directory: %BUILD_DIR% >> "%MAC_PLUGIN_DIR%\sync_info.txt"
+echo Windows Version: >> "%MAC_PLUGIN_DIR%\sync_info.txt"
+ver >> "%MAC_PLUGIN_DIR%\sync_info.txt"
+
+echo.
+echo ✨ Plugin sync to Mac complete!
+echo 💡 Check %MAC_PLUGIN_DIR% on macOS for the synced plugins

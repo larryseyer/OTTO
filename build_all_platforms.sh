@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# OTTO JUCE 8 Multi-Platform Build Script
-# Builds for Mac OSX Standalone, VST3, AUv3, CLAP AU, Windows, Linux, iOS, and Android
+#==============================================================================
+# OTTO Phase 2.3.x - Enhanced Multi-Platform Build Script (JUCE 8)
+# Complete build orchestration for all supported platforms
+# Integrates all Phase 2.2 safety features and 2.3.x platform optimizations
+#==============================================================================
 
 set -e  # Exit on any error
 

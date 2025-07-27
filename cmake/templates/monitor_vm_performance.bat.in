@@ -1,0 +1,91 @@
+@echo off
+REM OTTO Phase 2.3.1 - Parallels VM Performance Monitor
+REM Generated automatically by CMake configuration
+
+echo 📊 OTTO Parallels VM Performance Monitor
+echo ========================================
+
+:monitor_loop
+cls
+echo 📊 OTTO Parallels VM Performance Monitor
+echo ========================================
+echo.
+
+echo 🖥️  System Resources:
+echo -------------------
+
+REM CPU Usage
+for /f "tokens=2 delims==" %%i in ('wmic cpu get loadpercentage /value ^| find "="') do (
+    echo   CPU Usage: %%i%%
+)
+
+REM Memory Usage
+for /f "tokens=2 delims==" %%i in ('wmic OS get TotalVisibleMemorySize /value ^| find "="') do set "TOTAL_MEM=%%i"
+for /f "tokens=2 delims==" %%i in ('wmic OS get FreePhysicalMemory /value ^| find "="') do set "FREE_MEM=%%i"
+
+set /a "USED_MEM=%TOTAL_MEM% - %FREE_MEM%"
+set /a "MEM_PERCENT=(%USED_MEM% * 100) / %TOTAL_MEM%"
+
+echo   Memory Usage: %MEM_PERCENT%%% (Used: %USED_MEM% KB / Total: %TOTAL_MEM% KB)
+
+echo.
+echo 🎵 Audio Services:
+echo -----------------
+
+REM Audio Service Status
+sc query AudioSrv | find "STATE" | find /v "SERVICE_" > temp_audio.txt
+for /f "tokens=4" %%i in (temp_audio.txt) do echo   Audio Service: %%i
+del temp_audio.txt
+
+sc query AudioEndpointBuilder | find "STATE" | find /v "SERVICE_" > temp_endpoint.txt
+for /f "tokens=4" %%i in (temp_endpoint.txt) do echo   Audio Endpoint Builder: %%i
+del temp_endpoint.txt
+
+echo.
+echo 🔧 Development Processes:
+echo ------------------------
+
+REM Check for Visual Studio
+tasklist /fi "imagename eq devenv.exe" | find "devenv.exe" > nul
+if %ERRORLEVEL% equ 0 (
+    echo   Visual Studio: Running
+) else (
+    echo   Visual Studio: Not running
+)
+
+REM Check for Reaper
+tasklist /fi "imagename eq reaper.exe" | find "reaper.exe" > nul
+if %ERRORLEVEL% equ 0 (
+    echo   Reaper: Running
+) else (
+    echo   Reaper: Not running
+)
+
+REM Check for CMake
+tasklist /fi "imagename eq cmake.exe" | find "cmake.exe" > nul
+if %ERRORLEVEL% equ 0 (
+    echo   CMake: Running
+) else (
+    echo   CMake: Not running
+)
+
+echo.
+echo 🌡️  Temperature & Performance:
+echo -----------------------------
+
+REM Parallels Tools info (if available)
+reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Parallels\Parallels Tools" /v "version" 2>nul
+if %ERRORLEVEL% equ 0 (
+    echo   Parallels Tools: Installed
+) else (
+    echo   Parallels Tools: Not detected
+)
+
+echo.
+echo 📈 Real-time Monitoring (Press Ctrl+C to exit)
+echo Last Update: %date% %time%
+echo.
+
+REM Wait 5 seconds before next update
+timeout /t 5 > nul
+goto monitor_loop

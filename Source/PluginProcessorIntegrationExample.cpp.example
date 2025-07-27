@@ -1,0 +1,316 @@
+// This file demonstrates how to integrate the proportional scaling system
+// into your existing OTTOAudioProcessor::createEditor() method using JUCE 8
+
+#include "PluginProcessor.h"
+#include "PluginEditor.h"
+#include "ProportionalPluginEditor.h"
+#include "EnhancedProportionalEditor.h"
+#include "JUCE8Compatibility.h"
+
+// Option 1: Simple Drop-in Replacement (Minimal Changes)
+// Replace your existing createEditor method with this:
+
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditor() {
+    // Use the factory to create a proportional editor
+    return OTTO_INIT_PROPORTIONAL(*this).release();
+}
+
+// Option 2: Enhanced Integration with Platform Detection
+// This version automatically adapts to the current platform and plugin format:
+
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditor() {
+    // Detect the current platform and plugin format
+    auto platformType = detectCurrentPlatform();
+    auto pluginFormat = detectPluginFormat();
+    
+    // Create editor optimized for the detected environment
+    if (pluginFormat != "Standalone") {
+        // Plugin version - use constrained proportional scaling
+        return OTTO_CREATE_FOR_FORMAT(*this, pluginFormat).release();
+    } else {
+        // Standalone version - use platform-optimized editor
+        return OTTO_CREATE_FOR_PLATFORM(*this, platformType).release();
+    }
+}
+
+// Option 3: Full Custom Integration with Configuration
+// This version gives you complete control over the proportional scaling system:
+
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditor() {
+    // Create the proportional editor
+    auto editor = std::make_unique<ProportionalPluginEditor>(*this);
+    
+    // Configure proportional scaling for OTTO
+    configureProportionalScaling(editor.get());
+    
+    // Enable debug features in development builds
+    #if JUCE_DEBUG
+    editor->enableDebugVisualization(true);
+    editor->showProportionalScalingDemo(false); // Set to true to show demo tab
+    #endif
+    
+    // Adapt for current platform and plugin format
+    adaptEditorForEnvironment(editor.get());
+    
+    return editor.release();
+}
+
+// Option 4: Hybrid Approach (Backwards Compatible)
+// This version can switch between the old and new editor based on a setting:
+
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditor() {
+    // Check if proportional scaling is enabled (could be a preference setting)
+    bool useProportionalScaling = getProportionalScalingPreference();
+    
+    if (useProportionalScaling) {
+        // Use new proportional editor
+        auto editor = std::make_unique<ProportionalPluginEditor>(*this);
+        configureProportionalScaling(editor.get());
+        return editor.release();
+    } else {
+        // Use original editor for backwards compatibility
+        return new OTTOAudioProcessorEditor(*this);
+    }
+}
+
+// Option 5: Demo Mode Integration
+// This version includes the proportional scaling demo for development and testing:
+
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditor() {
+    // Create enhanced editor with built-in demo
+    auto editor = std::make_unique<EnhancedProportionalEditor>(*this);
+    
+    // Configure for OTTO-specific needs
+    if (auto* propManager = editor->getProportionalManager()) {
+        ProportionalScalingManager::ReferenceConfig config;
+        config.baseWidth = 1000;  // OTTO's design width
+        config.baseHeight = 750;  // OTTO's design height
+        config.minScaleFactor = 0.3f;
+        config.maxScaleFactor = 3.0f;
+        
+        // Enable touch optimization for mobile platforms
+        #if JUCE_IOS || JUCE_ANDROID
+        config.minTouchTargetPx = 44;
+        config.minTouchTargetDp = 48;
+        #endif
+        
+        propManager->setReferenceConfig(config);
+    }
+    
+    return editor.release();
+}
+
+//==============================================================================
+// Helper Methods for Integration
+//==============================================================================
+
+PlatformResponsiveManager::TargetPlatform OTTOAudioProcessor::detectCurrentPlatform() const {
+    // Use JUCE 8 compatibility layer for platform detection
+    auto juce8Platform = JUCE8_CURRENT_PLATFORM();
+    
+    switch (juce8Platform) {
+        case JUCE8Compatibility::PlatformHelpers::Platform::macOS_Standalone:
+            return PlatformResponsiveManager::TargetPlatform::macOS_Standalone;
+        case JUCE8Compatibility::PlatformHelpers::Platform::macOS_VST3:
+            return PlatformResponsiveManager::TargetPlatform::macOS_VST3;
+        case JUCE8Compatibility::PlatformHelpers::Platform::macOS_AU:
+            return PlatformResponsiveManager::TargetPlatform::macOS_AU;
+        case JUCE8Compatibility::PlatformHelpers::Platform::macOS_CLAP:
+            return PlatformResponsiveManager::TargetPlatform::macOS_CLAP;
+        case JUCE8Compatibility::PlatformHelpers::Platform::Windows_Standalone:
+            return PlatformResponsiveManager::TargetPlatform::Windows_Standalone;
+        case JUCE8Compatibility::PlatformHelpers::Platform::Windows_VST3:
+            return PlatformResponsiveManager::TargetPlatform::Windows_VST3;
+        case JUCE8Compatibility::PlatformHelpers::Platform::Windows_CLAP:
+            return PlatformResponsiveManager::TargetPlatform::Windows_CLAP;
+        case JUCE8Compatibility::PlatformHelpers::Platform::Linux_Standalone:
+            return PlatformResponsiveManager::TargetPlatform::Linux_Standalone;
+        case JUCE8Compatibility::PlatformHelpers::Platform::Linux_VST3:
+            return PlatformResponsiveManager::TargetPlatform::Linux_VST3;
+        case JUCE8Compatibility::PlatformHelpers::Platform::Linux_CLAP:
+            return PlatformResponsiveManager::TargetPlatform::Linux_CLAP;
+        case JUCE8Compatibility::PlatformHelpers::Platform::iOS_Standalone:
+            return PlatformResponsiveManager::TargetPlatform::iOS_Standalone;
+        case JUCE8Compatibility::PlatformHelpers::Platform::iOS_AUv3:
+            return PlatformResponsiveManager::TargetPlatform::iOS_AUv3;
+        case JUCE8Compatibility::PlatformHelpers::Platform::Android_Standalone:
+            return PlatformResponsiveManager::TargetPlatform::Android_Standalone;
+        default:
+            return PlatformResponsiveManager::TargetPlatform::macOS_Standalone; // Fallback
+    }
+}
+
+juce::String OTTOAudioProcessor::detectPluginFormat() const {
+    // Use JUCE 8 compatibility helper for plugin format detection
+    return JUCE8_PLUGIN_FORMAT(*this);
+}
+
+void OTTOAudioProcessor::configureProportionalScaling(ProportionalPluginEditor* editor) {
+    if (!editor) return;
+    
+    // Get the proportional scaling manager
+    auto* propManager = editor->getProportionalManager();
+    if (!propManager) return;
+    
+    // Configure OTTO-specific reference dimensions using JUCE 8
+    ProportionalScalingManager::ReferenceConfig config;
+    
+    // Use JUCE 8 optimal plugin size as base if available
+    auto optimalSize = JUCE8_OPTIMAL_PLUGIN_SIZE(*this);
+    config.baseWidth = optimalSize.getWidth();
+    config.baseHeight = optimalSize.getHeight();
+    config.aspectRatio = static_cast<float>(config.baseWidth) / static_cast<float>(config.baseHeight);
+    config.minScaleFactor = 0.3f; // Allow scaling down to 30%
+    config.maxScaleFactor = 3.0f; // Allow scaling up to 300%
+    
+    // JUCE 8 platform-specific touch optimization
+    if (JUCE8_IS_MOBILE()) {
+        config.minTouchTargetPx = 44; // iOS guidelines
+        config.minTouchTargetDp = 48; // Android guidelines
+    } else {
+        config.minTouchTargetPx = 20; // Desktop minimum
+        config.minTouchTargetDp = 20;
+    }
+    
+    // Responsive breakpoints tailored for OTTO
+    config.extraSmallThreshold = 400;  // Very small screens
+    config.smallThreshold = 600;       // Small screens
+    config.mediumThreshold = 800;      // Medium screens (default)
+    config.largeThreshold = 1200;      // Large screens
+    config.extraLargeThreshold = 1600; // Extra large screens
+    
+    propManager->setReferenceConfig(config);
+    
+    // Enable auto-recalculation for smooth scaling
+    propManager->enableAutoRecalculation(true);
+}
+
+void OTTOAudioProcessor::adaptEditorForEnvironment(ProportionalPluginEditor* editor) {
+    if (!editor) return;
+    
+    // Adapt for current platform
+    editor->adaptForCurrentPlatform();
+    
+    // Set plugin host constraints if running as plugin
+    if (wrapperType != wrapperType_Standalone) {
+        // Common plugin sizes - adjust based on your needs
+        switch (wrapperType) {
+            case wrapperType_VST3:
+                editor->setPluginHostConstraints(1024, 768, true);
+                break;
+            case wrapperType_AudioUnit:
+                editor->setPluginHostConstraints(800, 600, true);
+                break;
+            case wrapperType_CLAP:
+                editor->setPluginHostConstraints(1200, 800, true);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+bool OTTOAudioProcessor::getProportionalScalingPreference() const {
+    // This could be stored in your settings/preferences
+    // For now, return true to enable proportional scaling by default
+    return true;
+    
+    // Example of how you might store this preference:
+    // return globalSettings.getBoolValue("enableProportionalScaling", true);
+}
+
+//==============================================================================
+// Additional Integration Examples
+//==============================================================================
+
+// Example: Creating different editor types based on build configuration
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditorBasedOnBuildConfig() {
+    #if OTTO_DEVELOPMENT_BUILD
+        // Development build - show full demo with debug features
+        auto editor = std::make_unique<EnhancedProportionalEditor>(*this);
+        editor->enableDebugVisualization(true);
+        return editor.release();
+    #elif OTTO_BETA_BUILD
+        // Beta build - proportional scaling enabled but no demo
+        auto editor = std::make_unique<ProportionalPluginEditor>(*this);
+        configureProportionalScaling(editor.get());
+        return editor.release();
+    #else
+        // Release build - choice between old and new based on preference
+        if (getProportionalScalingPreference()) {
+            auto editor = std::make_unique<ProportionalPluginEditor>(*this);
+            configureProportionalScaling(editor.get());
+            return editor.release();
+        } else {
+            return new OTTOAudioProcessorEditor(*this);
+        }
+    #endif
+}
+
+// Example: Creating editor with specific presets
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditorWithPreset() {
+    // Get available presets
+    auto presets = OTTOEditorFactory::getAvailablePresets();
+    
+    // Choose preset based on platform
+    OTTOEditorFactory::EditorPreset selectedPreset;
+    
+    #if JUCE_IOS || JUCE_ANDROID
+        // Mobile preset
+        selectedPreset = std::find_if(presets.begin(), presets.end(),
+            [](const auto& preset) { return preset.name == "Mobile"; });
+    #else
+        if (wrapperType == wrapperType_Standalone) {
+            // Desktop preset
+            selectedPreset = std::find_if(presets.begin(), presets.end(),
+                [](const auto& preset) { return preset.name == "Desktop"; });
+        } else {
+            // Plugin preset
+            selectedPreset = std::find_if(presets.begin(), presets.end(),
+                [](const auto& preset) { return preset.name == "Plugin"; });
+        }
+    #endif
+    
+    // Create editor from preset
+    return OTTOEditorFactory::createEditorFromPreset(*this, selectedPreset).release();
+}
+
+// Example: Migrating from existing editor
+juce::AudioProcessorEditor* OTTOAudioProcessor::createEditorWithMigration() {
+    // Create original editor first
+    auto originalEditor = std::make_unique<OTTOAudioProcessorEditor>(*this);
+    
+    // Analyze what needs to be migrated
+    auto migrationAnalysis = OTTOEditorMigration::analyzeMigrationNeeds(originalEditor.get());
+    DBG("Migration Analysis: " << migrationAnalysis);
+    
+    // Create new proportional editor
+    auto newEditor = std::make_unique<ProportionalPluginEditor>(*this);
+    
+    // Migrate state from old to new
+    OTTOEditorMigration::migrateEditorState(originalEditor.get(), newEditor.get());
+    
+    // Validate migration
+    bool migrationSuccessful = OTTOEditorMigration::validateMigration(
+        originalEditor.get(), newEditor.get());
+    
+    if (migrationSuccessful) {
+        DBG("Editor migration successful");
+        return newEditor.release();
+    } else {
+        DBG("Editor migration failed, using original");
+        return originalEditor.release();
+    }
+}
+
+//==============================================================================
+// Usage Instructions:
+//
+// 1. Choose one of the above options for your createEditor() method
+// 2. Add the helper methods to your OTTOAudioProcessor class
+// 3. Include the necessary headers at the top of your PluginProcessor.cpp
+// 4. Update your PluginProcessor.h to declare the new methods
+//
+// For the simplest integration, use Option 1 (Simple Drop-in Replacement).
+// For production use, Option 3 (Full Custom Integration) is recommended.
+//==============================================================================

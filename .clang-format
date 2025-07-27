@@ -1,0 +1,31 @@
+# JUCE 8 Project - Code Formatting Standards
+# This ensures all code follows JUCE 8 patterns
+
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++20
+
+# JUCE 8 specific formatting
+ColumnLimit: 120
+IndentWidth: 4
+UseTab: Never
+TabWidth: 4
+
+# JUCE 8 naming conventions
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+PackConstructorInitializers: Never
+
+# Ensure proper JUCE 8 patterns are maintained
+AlwaysBreakTemplateDeclarations: Yes
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+
+# Comments for JUCE 8 compliance
+ReflowComments: true
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: -1
+
+# JUCE 8 Project Marker
+# This file ensures all code follows JUCE 8.0.8+ standards

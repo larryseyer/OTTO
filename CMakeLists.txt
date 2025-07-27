@@ -1,12 +1,27 @@
 cmake_minimum_required(VERSION 3.22)
 
+#==============================================================================
+# JUCE 8 PROJECT - MANDATORY JUCE 8.0.8+ COMPATIBILITY
+# This project EXCLUSIVELY uses JUCE 8 methods and APIs
+# ALL deprecated JUCE methods are FORBIDDEN
+#==============================================================================
+
 # Set project name and version to match ProJucer
 project(OTTO VERSION 1.0.0)
 
+# Enforce JUCE 8 requirement
+set(JUCE_MINIMUM_VERSION "8.0.8")
+add_compile_definitions(JUCE8_PROJECT=1)
+add_compile_definitions(JUCE_MAJOR_VERSION_REQUIRED=8)
+
 # Set C++ standard for JUCE 8
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# JUCE 8 specific settings
+set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Platform detection
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
@@ -65,39 +80,94 @@ else()
     message(STATUS "Using system-installed JUCE")
 endif()
 
-# Create the plugin target with settings matching ProJucer file
+# Define plugin formats based on platform for JUCE 8
+set(OTTO_FORMATS)
+
+# Platform-specific format configuration
+if(JUCE_TARGET_PLATFORM STREQUAL "macOS")
+    list(APPEND OTTO_FORMATS Standalone VST3 AU CLAP)
+elseif(JUCE_TARGET_PLATFORM STREQUAL "iOS")
+    list(APPEND OTTO_FORMATS Standalone AUv3)
+elseif(JUCE_TARGET_PLATFORM STREQUAL "Windows")
+    list(APPEND OTTO_FORMATS Standalone VST3 CLAP)
+elseif(JUCE_TARGET_PLATFORM STREQUAL "Linux")
+    list(APPEND OTTO_FORMATS Standalone VST3 CLAP)
+elseif(JUCE_TARGET_PLATFORM STREQUAL "Android")
+    list(APPEND OTTO_FORMATS Standalone)
+else()
+    # Fallback for unknown platforms
+    list(APPEND OTTO_FORMATS Standalone)
+endif()
+
+message(STATUS "Building OTTO for ${JUCE_TARGET_PLATFORM} with formats: ${OTTO_FORMATS}")
+
+# Create the plugin target with JUCE 8 configuration
 juce_add_plugin(OTTO
-    # Company and product info to match ProJucer
+    # Company and product info
     COMPANY_NAME "Automagic Art"
     PLUGIN_MANUFACTURER_CODE "OTTO"
     PLUGIN_CODE "OTTO"
-    FORMATS AU VST3 CLAP Standalone
+    FORMATS ${OTTO_FORMATS}
     PRODUCT_NAME "OTTO"
-    DESCRIPTION "OTTO."
+    DESCRIPTION "OTTO - Proportional Scaling Audio Interface"
     BUNDLE_ID "com.automagicart.OTTO"
     
-    # Plugin characteristics matching ProJucer
+    # Plugin characteristics
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT TRUE
     IS_MIDI_EFFECT TRUE
-    EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD FALSE
+    EDITOR_WANTS_KEYBOARD_FOCUS TRUE
+    COPY_PLUGIN_AFTER_BUILD TRUE
     
-    # Plugin characteristics value from ProJucer
+    # JUCE 8 specific plugin characteristics
     PLUGIN_CHARACTERISTICS_VALUE "pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
     
-    # iOS specific settings
-    $<$<STREQUAL:${JUCE_TARGET_PLATFORM},iOS>:
-        IPHONE_SCREEN_ORIENTATIONS UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
-        REQUIRES_FULL_SCREEN TRUE
-        TARGETED_DEVICE_FAMILY "1,2"
+    # VST3 specific (JUCE 8)
+    VST3_CATEGORIES "Fx" "Dynamics" "Tools" "Synth"
+    
+    # AU specific (JUCE 8)
+    AU_MAIN_TYPE "kAudioUnitType_MusicDevice"
+    AU_SANDBOX_SAFE TRUE
+    
+    # AUv3 specific for iOS (JUCE 8)
+    $<$<IN_LIST:AUv3,${OTTO_FORMATS}>:
+        AUV3_CATEGORY_GENERATOR
+        REQUIRES_FULL_SCREEN FALSE
+        BACKGROUND_AUDIO_ENABLED FALSE
+        BACKGROUND_BLE_ENABLED FALSE
+        INTER_APP_AUDIO_ENABLED FALSE
     >
     
-    # Android specific  
+    # iOS specific settings (JUCE 8)
+    $<$<STREQUAL:${JUCE_TARGET_PLATFORM},iOS>:
+        IPHONE_SCREEN_ORIENTATIONS UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        IPAD_SCREEN_ORIENTATIONS UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown
+        TARGETED_DEVICE_FAMILY "1,2"
+        IOS_DEPLOYMENT_TARGET "12.0"
+        MICROPHONE_PERMISSION_ENABLED TRUE
+        MICROPHONE_PERMISSION_TEXT "OTTO needs microphone access for audio input"
+        CAMERA_PERMISSION_ENABLED FALSE
+        BLUETOOTH_PERMISSION_ENABLED FALSE
+    >
+    
+    # Android specific (JUCE 8)
     $<$<STREQUAL:${JUCE_TARGET_PLATFORM},Android>:
         ANDROID_MIN_SDK_VERSION 23
-        ANDROID_TARGET_SDK_VERSION 33
+        ANDROID_TARGET_SDK_VERSION 34
+        ANDROID_ACTIVITY_CLASS_NAME "com.automagicart.otto.OTTOActivity"
+        ANDROID_INTERNET_NEEDED FALSE
+        ANDROID_MIC_NEEDED TRUE
+        ANDROID_BLUETOOTH_NEEDED FALSE
+        ANDROID_EXTERNAL_READ_NEEDED FALSE
+        ANDROID_EXTERNAL_WRITE_NEEDED FALSE
+    >
+    
+    # Windows specific (JUCE 8)
+    $<$<STREQUAL:${JUCE_TARGET_PLATFORM},Windows>:
+        COMPANY_WEBSITE "https://automagicart.com"
+        COMPANY_EMAIL "support@automagicart.com"
+        WIN32_EXECUTABLE_VERSION "1.0.0.0"
     >
 )
 
@@ -107,6 +177,26 @@ file(GLOB_RECURSE HEADER_FILES "Source/*.h")
 
 # Exclude test files
 list(FILTER SOURCE_FILES EXCLUDE REGEX "Source/tests/.*")
+
+# Ensure our new proportional scaling files are included
+set(PROPORTIONAL_SCALING_SOURCES
+    "Source/ProportionalScalingManager.cpp"
+    "Source/ProportionalScalingDemo.cpp"
+    "Source/EnhancedProportionalEditor.cpp"
+    "Source/ProportionalPluginEditor.cpp"
+)
+
+set(PROPORTIONAL_SCALING_HEADERS
+    "Source/ProportionalScalingManager.h"
+    "Source/ProportionalScalingDemo.h"
+    "Source/EnhancedProportionalEditor.h"
+    "Source/ProportionalPluginEditor.h"
+    "Source/JUCE8Compatibility.h"
+)
+
+# Add proportional scaling sources explicitly
+list(APPEND SOURCE_FILES ${PROPORTIONAL_SCALING_SOURCES})
+list(APPEND HEADER_FILES ${PROPORTIONAL_SCALING_HEADERS})
 
 # Add sources to target
 target_sources(OTTO PRIVATE ${SOURCE_FILES})
@@ -118,12 +208,13 @@ target_include_directories(OTTO PRIVATE
     Assets
 )
 
-# Link JUCE modules
+# Link JUCE 8 modules with plugin client support
 target_link_libraries(OTTO PRIVATE
     juce::juce_audio_basics
     juce::juce_audio_devices
     juce::juce_audio_formats
     juce::juce_audio_processors
+    juce::juce_audio_plugin_client
     juce::juce_audio_utils
     juce::juce_core
     juce::juce_data_structures
@@ -132,7 +223,81 @@ target_link_libraries(OTTO PRIVATE
     juce::juce_graphics
     juce::juce_gui_basics
     juce::juce_gui_extra
+    juce::juce_opengl
 )
+
+# Platform-specific additional libraries for JUCE 8
+if(JUCE_TARGET_PLATFORM STREQUAL "iOS")
+    target_link_libraries(OTTO PRIVATE
+        "-framework CoreMIDI"
+        "-framework AudioUnit"
+        "-framework AudioToolbox"
+        "-framework Accelerate"
+        "-framework QuartzCore"
+        "-framework CoreGraphics"
+        "-framework UIKit"
+        "-framework Foundation"
+        "-framework AVFoundation"
+    )
+elseif(JUCE_TARGET_PLATFORM STREQUAL "macOS")
+    target_link_libraries(OTTO PRIVATE
+        "-framework CoreMIDI"
+        "-framework AudioUnit"
+        "-framework AudioToolbox" 
+        "-framework Accelerate"
+        "-framework QuartzCore"
+        "-framework CoreGraphics"
+        "-framework Cocoa"
+        "-framework Foundation"
+        "-framework AVFoundation"
+        "-framework CoreAudio"
+    )
+elseif(JUCE_TARGET_PLATFORM STREQUAL "Windows")
+    target_link_libraries(OTTO PRIVATE
+        winmm.lib
+        ole32.lib
+        oleaut32.lib
+        imm32.lib
+        version.lib
+        shlwapi.lib
+        wininet.lib
+        ws2_32.lib
+    )
+elseif(JUCE_TARGET_PLATFORM STREQUAL "Linux")
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(ALSA REQUIRED alsa)
+    pkg_check_modules(FREETYPE REQUIRED freetype2)
+    pkg_check_modules(X11 REQUIRED x11)
+    pkg_check_modules(XEXT REQUIRED xext)
+    pkg_check_modules(XRANDR REQUIRED xrandr)
+    pkg_check_modules(XINERAMA REQUIRED xinerama)
+    pkg_check_modules(XCURSOR REQUIRED xcursor)
+    
+    target_link_libraries(OTTO PRIVATE
+        ${ALSA_LIBRARIES}
+        ${FREETYPE_LIBRARIES}
+        ${X11_LIBRARIES}
+        ${XEXT_LIBRARIES}
+        ${XRANDR_LIBRARIES}
+        ${XINERAMA_LIBRARIES}
+        ${XCURSOR_LIBRARIES}
+        pthread
+        rt
+        dl
+    )
+    
+    target_include_directories(OTTO PRIVATE
+        ${ALSA_INCLUDE_DIRS}
+        ${FREETYPE_INCLUDE_DIRS}
+        ${X11_INCLUDE_DIRS}
+    )
+elseif(JUCE_TARGET_PLATFORM STREQUAL "Android")
+    target_link_libraries(OTTO PRIVATE
+        android
+        log
+        OpenSLES
+    )
+endif()
 
 # JUCE 8 compile definitions matching ProJucer JUCEOPTIONS
 target_compile_definitions(OTTO PRIVATE
@@ -150,21 +315,31 @@ target_compile_definitions(OTTO PRIVATE
     JUCE_REPORT_APP_USAGE=0
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
+    JUCE_ALLOW_STATIC_NULL_VARIABLES=0
+    JUCE_LOG_ASSERTIONS=0
+    JUCE_CHECK_MEMORY_LEAKS=1
+    JUCE_DONT_DECLARE_PROJECTINFO=1
     
-    # Plugin format controls
+    # OpenGL and graphics optimizations for JUCE 8
+    JUCE_OPENGL=1
+    JUCE_OPENGL3=1
+    JUCE_USE_OPENGL_SHADERS=1
+    
+    # Plugin format controls (dynamic based on platform)
     JucePlugin_Build_VST=0
-    JucePlugin_Build_VST3=1
-    JucePlugin_Build_AU=1
-    JucePlugin_Build_CLAP=1
-    JucePlugin_Build_Standalone=1
+    $<$<IN_LIST:VST3,${OTTO_FORMATS}>:JucePlugin_Build_VST3=1>
+    $<$<IN_LIST:AU,${OTTO_FORMATS}>:JucePlugin_Build_AU=1>
+    $<$<IN_LIST:AUv3,${OTTO_FORMATS}>:JucePlugin_Build_AUv3=1>
+    $<$<IN_LIST:CLAP,${OTTO_FORMATS}>:JucePlugin_Build_CLAP=1>
+    $<$<IN_LIST:Standalone,${OTTO_FORMATS}>:JucePlugin_Build_Standalone=1>
     JucePlugin_Build_AAX=0
     JucePlugin_Build_Unity=0
+    JucePlugin_Build_LV2=0
     
     # Plugin characteristics matching ProJucer
     JucePlugin_IsSynth=1
     JucePlugin_WantsMidiInput=1
     JucePlugin_ProducesMidiOutput=1
-    JucePlugin_EditorRequiresKeyboardFocus=0
     JucePlugin_IsMidiEffect=1
     
     # Platform-specific audio backend definitions

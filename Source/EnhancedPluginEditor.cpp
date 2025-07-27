@@ -1,4 +1,5 @@
 #include "EnhancedPluginEditor.h"
+#include "JUCE8Compatibility.h"
 
 EnhancedPluginEditor::EnhancedPluginEditor(OTTOAudioProcessor& processor)
     : OTTOAudioProcessorEditor(processor)
@@ -74,7 +75,7 @@ void EnhancedPluginEditor::paint(juce::Graphics& g)
                              .removeFromRight(platformResponsiveManager->scaled(100));
         
         g.setColour(juce::Colours::yellow.withAlpha(0.7f));
-        g.setFont(platformResponsiveManager->scaled(juce::Font(10.0f)));
+        g.setFont(platformResponsiveManager->scaled(JUCE8_CREATE_FONT(10.0f, juce::Font::plain)));
         
         juce::String info = "Scale: " + juce::String(
             platformResponsiveManager->calculateOptimalScaling(getWidth(), getHeight()).baseUIScale, 2);

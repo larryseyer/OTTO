@@ -1,7 +1,5 @@
 OTTO is a powerful drum machine and sample playback system with these key features:
 
-<!-- Verification comment added by Devin for testing repo access and PR workflow -->
-
 - **8 Independent MIDI Players**: Each with (synced MIDI playback to host or stand alone), SFZ sample engine, unique sounds and midi & audio mixer with multiple outputs and FX for each.
 - **Pattern Management**: 4x4 grids of MIDI Beat patterns organized in groups of 16
 - **Smart Fill System**: Automatic and manual drum fills
@@ -45,7 +43,7 @@ All build outputs are automatically organized in the `Builds/` directory:
 Builds/
 ├── MacOSX/Release/        # macOS Universal Binary (Intel + Apple Silicon)
 │   ├── VST3/OTTO.vst3     # VST3 plugin
-│   ├── AU/OTTO.component  # Audio Unit plugin  
+│   ├── AU/OTTO.component  # Audio Unit plugin
 │   └── Standalone/OTTO.app # Standalone application
 ├── iOS/Release/           # iOS builds
 │   └── Standalone/OTTO.app # iOS standalone app

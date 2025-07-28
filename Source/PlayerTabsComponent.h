@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <tuple>
 #include "UtilityComponents.h"
 #include "ResponsiveLayoutManager.h"
 #include "FontManager.h"
@@ -33,6 +34,7 @@ public:
     void showClipState(int tabIndex, bool hasClip, bool isPlaying);
 
     void lookAndFeelChanged() override;
+    void parentSizeChanged() override;
 
     std::function<void(int)> onTabChanged;
     std::function<void(int)> onClipTriggered;
@@ -56,6 +58,9 @@ private:
     void updateTabVisuals();
     void updateTabText(int tabIndex, const PlayerSettings& player);
     void handleTabClick(int tabIndex);
+    
+    // JUCE 8 compatible layout calculation for player buttons
+    std::tuple<float, float, int> calculatePlayerButtonLayout(int availableWidth);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerTabsComponent)
 };

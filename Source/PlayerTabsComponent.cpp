@@ -14,7 +14,7 @@ PlayerTabsComponent::PlayerTabsComponent(MidiEngine& midiEngine,
 }
 
 void PlayerTabsComponent::setupTabs() {
-    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
         addAndMakeVisible(tabs[i]);
         tabs[i].setButtonText("PLAYER " + juce::String(i + 1));
 
@@ -30,7 +30,7 @@ void PlayerTabsComponent::setupTabs() {
 }
 
 void PlayerTabsComponent::setSelectedTab(int tab) {
-    if (tab >= 0 && tab < INIConfig::LayoutConstants::playerTabsCount && tab != selectedTab) {
+    if (tab >= 0 && tab < INIConfig::LayoutConstants::Row2::tabsCount && tab != selectedTab) {
         selectedTab = INIConfig::clampPlayerIndex(tab);
         midiEngine.selectPattern(selectedTab, 0);
 
@@ -45,7 +45,7 @@ void PlayerTabsComponent::setSelectedTab(int tab) {
 }
 
 void PlayerTabsComponent::lookAndFeelChanged() {
-    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
         tabs[i].repaint();
     }
     repaint();
@@ -60,7 +60,7 @@ void PlayerTabsComponent::parentSizeChanged() {
 }
 
 void PlayerTabsComponent::updateTabVisuals() {
-    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
         tabs[i].setToggleState(i == selectedTab, juce::dontSendNotification);
 
         tabs[i].removeColour(juce::TextButton::buttonColourId);
@@ -95,7 +95,7 @@ void PlayerTabsComponent::loadStates(const ComponentState& state) {
 }
 
 void PlayerTabsComponent::updateTabsFromState(const ComponentState& state) {
-    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
         if (INIConfig::isValidPlayerIndex(i)) {
             updateTabText(i, state.playerSettings[i]);
         }
@@ -108,7 +108,7 @@ void PlayerTabsComponent::updateTabsFromState(const ComponentState& state) {
 void PlayerTabsComponent::setClipLaunchMode(bool enabled) {
     clipLaunchMode = enabled;
 
-    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
         tabs[i].onClick = [this, i] {
             handleTabClick(i);
         };
@@ -126,7 +126,7 @@ void PlayerTabsComponent::handleTabClick(int tabIndex) {
 }
 
 void PlayerTabsComponent::highlightQueuedTab(int tabIndex, bool highlight) {
-    if (tabIndex >= 0 && tabIndex < INIConfig::LayoutConstants::playerTabsCount) {
+    if (tabIndex >= 0 && tabIndex < INIConfig::LayoutConstants::Row2::tabsCount) {
         tabQueuedStates[tabIndex] = highlight;
 
         if (highlight) {
@@ -139,7 +139,7 @@ void PlayerTabsComponent::highlightQueuedTab(int tabIndex, bool highlight) {
 }
 
 void PlayerTabsComponent::showClipState(int tabIndex, bool hasClip, bool isPlaying) {
-    if (tabIndex >= 0 && tabIndex < INIConfig::LayoutConstants::playerTabsCount) {
+    if (tabIndex >= 0 && tabIndex < INIConfig::LayoutConstants::Row2::tabsCount) {
         tabHasClip[tabIndex] = hasClip;
         tabIsPlaying[tabIndex] = isPlaying;
 
@@ -157,49 +157,56 @@ void PlayerTabsComponent::paint(juce::Graphics& g) {
 
     auto bounds = getLocalBounds();
     
-    // Calculate button dimensions and total width needed
-    auto [buttonWidth, totalWidth, startX] = calculatePlayerButtonLayout(bounds.getWidth());
+    // PHASE 4: Use percentage-based Row 2 constants for highlight positioning
+    // ======================================================================
+    int tabWidth = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabWidth);
+    int leftMargin = layoutManager.scaled(INIConfig::LayoutConstants::Row2::leftMargin);
+    int tabSpacing = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabSpacing);
+    int highlightHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row2::highlightHeight);
+    int highlightMargin = layoutManager.scaled(INIConfig::LayoutConstants::Row2::highlightMargin);
+    int highlightWidthReduction = layoutManager.scaled(INIConfig::LayoutConstants::Row2::highlightWidthReduction);
     
     // Draw highlight for selected tab
     g.setColour(colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     
-    // Calculate selected button position with CORRECTED layout
-    int selectedButtonX = startX;
+    // Calculate selected button position using percentage-based layout
+    int selectedButtonX = leftMargin;
     for (int i = 0; i < selectedTab; ++i) {
-        // Move past current button + 1/4w margin to next button
-        selectedButtonX += static_cast<int>(buttonWidth + (buttonWidth * 0.25f));
+        selectedButtonX += tabWidth + tabSpacing;
     }
     
-    g.fillRect(selectedButtonX + layoutManager.scaled(INIConfig::LayoutConstants::playerTabHighlightMargin),
-               bounds.getBottom() - layoutManager.scaled(INIConfig::LayoutConstants::playerTabHighlightHeight),
-               static_cast<int>(buttonWidth) - layoutManager.scaled(INIConfig::LayoutConstants::playerTabHighlightWidthReduction),
-               layoutManager.scaled(INIConfig::LayoutConstants::playerTabHighlightHeight));
+    g.fillRect(selectedButtonX + highlightMargin,
+               bounds.getBottom() - highlightHeight,
+               tabWidth - highlightWidthReduction,
+               highlightHeight);
 }
 
 void PlayerTabsComponent::resized() {
     auto bounds = getLocalBounds();
     
-    // Calculate button dimensions and positioning
-    auto [buttonWidth, totalWidth, startX] = calculatePlayerButtonLayout(bounds.getWidth());
-    int tabHeight = bounds.getHeight() - layoutManager.scaled(INIConfig::LayoutConstants::playerTabHeight);
+    // PHASE 4: Use percentage-based Row 2 constants for positioning
+    // ============================================================
+    int tabWidth = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabWidth);
+    int leftMargin = layoutManager.scaled(INIConfig::LayoutConstants::Row2::leftMargin);
+    int tabSpacing = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabSpacing);
+    int tabTopOffset = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabTopOffset);
+    int tabContentHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabContentHeight);
 
-    // Position each player tab with CORRECTED layout:
-    // Button 1: [1/2w margin][Button1] (starts at 0.5w from left)
-    // Buttons 2-7: [1/4w margin][Button] (1/4w margin before each)
-    // Button 8: [1/4w margin][Button8][1/2w margin] (1/4w margin before, 1/2w margin after)
-    int currentX = startX;
-    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+    // Position each player tab using percentage-based layout:
+    // Button 1: [4.5% margin][Button1] (left margin)
+    // Buttons 2-7: [2.25% margin][Button] (spacing between tabs)
+    // Button 8: [2.25% margin][Button8][4.5% margin] (right margin)
+    int currentX = leftMargin;
+    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
         tabs[i].setBounds(currentX, 
-                         layoutManager.scaled(INIConfig::LayoutConstants::playerTabTopOffset), 
-                         static_cast<int>(buttonWidth), 
-                         tabHeight);
+                         tabTopOffset, 
+                         tabWidth, 
+                         tabContentHeight);
         
-        // Move to next button position:
-        // - Add current button width
-        // - Add 1/4w margin before next button (except for the last button)
-        currentX += static_cast<int>(buttonWidth);
-        if (i < INIConfig::LayoutConstants::playerTabsCount - 1) {
-            currentX += static_cast<int>(buttonWidth * 0.25f); // 1/4w margin before next button
+        // Move to next button position using percentage-based spacing
+        currentX += tabWidth;
+        if (i < INIConfig::LayoutConstants::Row2::tabsCount - 1) {
+            currentX += tabSpacing; // Add spacing before next tab
         }
     }
 
@@ -207,36 +214,5 @@ void PlayerTabsComponent::resized() {
                              bounds.getWidth(), layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
 }
 
-std::tuple<float, float, int> PlayerTabsComponent::calculatePlayerButtonLayout(int availableWidth) {
-    const int numButtons = INIConfig::LayoutConstants::playerTabsCount;
-    
-    // Ensure minimum width to prevent division by zero or negative values
-    if (availableWidth <= 0 || numButtons <= 0) {
-        return std::make_tuple(0.0f, 0.0f, 0);
-    }
-    
-    // CORRECTED Layout specification:
-    // Button 1: [1/2w margin][Button1] (double margin on left only)
-    // Buttons 2-7: [1/4w margin][Button] (single margin on left only) 
-    // Button 8: [1/4w margin][Button8][1/2w margin] (single margin on left, double margin on right)
-    // 
-    // Layout: [1/2w][B1][1/4w][B2][1/4w][B3][1/4w][B4][1/4w][B5][1/4w][B6][1/4w][B7][1/4w][B8][1/2w]
-    // Total width = 1/2w + 8×B + 7×(1/4w) + 1/2w = 1w + 8B + 1.75w = 2.75w + 8B
-    // If B = w, then: availableWidth = 10.75w
-    // So: w = availableWidth / 10.75
-    
-    float buttonWidth = static_cast<float>(availableWidth) / 10.75f;
-    
-    // Ensure minimum button width for usability
-    buttonWidth = juce::jmax(buttonWidth, 16.0f);
-    
-    // Calculate total layout width
-    float totalWidth = 10.75f * buttonWidth;
-    
-    // Button 1 starts after 1/2w margin from left edge
-    int startX = static_cast<int>(buttonWidth * 0.5f);
-    
-
-    
-    return std::make_tuple(buttonWidth, totalWidth, startX);
-}
+// PHASE 4: Removed calculatePlayerButtonLayout method
+// Now using percentage-based constants from INIConfig::LayoutConstants::Row2

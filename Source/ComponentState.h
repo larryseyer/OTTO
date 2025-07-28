@@ -452,6 +452,12 @@ public:
     int currentPreset = INIConfig::Defaults::DEFAULT_CURRENT_PRESET;
     int phosphorIconWeight = INIConfig::Defaults::DEFAULT_PHOSPHOR_WEIGHT;
 
+    // DrumKit popup window state
+    int drumKitWindowX = 100;
+    int drumKitWindowY = 100;
+    int drumKitWindowWidth = 500;
+    int drumKitWindowHeight = 400;
+
     juce::Array<MidiMappingState> midiMappings;
     MidiControllerPresetData currentControllerPreset;
     juce::String currentLearnParameter;

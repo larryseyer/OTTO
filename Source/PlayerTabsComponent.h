@@ -59,8 +59,7 @@ private:
     void updateTabText(int tabIndex, const PlayerSettings& player);
     void handleTabClick(int tabIndex);
     
-    // JUCE 8 compatible layout calculation for player buttons
-    std::tuple<float, float, int> calculatePlayerButtonLayout(int availableWidth);
+    // PHASE 4: Removed calculatePlayerButtonLayout method - now using percentage-based Row 2 constants
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerTabsComponent)
 };

@@ -3,7 +3,7 @@
 #include "PluginProcessor.h"
 #include "TopBarComponent.h"
 #include "PlayerTabsComponent.h"
-#include "DrumKitSectionComponent.h"
+#include "PopupWindowsDrumKit.h"
 #include "ColorScheme.h"
 #include "ResponsiveLayoutManager.h"
 #include "FontManager.h"
@@ -41,13 +41,14 @@ private:
     std::unique_ptr<CustomLookAndFeel> customLookAndFeel;
     std::unique_ptr<TopBarComponent> topBar;
     std::unique_ptr<PlayerTabsComponent> playerTabs;
-    std::unique_ptr<DrumKitSectionComponent> drumKitSection;
+    std::unique_ptr<DrumKitSelectionWindow> drumKitPopup;
     std::unique_ptr<MainContentComponent> mainContent;
     std::unique_ptr<juce::Component> splashOverlay;
     ComponentState componentState;
     std::unique_ptr<SettingsPanelWindow> settingsPanel;
 
     void showSettingsPanel();
+    void showDrumKitPopup();
     int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     bool isInitialized = false;
     void initializeManagers();

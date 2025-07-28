@@ -186,7 +186,7 @@ OTTOAudioProcessorEditor::~OTTOAudioProcessorEditor()
     if (colorScheme)
         colorScheme->removeListener(this);
 
-    if (isInitialized && topBar && playerTabs && drumKitSection && dataManager)
+    if (isInitialized && topBar && playerTabs && drumKitPopup && dataManager)
     {
         try {
             saveEditorState();
@@ -248,10 +248,7 @@ void OTTOAudioProcessorEditor::initializeManagers()
                 playerTabs->lookAndFeelChanged();
                 playerTabs->resized();
             }
-            if (drumKitSection) {
-                drumKitSection->lookAndFeelChanged();
-                drumKitSection->resized();
-            }
+            // DrumKit popup is now handled separately - no main GUI updates needed
             if (mainContent) {
                 mainContent->lookAndFeelChanged();
                 mainContent->resized();
@@ -390,32 +387,28 @@ void OTTOAudioProcessorEditor::createComponents()
             DBG("PluginEditor: Failed to create PlayerTabsComponent");
         }
 
-        // Null-pointer safety: Create DrumKitSectionComponent with error handling
+        // Create DrumKit popup window (not added to main GUI)
         if (dataManager) {
-            drumKitSection = ErrorHandler::safeCreate<DrumKitSectionComponent>(
+            drumKitPopup = ErrorHandler::safeCreate<DrumKitSelectionWindow>(
                 [&]() {
-                    return std::make_unique<DrumKitSectionComponent>(
+                    return std::make_unique<DrumKitSelectionWindow>(
                         audioProcessor.getPresetManager(),
                         audioProcessor.getSFZEngine(),
-                        *layoutManager,
-                        *fontManager,
                         *colorScheme,
+                        *fontManager,
+                        *layoutManager,
                         *dataManager,
                         &audioProcessor.getMixer()
                     );
                 },
-                "DrumKitSectionComponent"
+                "DrumKitSelectionWindow"
             );
             
-            if (drumKitSection) {
-                ErrorHandler::safeExecute([&]() {
-                    addAndMakeVisible(drumKitSection.get());
-                }, "DrumKitSection visibility");
-            } else {
-                DBG("PluginEditor: Failed to create DrumKitSectionComponent");
+            if (!drumKitPopup) {
+                DBG("PluginEditor: Failed to create DrumKitSelectionWindow");
             }
         } else {
-            DBG("PluginEditor: Cannot create DrumKitSection - dataManager is null");
+            DBG("PluginEditor: Cannot create DrumKitPopup - dataManager is null");
         }
 
         // Null-pointer safety: Create MainContentComponent with error handling
@@ -451,8 +444,7 @@ void OTTOAudioProcessorEditor::createComponents()
 
 void OTTOAudioProcessorEditor::setupCallbacks()
 {
-    if (!topBar || !playerTabs || !drumKitSection) {
-
+    if (!topBar || !playerTabs) {
         return;
     }
 
@@ -482,22 +474,33 @@ void OTTOAudioProcessorEditor::setupCallbacks()
         saveEditorState();
     };
 
-    drumKitSection->onKitChanged = [this](int kitIndex) {
-        if (INIConfig::isValidPlayerIndex(currentPlayerIndex))
-        {
-            componentState.playerSettings[currentPlayerIndex].selectedButton =
-                INIConfig::clampButtonIndex(kitIndex);
-            saveEditorState();
-        }
-    };
+    // Setup drumkit popup callbacks
+    if (drumKitPopup) {
+        drumKitPopup->onKitChanged = [this](int kitIndex) {
+            if (INIConfig::isValidPlayerIndex(currentPlayerIndex))
+            {
+                componentState.playerSettings[currentPlayerIndex].selectedButton =
+                    INIConfig::clampButtonIndex(kitIndex);
+                saveEditorState();
+            }
+        };
 
-    drumKitSection->onPowerStateChanged = [this](bool enabled) {
-        if (INIConfig::isValidPlayerIndex(currentPlayerIndex))
-        {
-            componentState.playerSettings[currentPlayerIndex].enabled = enabled;
-            saveEditorState();
-        }
-    };
+        drumKitPopup->onPowerStateChanged = [this](bool enabled) {
+            if (INIConfig::isValidPlayerIndex(currentPlayerIndex))
+            {
+                componentState.playerSettings[currentPlayerIndex].enabled = enabled;
+                saveEditorState();
+            }
+        };
+        
+        drumKitPopup->onEditRequested = [this]() {
+            // Handle drumkit editing if needed
+        };
+        
+        drumKitPopup->onMixerRequested = [this]() {
+            // Handle mixer request if needed
+        };
+    }
 
     if (mainContent) {
         mainContent->onEditModeChanged = [this](bool editMode) {
@@ -506,6 +509,11 @@ void OTTOAudioProcessorEditor::setupCallbacks()
 
         mainContent->onSliderValueChanged = [this](const juce::String& sliderId, float value) {
             saveEditorState();
+        };
+        
+        // Connect DrumKit popup trigger - Phase 2 of DrumKit Popup Refactor
+        mainContent->onDrumKitPopupRequested = [this]() {
+            showDrumKitPopup();
         };
     }
 }
@@ -545,31 +553,26 @@ void OTTOAudioProcessorEditor::resized()
         splashOverlay->setBounds(getLocalBounds());
     }
 
-    // Calculate responsive window areas as proportions of current window size
+    // Calculate responsive window areas - simplified without drumkit section
     // These proportions are based on the original design at 1200x800
     const float topBarHeightRatio = 0.075f;        // 7.5% of height (60/800)
     const float playerTabsHeightRatio = 0.0625f;   // 6.25% of height (50/800) 
-    const float drumKitWidthRatio = 0.25f;         // 25% of width (300/1200)
     
     // Calculate actual dimensions based on current window size
     const int topBarHeight = static_cast<int>(getHeight() * topBarHeightRatio);
     const int playerTabsHeight = static_cast<int>(getHeight() * playerTabsHeightRatio);
-    const int drumKitWidth = static_cast<int>(getWidth() * drumKitWidthRatio);
     
     // Ensure minimum sizes for usability - these scale with the interface
     const int minTopBarHeight = layoutManager ? layoutManager->scaled(50) : 50;
     const int minPlayerTabsHeight = layoutManager ? layoutManager->scaled(40) : 40;
-    const int minDrumKitWidth = layoutManager ? layoutManager->scaled(200) : 200;
     
     // Maximum sizes to prevent areas from becoming too large on very big screens
     const int maxTopBarHeight = layoutManager ? layoutManager->scaled(120) : 120;
     const int maxPlayerTabsHeight = layoutManager ? layoutManager->scaled(80) : 80;
-    const int maxDrumKitWidth = static_cast<int>(getWidth() * 0.4f); // Maximum 40% of width
     
     // Apply constraints
     const int finalTopBarHeight = juce::jlimit(minTopBarHeight, maxTopBarHeight, topBarHeight);
     const int finalPlayerTabsHeight = juce::jlimit(minPlayerTabsHeight, maxPlayerTabsHeight, playerTabsHeight);
-    const int finalDrumKitWidth = juce::jlimit(minDrumKitWidth, maxDrumKitWidth, drumKitWidth);
     
     // Debug output for responsive layout (uncomment for debugging)
     // DBG("Window: " << getWidth() << "x" << getHeight() << " | TopBar: " << finalTopBarHeight << " | PlayerTabs: " << finalPlayerTabsHeight << " | DrumKit: " << finalDrumKitWidth);
@@ -594,25 +597,7 @@ void OTTOAudioProcessorEditor::resized()
         }
     }
 
-    // Set DrumKitSection bounds (right side of remaining area)
-    // Only show drum kit section if there's enough remaining width for main content
-    const int minMainContentWidth = layoutManager ? layoutManager->scaled(300) : 300;
-    const bool shouldShowDrumKit = (bounds.getWidth() - finalDrumKitWidth) >= minMainContentWidth;
-    
-    if (drumKitSection && finalDrumKitWidth > 0 && shouldShowDrumKit) {
-        auto drumKitBounds = bounds.removeFromRight(finalDrumKitWidth);
-        if (!drumKitBounds.isEmpty()) {
-            drumKitSection->setBounds(drumKitBounds);
-            drumKitSection->setVisible(true);
-            // Force the component to recalculate its internal layout
-            drumKitSection->resized();
-        }
-    } else if (drumKitSection) {
-        // Hide drum kit section if window is too small
-        drumKitSection->setVisible(false);
-    }
-
-    // Set MainContent bounds (remaining area after top bars and drum kit section)
+    // Set MainContent bounds (remaining area after top bars - full width now)
     if (mainContent && !bounds.isEmpty()) {
         mainContent->setBounds(bounds);
         mainContent->setVisible(true);
@@ -695,8 +680,8 @@ void OTTOAudioProcessorEditor::saveAllComponentStates()
     if (playerTabs)
         playerTabs->saveStates(componentState);
 
-    if (drumKitSection)
-        drumKitSection->saveStates(componentState);
+    if (drumKitPopup)
+        drumKitPopup->saveStates(componentState);
 
     if (mainContent)
         mainContent->saveStates(componentState);
@@ -716,8 +701,8 @@ void OTTOAudioProcessorEditor::loadAllComponentStates()
     if (playerTabs)
         playerTabs->loadStates(componentState);
 
-    if (drumKitSection)
-        drumKitSection->loadStates(componentState);
+    if (drumKitPopup)
+        drumKitPopup->loadStates(componentState);
 
     if (mainContent)
         mainContent->loadStates(componentState);
@@ -773,7 +758,7 @@ void OTTOAudioProcessorEditor::applyColorScheme()
 
         if (topBar) topBar->repaint();
         if (playerTabs) playerTabs->repaint();
-        if (drumKitSection) drumKitSection->repaint();
+        // DrumKit popup handles its own repainting
         if (mainContent) mainContent->repaint();
 
         repaint();
@@ -787,14 +772,17 @@ void OTTOAudioProcessorEditor::handlePlayerChange(int newPlayerIndex)
 
     if (INIConfig::isValidPlayerIndex(currentPlayerIndex))
     {
-        drumKitSection->saveStates(componentState);
+        if (drumKitPopup)
+            drumKitPopup->saveStates(componentState);
     }
 
     currentPlayerIndex = newPlayerIndex;
     componentState.currentPlayer = currentPlayerIndex;
 
-    drumKitSection->setCurrentPlayerIndex(currentPlayerIndex);
-    drumKitSection->loadStates(componentState);
+    if (drumKitPopup) {
+        drumKitPopup->setCurrentPlayerIndex(currentPlayerIndex);
+        drumKitPopup->loadStates(componentState);
+    }
 
     audioProcessor.getMidiEngine().setCurrentPlayer(currentPlayerIndex);
 }
@@ -869,7 +857,7 @@ void OTTOAudioProcessorEditor::showSettingsPanel()
             juce::ignoreUnused(weight);
             if (topBar) topBar->repaint();
             if (playerTabs) playerTabs->repaint();
-            if (drumKitSection) drumKitSection->repaint();
+            // DrumKit is now in popup - no main GUI repaint needed
             saveEditorState();
         };
 
@@ -879,4 +867,19 @@ void OTTOAudioProcessorEditor::showSettingsPanel()
     settingsPanel->setBounds(getLocalBounds());
     settingsPanel->setVisible(true);
     settingsPanel->toFront(true);
+}
+
+void OTTOAudioProcessorEditor::showDrumKitPopup()
+{
+    if (drumKitPopup) {
+        // Update the popup with current player index
+        drumKitPopup->setCurrentPlayerIndex(currentPlayerIndex);
+        
+        // Load current state
+        drumKitPopup->loadStates(componentState);
+        
+        // Show and bring to front
+        drumKitPopup->setVisible(true);
+        drumKitPopup->toFront(true);
+    }
 }

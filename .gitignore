@@ -108,6 +108,10 @@ cmake/Makefile
 ehthumbs.db
 Thumbs.db
 
+# Build artifacts
+compile_commands.json
+**/compile_commands.json
+
 # IDE files - CLion/IntelliJ
 .idea/
 

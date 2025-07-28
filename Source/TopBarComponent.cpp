@@ -758,6 +758,16 @@ void TopBarComponent::setupPresets() {
 }
 
 void TopBarComponent::buildHierarchicalPresetMenu() {
+    // Ensure default preset structure exists
+    ensureDefaultPresetStructure();
+    
+    // Create sample preset structure for demonstration (only if directories are empty)
+    auto presetsDir = INIConfig::getPresetsDirectory();
+    auto categoryDirs = presetsDir.findChildFiles(juce::File::findDirectories, false);
+    if (categoryDirs.size() <= 1) { // Only Default category exists
+        createSamplePresetStructure();
+    }
+    
     juce::PopupMenu mainMenu;
 
     mainMenu.setLookAndFeel(&getLookAndFeel());
@@ -765,32 +775,28 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
     presetMenuMapping.clear();
     int currentMenuId = 1;
 
-    struct PresetCategory {
-        juce::String categoryName;
-        juce::StringArray presets;
-    };
+    // Get categories from filesystem
+    auto categories = getPresetCategoriesFromFilesystem();
 
-    PresetCategory categories[] = {
-        {"Basic", {"Default", "Acoustic", "Electronic"}},
-        {"Vintage", {"Bathroom", "Blues", "Brush"}},
-        {"Modern", {"Claps", "Funk", "Rock"}},
-        {"Special", {"Noise Makers", "Percs", "Rods & Shakers", "Tamborine"}}
-    };
-
-    for (const auto& category : categories) {
+    for (const auto& categoryName : categories) {
         juce::PopupMenu subMenu;
-
         subMenu.setLookAndFeel(&getLookAndFeel());
 
-        for (const auto& preset : category.presets) {
+        // Get presets in this category
+        auto presetsInCategory = getPresetsInCategory(categoryName);
+
+        for (const auto& preset : presetsInCategory) {
             bool isCurrentSelection = (preset == currentPresetName);
             subMenu.addItem(currentMenuId, preset, true, isCurrentSelection);
 
-            presetMenuMapping.add({preset, currentMenuId});
+            presetMenuMapping.add({preset, categoryName, currentMenuId});
             currentMenuId++;
         }
 
-        mainMenu.addSubMenu(category.categoryName, subMenu);
+        // Only add submenu if it has presets
+        if (presetsInCategory.size() > 0) {
+            mainMenu.addSubMenu(categoryName, subMenu);
+        }
     }
 
     mainMenu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(&presetsMenu),
@@ -830,9 +836,163 @@ juce::StringArray TopBarComponent::getAllPresetNames() const {
             return presets;
         }
     }
-    
+
     // Fallback to just Default if system is not ready
     return {"Default"};
+}
+
+juce::Array<juce::String> TopBarComponent::getPresetCategoriesFromFilesystem() const {
+    juce::Array<juce::String> categories;
+    
+    auto presetsDir = INIConfig::getPresetsDirectory();
+    if (!presetsDir.exists()) {
+        categories.add("Defaults");
+        return categories;
+    }
+    
+    // Always ensure "Defaults" category exists and comes first
+    bool hasDefaults = false;
+    
+    // Scan for subdirectories in the Presets folder
+    for (auto& file : presetsDir.findChildFiles(juce::File::findDirectories, false)) {
+        juce::String categoryName = file.getFileName();
+        if (categoryName == "Defaults") {
+            hasDefaults = true;
+        } else {
+            categories.add(categoryName);
+        }
+    }
+    
+    // Ensure Defaults is first
+    if (hasDefaults) {
+        categories.insert(0, "Defaults");
+    } else {
+        categories.insert(0, "Defaults");
+    }
+    
+    return categories;
+}
+
+juce::StringArray TopBarComponent::getPresetsInCategory(const juce::String& categoryName) const {
+    juce::StringArray presets;
+    
+    auto presetsDir = INIConfig::getPresetsDirectory();
+    auto categoryDir = presetsDir.getChildFile(categoryName);
+    
+    if (!categoryDir.exists()) {
+        // For Defaults category, create it and add default preset
+        if (categoryName == "Defaults") {
+            if (iniDataManager) {
+                iniDataManager->createDefaultPreset();
+                presets.add("Default");
+            }
+        }
+        return presets;
+    }
+    
+    // Scan for preset files in the category directory
+    // Look for .ini files (presets are stored as INI files)
+    for (auto& file : categoryDir.findChildFiles(juce::File::findFiles, false, "*.ini")) {
+        juce::String presetName = file.getFileNameWithoutExtension();
+        presets.add(presetName);
+    }
+    
+    // If no presets found but it's Defaults category, create and add Default preset
+    if (presets.isEmpty() && categoryName == "Defaults") {
+        if (iniDataManager) {
+            iniDataManager->createDefaultPreset();
+            presets.add("Default");
+        }
+    }
+    
+    // Sort presets, but ensure "Default" comes first if it exists
+    if (presets.contains("Default")) {
+        presets.removeString("Default");
+        presets.sort(false);
+        presets.insert(0, "Default");
+    } else {
+        presets.sort(false);
+    }
+    
+    return presets;
+}
+
+void TopBarComponent::ensureDefaultPresetStructure() const {
+    auto presetsDir = INIConfig::getPresetsDirectory();
+    
+    // Ensure main presets directory exists
+    if (!presetsDir.exists()) {
+        presetsDir.createDirectory();
+    }
+    
+    // Ensure Defaults category directory exists
+    auto defaultCategoryDir = presetsDir.getChildFile("Defaults");
+    if (!defaultCategoryDir.exists()) {
+        defaultCategoryDir.createDirectory();
+    }
+    
+    // Ensure Default preset file exists - use INIDataManager to create it properly
+    auto defaultPresetFile = defaultCategoryDir.getChildFile("Default.ini");
+    if (!defaultPresetFile.existsAsFile() && iniDataManager) {
+        iniDataManager->createDefaultPreset();
+    }
+}
+
+void TopBarComponent::createSamplePresetStructure() const {
+    if (!iniDataManager) return;
+    
+    auto presetsDir = INIConfig::getPresetsDirectory();
+    
+    // Create sample categories and presets to match the original hardcoded structure
+    struct SampleCategory {
+        juce::String categoryName;
+        juce::StringArray presets;
+    };
+    
+    SampleCategory sampleCategories[] = {
+        {"Basic", {"Acoustic", "Electronic"}},
+        {"Vintage", {"Bathroom", "Blues", "Brush"}},
+        {"Modern", {"Claps", "Funk", "Rock"}},
+        {"Special", {"Noise Makers", "Percs", "Rods & Shakers", "Tamborine"}}
+    };
+    
+    for (const auto& category : sampleCategories) {
+        auto categoryDir = presetsDir.getChildFile(category.categoryName);
+        if (!categoryDir.exists()) {
+            categoryDir.createDirectory();
+        }
+        
+        for (const auto& presetName : category.presets) {
+            auto presetFile = categoryDir.getChildFile(presetName + ".ini");
+            if (!presetFile.existsAsFile()) {
+                // Create a basic sample preset state
+                ComponentState sampleState;
+                sampleState.tempo = INIConfig::Defaults::DEFAULT_TEMPO;
+                sampleState.sliderValues["masterVolume"] = INIConfig::Defaults::DEFAULT_MASTER_VOLUME;
+                
+                // Set sample player settings with variations based on preset name
+                for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+                    auto& player = sampleState.playerSettings[i];
+                    player.enabled = (i < 4); // Enable first 4 players for sample presets
+                    player.selectedDrumkit = (presetName.contains("Electronic")) ? "Electronic" : "Acoustic";
+                    player.swingValue = INIConfig::Defaults::SWING;
+                    player.energyValue = INIConfig::Defaults::ENERGY;
+                    player.volume = INIConfig::Defaults::VOLUME;
+                }
+                
+                // Use INIDataManager to save the preset properly 
+                // First save with a temporary name and then rename the file to correct category
+                iniDataManager->savePreset(presetName, sampleState);
+                
+                // Move the preset file to correct category if it was created in the wrong location
+                auto userDir = presetsDir.getChildFile("User");
+                auto wrongFile = userDir.getChildFile(presetName + ".ini");
+                if (wrongFile.existsAsFile() && category.categoryName != "User") {
+                    wrongFile.moveFileTo(presetFile);
+                }
+            }
+        }
+    }
 }
 
 void TopBarComponent::handlePresetChevrons(bool isRight) {

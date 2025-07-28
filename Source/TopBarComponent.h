@@ -107,6 +107,7 @@ private:
 
     struct PresetMenuMapping {
         juce::String presetName;
+        juce::String categoryName;
         int menuId;
     };
     juce::Array<PresetMenuMapping> presetMenuMapping;
@@ -115,6 +116,10 @@ private:
     void setupPresets();
     void buildHierarchicalPresetMenu();
     void handlePresetMenuSelection(int result);
+    juce::Array<juce::String> getPresetCategoriesFromFilesystem() const;
+    juce::StringArray getPresetsInCategory(const juce::String& categoryName) const;
+    void ensureDefaultPresetStructure() const;
+    void createSamplePresetStructure() const;
     void handlePresetChevrons(bool isRight);
     void updatePlayButtons();
     void updateLinkButtonVisuals();

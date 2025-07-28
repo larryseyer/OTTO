@@ -77,6 +77,7 @@ public:
     bool presetExists(const juce::String& presetName);
     juce::StringArray getAvailablePresetNames();
     bool createDefaultPreset();
+    bool ensureDefaultPresetExists();
     bool isValidPresetName(const juce::String& name) const;
 
     juce::Colour stringToColor(const juce::String& colorString);

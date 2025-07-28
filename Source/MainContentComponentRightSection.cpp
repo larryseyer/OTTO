@@ -277,7 +277,7 @@ void MainContentComponentRightSection::paint(juce::Graphics& g) {
         laf->drawHorizontalSeparator(g, 0, dividerY, bounds.getWidth(), 2.0f);
     } else {
         g.setColour(colorScheme.getColor(ColorScheme::ColorRole::Separator));
-        g.fillRect(0, dividerY, bounds.getWidth(), layoutManager.scaled(2));
+        g.fillRect(0, dividerY, bounds.getWidth(), static_cast<int>(layoutManager.scaled(INIConfig::LayoutConstants::separatorComponentDefaultThickness * 2)));
     }
 }
 

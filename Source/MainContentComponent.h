@@ -14,8 +14,11 @@ class INIDataManager;
 class MainContentComponentLeftSection;
 class MainContentComponentRightSection;
 class SceneLauncherComponent;
+class LoopSectionComponent;
 
-class MainContentComponent : public juce::Component {
+class MainContentComponent : public juce::Component,
+                              public juce::Button::Listener,
+                              public juce::ComboBox::Listener {
 public:
     MainContentComponent(MidiEngine& midiEngine,
                         Mixer& mixer,
@@ -28,6 +31,12 @@ public:
 
     void paint(juce::Graphics&) override;
     void resized() override;
+    
+    // juce::Button::Listener
+    void buttonClicked(juce::Button* button) override;
+    
+    // juce::ComboBox::Listener
+    void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override;
 
     void updatePlayerDisplay(int playerIndex);
 
@@ -66,6 +75,7 @@ public:
     std::function<void(const juce::String&, float)> onSliderValueChanged;
     std::function<void()> onGrooveAndFillsRequested;
     std::function<void(ComponentState&)> onStateChanged;
+    std::function<void()> onDrumKitPopupRequested;
 
 private:
     MidiEngine& midiEngine;
@@ -77,9 +87,26 @@ private:
 
     juce::Label rhythmLabel;
     juce::Label playerNumber;
+    
+    // Row 3: Player & DrumKit Controls
+    PhosphorIconButton drumKitEditButton;
+    PhosphorIconButton drumKitLeftChevron;
+    HierarchicalComboBox drumKitDropdown;
+    PhosphorIconButton drumKitRightChevron;
+    PhosphorIconButton drumKitMuteButton;
+    PhosphorIconButton drumKitMixerButton;
+    
+    // Row 4: Pattern Group Controls
+    juce::Label patternGroupLabel;
+    HierarchicalComboBox patternGroupDropdown;
+    juce::Label patternStatusLabel;
+    PhosphorIconButton patternAddButton;
+    PhosphorIconButton patternDeleteButton;
+    
     std::unique_ptr<MainContentComponentLeftSection> leftSection;
     std::unique_ptr<MainContentComponentRightSection> rightSection;
     std::unique_ptr<SceneLauncherComponent> sceneLauncher;
+    std::unique_ptr<LoopSectionComponent> loopSection;
     SeparatorComponent topSeparator;
     SeparatorComponent bottomSeparator;
 
@@ -91,6 +118,12 @@ private:
     void updatePlayerNumberDisplay();
     void notifyStateChanged(ComponentState& state);
     void updateLayoutForPerformanceMode();
+    void setupRow3Components();
+    void setupRow4Components();
+    void updateRow3Layout();
+    void updateRow4Layout();
+    void updateRow5Layout();
+    void updateRow6Layout();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainContentComponent)
 };

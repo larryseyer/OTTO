@@ -232,6 +232,38 @@ void OTTOAudioProcessorEditor::initializeManagers()
             return;
         }
 
+        // Set up responsive layout callback to handle scale changes
+        layoutManager->onScaleChanged = [this](float newScale) {
+            if (fontManager) {
+                fontManager->setScaleFactor(newScale);
+            }
+            
+            // Notify all components that look and feel has changed to update fonts
+            // This is crucial for JUCE 8 - components need to know when fonts change
+            if (topBar) {
+                topBar->lookAndFeelChanged();
+                topBar->resized();
+            }
+            if (playerTabs) {
+                playerTabs->lookAndFeelChanged();
+                playerTabs->resized();
+            }
+            if (drumKitSection) {
+                drumKitSection->lookAndFeelChanged();
+                drumKitSection->resized();
+            }
+            if (mainContent) {
+                mainContent->lookAndFeelChanged();
+                mainContent->resized();
+            }
+            
+            // Also call lookAndFeelChanged on the main editor
+            lookAndFeelChanged();
+            
+            // Force a repaint to update visuals
+            repaint();
+        };
+
         // Null-pointer safety: Create FontManager with exception handling
         fontManager = ErrorHandler::safeCreate<FontManager>(
             []() { return std::make_unique<FontManager>(); },
@@ -494,50 +526,115 @@ void OTTOAudioProcessorEditor::resized()
     auto bounds = getLocalBounds();
 
     if (bounds.isEmpty()) {
-
         return;
     }
 
+    // CRITICAL FIX: Update the layout manager's scale based on new window dimensions
+    // This is what was missing - the scale needs to be recalculated when the window resizes
+    if (layoutManager) {
+        layoutManager->updateScale(getWidth(), getHeight());
+        
+        // Update font manager scale factor to match layout scale for responsive fonts
+        if (fontManager) {
+            fontManager->setScaleFactor(layoutManager->getCurrentScale());
+        }
+    }
 
+    // Handle splash overlay resizing
+    if (splashOverlay) {
+        splashOverlay->setBounds(getLocalBounds());
+    }
 
-    const int topBarHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::mainHeaderHeight) : 60;
-    const int playerTabsHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::playerTabHeight * INIConfig::LayoutConstants::defaultMargin) : 100;
-    const int drumKitWidth = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::drumKitSectionMargin * INIConfig::LayoutConstants::dialogButtonWidth / 2) : 500;
+    // Calculate responsive window areas as proportions of current window size
+    // These proportions are based on the original design at 1200x800
+    const float topBarHeightRatio = 0.075f;        // 7.5% of height (60/800)
+    const float playerTabsHeightRatio = 0.0625f;   // 6.25% of height (50/800) 
+    const float drumKitWidthRatio = 0.25f;         // 25% of width (300/1200)
+    
+    // Calculate actual dimensions based on current window size
+    const int topBarHeight = static_cast<int>(getHeight() * topBarHeightRatio);
+    const int playerTabsHeight = static_cast<int>(getHeight() * playerTabsHeightRatio);
+    const int drumKitWidth = static_cast<int>(getWidth() * drumKitWidthRatio);
+    
+    // Ensure minimum sizes for usability - these scale with the interface
+    const int minTopBarHeight = layoutManager ? layoutManager->scaled(50) : 50;
+    const int minPlayerTabsHeight = layoutManager ? layoutManager->scaled(40) : 40;
+    const int minDrumKitWidth = layoutManager ? layoutManager->scaled(200) : 200;
+    
+    // Maximum sizes to prevent areas from becoming too large on very big screens
+    const int maxTopBarHeight = layoutManager ? layoutManager->scaled(120) : 120;
+    const int maxPlayerTabsHeight = layoutManager ? layoutManager->scaled(80) : 80;
+    const int maxDrumKitWidth = static_cast<int>(getWidth() * 0.4f); // Maximum 40% of width
+    
+    // Apply constraints
+    const int finalTopBarHeight = juce::jlimit(minTopBarHeight, maxTopBarHeight, topBarHeight);
+    const int finalPlayerTabsHeight = juce::jlimit(minPlayerTabsHeight, maxPlayerTabsHeight, playerTabsHeight);
+    const int finalDrumKitWidth = juce::jlimit(minDrumKitWidth, maxDrumKitWidth, drumKitWidth);
+    
+    // Debug output for responsive layout (uncomment for debugging)
+    // DBG("Window: " << getWidth() << "x" << getHeight() << " | TopBar: " << finalTopBarHeight << " | PlayerTabs: " << finalPlayerTabsHeight << " | DrumKit: " << finalDrumKitWidth);
 
-    if (topBar && topBarHeight > 0) {
-        auto topBarBounds = bounds.removeFromTop(topBarHeight);
+    // Set TopBar bounds (top area, full width)
+    if (topBar && finalTopBarHeight > 0) {
+        auto topBarBounds = bounds.removeFromTop(finalTopBarHeight);
         if (!topBarBounds.isEmpty()) {
             topBar->setBounds(topBarBounds);
-
+            // Force the component to recalculate its internal layout
+            topBar->resized();
         }
     }
 
-    if (playerTabs && playerTabsHeight > 0) {
-        auto playerTabsBounds = bounds.removeFromTop(playerTabsHeight);
+    // Set PlayerTabs bounds (below top bar, full width)
+    if (playerTabs && finalPlayerTabsHeight > 0) {
+        auto playerTabsBounds = bounds.removeFromTop(finalPlayerTabsHeight);
         if (!playerTabsBounds.isEmpty()) {
             playerTabs->setBounds(playerTabsBounds);
-
+            // Force the component to recalculate its internal layout
+            playerTabs->resized();
         }
     }
 
-    if (drumKitSection && drumKitWidth > 0 && bounds.getWidth() > 0) {
-        auto drumKitBounds = bounds.removeFromRight(drumKitWidth);
+    // Set DrumKitSection bounds (right side of remaining area)
+    // Only show drum kit section if there's enough remaining width for main content
+    const int minMainContentWidth = layoutManager ? layoutManager->scaled(300) : 300;
+    const bool shouldShowDrumKit = (bounds.getWidth() - finalDrumKitWidth) >= minMainContentWidth;
+    
+    if (drumKitSection && finalDrumKitWidth > 0 && shouldShowDrumKit) {
+        auto drumKitBounds = bounds.removeFromRight(finalDrumKitWidth);
         if (!drumKitBounds.isEmpty()) {
             drumKitSection->setBounds(drumKitBounds);
-
+            drumKitSection->setVisible(true);
+            // Force the component to recalculate its internal layout
+            drumKitSection->resized();
         }
+    } else if (drumKitSection) {
+        // Hide drum kit section if window is too small
+        drumKitSection->setVisible(false);
     }
 
+    // Set MainContent bounds (remaining area after top bars and drum kit section)
     if (mainContent && !bounds.isEmpty()) {
         mainContent->setBounds(bounds);
+        mainContent->setVisible(true);
+        // Force the component to recalculate its internal layout
+        mainContent->resized();
+    } else if (mainContent && bounds.isEmpty()) {
+        // Handle case where no space is left for main content
+        mainContent->setVisible(false);
+        DBG("Warning: No space remaining for main content area");
     }
 
+    // Update component state with new dimensions
     componentState.interfaceWidth = getWidth();
     componentState.interfaceHeight = getHeight();
 
+    // Save the new state if initialized
     if (isInitialized && componentState.interfaceWidth > 0 && componentState.interfaceHeight > 0) {
         saveEditorState();
     }
+
+    // Force a repaint to ensure all visual elements update with new scaling
+    repaint();
 }
 
 void OTTOAudioProcessorEditor::buttonClicked(juce::Button* button)

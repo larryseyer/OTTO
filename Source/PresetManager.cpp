@@ -100,16 +100,13 @@ void PresetManager::saveCurrentPreset() {
 
     ComponentState state;
     dataManager->loadAllData(state);
-    saveStates(state);
+    captureEngineState(state);
 
     state.currentPreset = currentPresetIndex;
     state.sliderValues["currentPresetIndex"] = static_cast<float>(currentPresetIndex);
 
-    if (!dataManager->saveAllData(state)) {
-
-    } else {
-
-    }
+    // Save the preset to the presets directory
+    dataManager->savePreset(currentPresetName, state);
 }
 
 void PresetManager::loadPreset(int presetIndex) {
@@ -127,67 +124,80 @@ void PresetManager::loadPreset(int presetIndex) {
 
 void PresetManager::loadPreset(const juce::String& presetName) {
     if (!dataManager || !presetExists(presetName)) {
-
         return;
     }
 
-    currentPresetName = presetName;
-
-    auto presets = getAvailablePresets();
-    for (int i = 0; i < presets.size(); ++i) {
-        if (presets[i] == presetName) {
-            currentPresetIndex = i;
-            break;
-        }
-    }
-
     ComponentState state;
-    if (dataManager->loadAllData(state)) {
+    if (dataManager->loadPreset(presetName, state)) {
+        currentPresetName = presetName;
+
+        // Update current index
+        auto presets = getAvailablePresets();
+        for (int i = 0; i < presets.size(); ++i) {
+            if (presets[i] == presetName) {
+                currentPresetIndex = i;
+                break;
+            }
+        }
+
         state.currentPreset = currentPresetIndex;
         state.sliderValues["currentPresetIndex"] = static_cast<float>(currentPresetIndex);
 
         loadStates(state);
-
-    } else {
-
     }
 }
 
 juce::StringArray PresetManager::getAvailablePresets() const {
+    if (dataManager) {
+        return dataManager->getAvailablePresetNames();
+    }
+    
+    // Fallback to hardcoded list if dataManager is not available
     juce::StringArray presets;
     presets.add("Default");
-    presets.add("Rock");
-    presets.add("Jazz");
-    presets.add("Electronic");
-    presets.add("Hip Hop");
-    presets.add("Latin");
-    presets.add("Funk");
-    presets.add("Custom");
-
     return presets;
 }
 
 void PresetManager::createPreset(const juce::String& presetName) {
-    if (!isValidPresetName(presetName) || presetExists(presetName)) {
-
+    if (!dataManager || !isValidPresetName(presetName) || presetExists(presetName)) {
         return;
     }
 
-    currentPresetName = presetName;
-    auto presets = getAvailablePresets();
-    currentPresetIndex = presets.size();
+    // Capture current state
+    ComponentState state;
+    dataManager->loadAllData(state);
+    captureEngineState(state);
 
-    saveCurrentPreset();
-    updatePresetList();
+    // Save the preset
+    if (dataManager->savePreset(presetName, state)) {
+        currentPresetName = presetName;
+        updatePresetList();
+        
+        // Update current index
+        auto presets = getAvailablePresets();
+        for (int i = 0; i < presets.size(); ++i) {
+            if (presets[i] == presetName) {
+                currentPresetIndex = i;
+                break;
+            }
+        }
+    }
 }
 
 void PresetManager::deletePreset(const juce::String& presetName) {
-    if (presetName == "Default") {
-
+    if (!dataManager || presetName == "Default") {
         return;
     }
 
-    updatePresetList();
+    if (dataManager->deletePreset(presetName)) {
+        // If we deleted the current preset, switch to Default
+        if (currentPresetName == presetName) {
+            currentPresetName = "Default";
+            currentPresetIndex = 0;
+            loadPreset("Default");
+        }
+        updatePresetList();
+    }
 }
 
 void PresetManager::renamePreset(const juce::String& oldName, const juce::String& newName) {
@@ -337,7 +347,10 @@ bool PresetManager::isValidPresetName(const juce::String& name) const {
 }
 
 bool PresetManager::presetExists(const juce::String& name) const {
-    return getAvailablePresets().contains(name);
+    if (dataManager) {
+        return dataManager->presetExists(name);
+    }
+    return name == "Default";
 }
 
 void PresetManager::updatePresetList() {
@@ -403,15 +416,13 @@ void PresetManager::captureEngineState(ComponentState& state) {
 void PresetManager::ensureDefaultPreset() {
     if (!dataManager) return;
 
-    ComponentState defaultState;
-    dataManager->initializeDefaults(defaultState);
+    // Create default preset if it doesn't exist
+    if (!dataManager->presetExists("Default")) {
+        dataManager->createDefaultPreset();
+    }
 
     currentPresetName = "Default";
     currentPresetIndex = 0;
-
-    saveStates(defaultState);
-    dataManager->saveAllData(defaultState);
-
 }
 
 bool PresetManager::validatePresetState(const ComponentState& state) const {

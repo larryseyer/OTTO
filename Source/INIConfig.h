@@ -10,6 +10,7 @@ namespace INIConfig {
     static const juce::String KITS_FOLDER = "Kits";
     static const juce::String MIXING_FOLDER = "Mix";
     static const juce::String SYSTEM_FOLDER = "System";
+    static const juce::String PRESETS_FOLDER = "Presets";
 
     static const juce::String GLOBAL_SETTINGS_FILE = "Global.ini";
     static const juce::String THEMES_FILE = "Themes.ini";
@@ -1347,6 +1348,10 @@ namespace LayoutConstants {
 
    inline juce::File getSystemDirectory() {
        return getOTTODataDirectory().getChildFile(SYSTEM_FOLDER);
+   }
+
+   inline juce::File getPresetsDirectory() {
+       return getOTTODataDirectory().getChildFile(PRESETS_FOLDER);
    }
 
    inline juce::File getINIFilePath(const juce::String& filename) {

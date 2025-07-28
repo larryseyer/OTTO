@@ -89,6 +89,15 @@ bool INIDataManager::createDirectoryStructure() {
         }
     }
 
+    auto presetsDir = INIConfig::getPresetsDirectory();
+    if (!presetsDir.exists()) {
+        auto result = presetsDir.createDirectory();
+        if (!result.wasOk()) {
+            setError("Failed to create presets directory: " + result.getErrorMessage());
+            success = false;
+        }
+    }
+
     return success;
 }
 
@@ -99,7 +108,8 @@ bool INIDataManager::directoryStructureExists() const {
            INIConfig::getPatternsDirectory().exists() &&
            INIConfig::getKitsDirectory().exists() &&
            INIConfig::getMixingDirectory().exists() &&
-           INIConfig::getSystemDirectory().exists();
+           INIConfig::getSystemDirectory().exists() &&
+           INIConfig::getPresetsDirectory().exists();
 }
 
 bool INIDataManager::allFilesExist() const {
@@ -2301,4 +2311,423 @@ bool INIDataManager::loadGrooveTemplates(juce::StringArray& templates) {
        setError("Exception loading groove templates: " + juce::String(e.what()));
        return false;
    }
+}
+
+bool INIDataManager::savePreset(const juce::String& presetName, const ComponentState& state) {
+    if (presetName.isEmpty() || !isValidPresetName(presetName)) {
+        setError("Invalid preset name: " + presetName);
+        return false;
+    }
+
+    auto presetsFile = INIConfig::getPresetsDirectory().getChildFile("presets.ini");
+    
+    // Load existing presets data
+    std::map<juce::String, std::map<juce::String, juce::String>> existingData;
+    if (presetsFile.existsAsFile()) {
+        INIUtils::readINIFile(presetsFile, existingData);
+    }
+
+    // Serialize the preset state to XML for the Data field
+    juce::ValueTree presetData("PresetData");
+    presetData.setProperty("preset_name", presetName, nullptr);
+    presetData.setProperty("created", INIUtils::formatTimestamp(), nullptr);
+    presetData.setProperty("tempo", state.tempo, nullptr);
+    
+    // Add slider values
+    juce::ValueTree sliderTree("SliderValues");
+    for (const auto& pair : state.sliderValues) {
+        sliderTree.setProperty(pair.first, pair.second, nullptr);
+    }
+    presetData.addChild(sliderTree, -1, nullptr);
+
+    // Add player settings
+    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+        const auto& player = state.playerSettings[i];
+        juce::ValueTree playerTree("Player" + juce::String(i));
+        playerTree.setProperty("enabled", player.enabled, nullptr);
+        playerTree.setProperty("drumkit", player.selectedDrumkit, nullptr);
+        playerTree.setProperty("swing", player.swingValue, nullptr);
+        playerTree.setProperty("energy", player.energyValue, nullptr);
+        playerTree.setProperty("volume", player.volume, nullptr);
+        
+        // Add assigned MIDI files
+        for (int j = 0; j <= INIConfig::Validation::MAX_BUTTON_INDEX; ++j) {
+            if (player.assignedMidiFiles[j].isNotEmpty()) {
+                playerTree.setProperty("midi_file_" + juce::String(j), player.assignedMidiFiles[j], nullptr);
+            }
+        }
+        presetData.addChild(playerTree, -1, nullptr);
+    }
+
+    // Add mixer settings (using slider values as mixer settings are stored there)
+    juce::ValueTree mixerTree("Mixer");
+    mixerTree.setProperty("master_volume", state.sliderValues.count("masterVolume") > 0 ? 
+                         state.sliderValues.at("masterVolume") : INIConfig::Defaults::DEFAULT_MASTER_VOLUME, nullptr);
+    // Store other mixer settings that might be in slider values
+    if (state.sliderValues.count("reverbMix") > 0)
+        mixerTree.setProperty("reverb_mix", state.sliderValues.at("reverbMix"), nullptr);
+    if (state.sliderValues.count("delayMix") > 0)
+        mixerTree.setProperty("delay_mix", state.sliderValues.at("delayMix"), nullptr);
+    presetData.addChild(mixerTree, -1, nullptr);
+
+    // Convert to XML string and encode
+    auto xmlString = presetData.toXmlString();
+    auto encodedData = juce::Base64::toBase64(xmlString);
+
+    // Find existing preset or determine new preset number
+    int presetNumber = -1;
+    for (const auto& section : existingData) {
+        if (section.first.startsWith("Preset") && section.second.count("Name")) {
+            if (section.second.at("Name") == presetName) {
+                presetNumber = section.first.substring(6).getIntValue();
+                break;
+            }
+        }
+    }
+
+    // If preset doesn't exist, find next available number
+    if (presetNumber == -1) {
+        int maxPresetNum = -1;
+        for (const auto& section : existingData) {
+            if (section.first.startsWith("Preset")) {
+                int num = section.first.substring(6).getIntValue();
+                maxPresetNum = juce::jmax(maxPresetNum, num);
+            }
+        }
+        presetNumber = maxPresetNum + 1;
+    }
+
+    // Update the preset data
+    juce::String sectionName = "Preset" + juce::String(presetNumber);
+    existingData[sectionName]["Data"] = encodedData;
+    existingData[sectionName]["Len"] = juce::String(encodedData.length());
+    existingData[sectionName]["Name"] = presetName;
+
+    // Update General section with preset count
+    int presetCount = 0;
+    for (const auto& section : existingData) {
+        if (section.first.startsWith("Preset")) {
+            presetCount++;
+        }
+    }
+    existingData["General"]["NbPresets"] = juce::String(presetCount);
+
+    // Convert back to INI format and save
+    std::map<juce::String, juce::StringArray> sectionData;
+    juce::StringArray sections;
+
+    for (const auto& section : existingData) {
+        sections.add(section.first);
+        juce::StringArray lines;
+        for (const auto& keyValue : section.second) {
+            lines.add(keyValue.first + "=" + keyValue.second);
+        }
+        sectionData[section.first] = lines;
+    }
+
+    return INIUtils::writeINIFile(presetsFile, sections, sectionData);
+}
+
+bool INIDataManager::loadPreset(const juce::String& presetName, ComponentState& state) {
+    if (presetName.isEmpty()) {
+        setError("Empty preset name");
+        return false;
+    }
+
+    auto presetsFile = INIConfig::getPresetsDirectory().getChildFile("presets.ini");
+    if (!presetsFile.existsAsFile()) {
+        setError("Presets file not found: " + presetsFile.getFullPathName());
+        return false;
+    }
+
+    std::map<juce::String, std::map<juce::String, juce::String>> data;
+    if (!INIUtils::readINIFile(presetsFile, data)) {
+        setError("Failed to read presets file: " + presetsFile.getFullPathName());
+        return false;
+    }
+
+    // Find the preset by name
+    juce::String presetData;
+    bool found = false;
+    
+    for (const auto& section : data) {
+        if (section.first.startsWith("Preset") && section.second.count("Name")) {
+            if (section.second.at("Name") == presetName) {
+                if (section.second.count("Data")) {
+                    presetData = section.second.at("Data");
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!found) {
+        setError("Preset not found: " + presetName);
+        return false;
+    }
+
+    try {
+        // Decode the Base64 data
+        juce::MemoryOutputStream decodedStream;
+        if (!juce::Base64::convertFromBase64(decodedStream, presetData)) {
+            setError("Failed to decode preset data");
+            return false;
+        }
+        juce::MemoryBlock decodedData = decodedStream.getMemoryBlock();
+
+        // Parse XML from decoded data
+        juce::String xmlString = decodedData.toString();
+        auto xmlDoc = juce::XmlDocument::parse(xmlString);
+        if (!xmlDoc) {
+            setError("Failed to parse preset XML data");
+            return false;
+        }
+
+        juce::ValueTree presetTree = juce::ValueTree::fromXml(*xmlDoc);
+        if (!presetTree.hasType("PresetData")) {
+            setError("Invalid preset data format");
+            return false;
+        }
+
+        // Load basic settings
+        if (presetTree.hasProperty("tempo"))
+            state.tempo = INIConfig::clampTempo(static_cast<int>(presetTree.getProperty("tempo", INIConfig::Defaults::DEFAULT_TEMPO)));
+
+        // Load slider values
+        auto sliderTree = presetTree.getChildWithName("SliderValues");
+        if (sliderTree.isValid()) {
+            for (int i = 0; i < sliderTree.getNumProperties(); ++i) {
+                auto propertyName = sliderTree.getPropertyName(i);
+                state.sliderValues[propertyName.toString()] = sliderTree.getProperty(propertyName, 0.0f);
+            }
+        }
+
+        // Load player settings
+        for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+            auto playerTree = presetTree.getChildWithName("Player" + juce::String(i));
+            if (playerTree.isValid()) {
+                auto& player = state.playerSettings[i];
+                player.enabled = playerTree.getProperty("enabled", INIConfig::Defaults::DEFAULT_PLAYER_ENABLED);
+                player.selectedDrumkit = playerTree.getProperty("drumkit", INIConfig::Defaults::DEFAULT_DRUMKIT).toString();
+                player.swingValue = INIConfig::clampSwing(playerTree.getProperty("swing", INIConfig::Defaults::SWING));
+                player.energyValue = INIConfig::clampEnergy(playerTree.getProperty("energy", INIConfig::Defaults::ENERGY));
+                player.volume = playerTree.getProperty("volume", INIConfig::Defaults::VOLUME);
+
+                // Load assigned MIDI files
+                for (int j = 0; j <= INIConfig::Validation::MAX_BUTTON_INDEX; ++j) {
+                    juce::String midiKey = "midi_file_" + juce::String(j);
+                    if (playerTree.hasProperty(midiKey)) {
+                        player.assignedMidiFiles[j] = playerTree.getProperty(midiKey, "").toString();
+                    }
+                }
+            }
+        }
+
+        // Load mixer settings (store in slider values)
+        auto mixerTree = presetTree.getChildWithName("Mixer");
+        if (mixerTree.isValid()) {
+            if (mixerTree.hasProperty("master_volume"))
+                state.sliderValues["masterVolume"] = mixerTree.getProperty("master_volume", INIConfig::Defaults::DEFAULT_MASTER_VOLUME);
+            if (mixerTree.hasProperty("reverb_mix"))
+                state.sliderValues["reverbMix"] = mixerTree.getProperty("reverb_mix", INIConfig::Defaults::DEFAULT_REVERB_MIX);
+            if (mixerTree.hasProperty("delay_mix"))
+                state.sliderValues["delayMix"] = mixerTree.getProperty("delay_mix", INIConfig::Defaults::DEFAULT_DELAY_MIX);
+        }
+
+        return true;
+    }
+    catch (const std::exception& e) {
+        setError("Exception loading preset: " + juce::String(e.what()));
+        return false;
+    }
+}
+
+bool INIDataManager::deletePreset(const juce::String& presetName) {
+    if (presetName.isEmpty() || presetName == "Default") {
+        setError("Cannot delete empty or default preset");
+        return false;
+    }
+
+    auto presetsFile = INIConfig::getPresetsDirectory().getChildFile("presets.ini");
+    if (!presetsFile.existsAsFile()) {
+        setError("Presets file not found: " + presetsFile.getFullPathName());
+        return false;
+    }
+
+    std::map<juce::String, std::map<juce::String, juce::String>> data;
+    if (!INIUtils::readINIFile(presetsFile, data)) {
+        setError("Failed to read presets file");
+        return false;
+    }
+
+    // Find and remove the preset
+    juce::String sectionToRemove;
+    bool found = false;
+    
+    for (const auto& section : data) {
+        if (section.first.startsWith("Preset") && section.second.count("Name")) {
+            if (section.second.at("Name") == presetName) {
+                sectionToRemove = section.first;
+                found = true;
+                break;
+            }
+        }
+    }
+
+    if (!found) {
+        setError("Preset not found: " + presetName);
+        return false;
+    }
+
+    // Remove the preset section
+    data.erase(sectionToRemove);
+
+    // Update preset count
+    int presetCount = 0;
+    for (const auto& section : data) {
+        if (section.first.startsWith("Preset")) {
+            presetCount++;
+        }
+    }
+    data["General"]["NbPresets"] = juce::String(presetCount);
+
+    // Write back to file
+    std::map<juce::String, juce::StringArray> sectionData;
+    juce::StringArray sections;
+
+    for (const auto& section : data) {
+        sections.add(section.first);
+        juce::StringArray lines;
+        for (const auto& keyValue : section.second) {
+            lines.add(keyValue.first + "=" + keyValue.second);
+        }
+        sectionData[section.first] = lines;
+    }
+
+    return INIUtils::writeINIFile(presetsFile, sections, sectionData);
+}
+
+bool INIDataManager::presetExists(const juce::String& presetName) {
+    if (presetName.isEmpty()) {
+        return false;
+    }
+
+    auto presetsFile = INIConfig::getPresetsDirectory().getChildFile("presets.ini");
+    if (!presetsFile.existsAsFile()) {
+        return false;
+    }
+
+    std::map<juce::String, std::map<juce::String, juce::String>> data;
+    if (!INIUtils::readINIFile(presetsFile, data)) {
+        return false;
+    }
+
+    for (const auto& section : data) {
+        if (section.first.startsWith("Preset") && section.second.count("Name")) {
+            if (section.second.at("Name") == presetName) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+juce::StringArray INIDataManager::getAvailablePresetNames() {
+    juce::StringArray presetNames;
+    
+    auto presetsFile = INIConfig::getPresetsDirectory().getChildFile("presets.ini");
+    if (!presetsFile.existsAsFile()) {
+        return presetNames;
+    }
+
+    std::map<juce::String, std::map<juce::String, juce::String>> data;
+    if (!INIUtils::readINIFile(presetsFile, data)) {
+        return presetNames;
+    }
+
+    // Collect all preset names with their section numbers for sorting
+    std::map<int, juce::String> presetMap;
+    
+    for (const auto& section : data) {
+        if (section.first.startsWith("Preset") && section.second.count("Name")) {
+            int presetNum = section.first.substring(6).getIntValue();
+            presetMap[presetNum] = section.second.at("Name");
+        }
+    }
+
+    // Add presets in order, ensuring Default comes first
+    juce::String defaultPreset;
+    for (const auto& preset : presetMap) {
+        if (preset.second == "Default") {
+            defaultPreset = preset.second;
+        } else {
+            presetNames.add(preset.second);
+        }
+    }
+    
+    // Ensure Default is first if it exists
+    if (defaultPreset.isNotEmpty()) {
+        presetNames.insert(0, defaultPreset);
+    }
+
+    return presetNames;
+}
+
+bool INIDataManager::createDefaultPreset() {
+    // Create the presets.ini file if it doesn't exist
+    auto presetsFile = INIConfig::getPresetsDirectory().getChildFile("presets.ini");
+    
+    if (!presetsFile.existsAsFile()) {
+        // Create initial presets.ini with General section
+        std::map<juce::String, juce::StringArray> sectionData;
+        juce::StringArray sections = { "General" };
+        
+        juce::StringArray generalLines;
+        generalLines.add("NbPresets=0");
+        sectionData["General"] = generalLines;
+        
+        if (!INIUtils::writeINIFile(presetsFile, sections, sectionData)) {
+            setError("Failed to create presets.ini file");
+            return false;
+        }
+    }
+
+    ComponentState defaultState;
+    initializeDefaults(defaultState);
+    
+    // Set default values
+    defaultState.tempo = INIConfig::Defaults::DEFAULT_TEMPO;
+    defaultState.sliderValues["swingValue"] = INIConfig::Defaults::SWING;
+    defaultState.sliderValues["energyValue"] = INIConfig::Defaults::ENERGY;
+    defaultState.sliderValues["masterVolume"] = INIConfig::Defaults::DEFAULT_MASTER_VOLUME;
+    
+    // Set default player settings
+    for (int i = 0; i < INIConfig::LayoutConstants::playerTabsCount; ++i) {
+        auto& player = defaultState.playerSettings[i];
+        player.enabled = INIConfig::Defaults::DEFAULT_PLAYER_ENABLED;
+        player.selectedDrumkit = INIConfig::Defaults::DEFAULT_DRUMKIT;
+        player.swingValue = INIConfig::Defaults::SWING;
+        player.energyValue = INIConfig::Defaults::ENERGY;
+        player.volume = INIConfig::Defaults::VOLUME;
+    }
+
+    return savePreset("Default", defaultState);
+}
+
+bool INIDataManager::isValidPresetName(const juce::String& name) const {
+    if (name.isEmpty() || name.length() > 50) {
+        return false;
+    }
+
+    // Check for invalid characters
+    juce::String invalidChars = "/\\:*?\"<>|,\n\r\t";
+    for (auto c : invalidChars) {
+        if (name.contains(juce::String::charToString(c))) {
+            return false;
+        }
+    }
+
+    return true;
 }

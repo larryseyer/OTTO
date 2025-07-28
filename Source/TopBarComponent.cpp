@@ -95,7 +95,7 @@ void TopBarComponent::setupComponents() {
         }
         notifyStateChanged();
     };
-    
+
 
     ottoLabel.setComponentID("otto_label");
     ottoLabel.setText("OTTO", juce::dontSendNotification);
@@ -260,7 +260,7 @@ void TopBarComponent::showCloudAuthDialog() {
 
     // Capture raw pointer for lambda - window will manage its own lifetime
     auto* windowPtr = window.get();
-    
+
     content->signInButton.onClick = [this, windowPtr] {
         if (auto* contentPtr = dynamic_cast<AuthContent*>(windowPtr->getContentComponent())) {
             cloudAuthenticated = true;
@@ -278,7 +278,7 @@ void TopBarComponent::showCloudAuthDialog() {
     window->setContentOwned(content.release(), true); // Transfer ownership to window
     window->centreWithSize(INIConfig::LayoutConstants::authDialogWidth, INIConfig::LayoutConstants::authDialogHeight);
     window->setVisible(true);
-    
+
     // JUCE automatically manages modal window lifecycle - release from smart pointer
     window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
@@ -345,7 +345,7 @@ void TopBarComponent::shareCurrentPattern() {
 
     // Capture raw pointer for lambda - window will manage its own lifetime
     auto* windowPtr = window.get();
-    
+
     content->shareButton.onClick = [this, windowPtr] {
         windowPtr->exitModalState(1);
         showShareSuccessMessage();
@@ -358,7 +358,7 @@ void TopBarComponent::shareCurrentPattern() {
     window->setContentOwned(content.release(), true);
     window->centreWithSize(INIConfig::LayoutConstants::shareDialogWidth, INIConfig::LayoutConstants::shareDialogHeight);
     window->setVisible(true);
-    
+
     // JUCE automatically manages modal window lifecycle - release from smart pointer
     window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
@@ -410,7 +410,7 @@ void TopBarComponent::startCollaborationSession() {
 
     // Capture raw pointer for lambda - window will manage its own lifetime
     auto* windowPtr = window.get();
-    
+
     content->startButton.onClick = [this, windowPtr] {
         if (auto* contentPtr = dynamic_cast<CollabContent*>(windowPtr->getContentComponent())) {
             collaborationActive = true;
@@ -428,7 +428,7 @@ void TopBarComponent::startCollaborationSession() {
     window->setContentOwned(content.release(), true);
     window->centreWithSize(INIConfig::LayoutConstants::collabDialogWidth, INIConfig::LayoutConstants::collabDialogHeight);
     window->setVisible(true);
-    
+
     // JUCE automatically manages modal window lifecycle - release from smart pointer
     window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
@@ -474,7 +474,7 @@ void TopBarComponent::joinCollaborationSession() {
 
     // Capture raw pointer for lambda - window will manage its own lifetime
     auto* windowPtr = window.get();
-    
+
     content->joinButton.onClick = [this, windowPtr] {
         if (auto* contentPtr = dynamic_cast<JoinContent*>(windowPtr->getContentComponent())) {
             collaborationActive = true;
@@ -491,7 +491,7 @@ void TopBarComponent::joinCollaborationSession() {
     window->setContentOwned(content.release(), true);
     window->centreWithSize(INIConfig::LayoutConstants::collabDialogWidth, INIConfig::LayoutConstants::collabDialogHeight);
     window->setVisible(true);
-    
+
     // JUCE automatically manages modal window lifecycle - release from smart pointer
     window.release()->enterModalState(true, nullptr, true); // deleteWhenFinished = true
 }
@@ -823,10 +823,16 @@ int TopBarComponent::getPresetIndexFromName(const juce::String& presetName) cons
 }
 
 juce::StringArray TopBarComponent::getAllPresetNames() const {
-    return {
-        "Default", "Acoustic", "Bathroom", "Blues", "Brush", "Claps",
-        "Electronic", "Funk", "Noise Makers", "Percs", "Rock", "Rods & Shakers", "Tamborine"
-    };
+    // Dynamically read presets from disk using the .ini storage system
+    if (iniDataManager) {
+        auto presets = iniDataManager->getAvailablePresetNames();
+        if (presets.size() > 0) {
+            return presets;
+        }
+    }
+    
+    // Fallback to just Default if system is not ready
+    return {"Default"};
 }
 
 void TopBarComponent::handlePresetChevrons(bool isRight) {

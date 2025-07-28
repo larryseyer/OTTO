@@ -70,6 +70,15 @@ public:
     bool saveGrooveTemplates(const juce::StringArray& templates);
     bool loadGrooveTemplates(juce::StringArray& templates);
 
+    // Preset management functions
+    bool savePreset(const juce::String& presetName, const ComponentState& state);
+    bool loadPreset(const juce::String& presetName, ComponentState& state);
+    bool deletePreset(const juce::String& presetName);
+    bool presetExists(const juce::String& presetName);
+    juce::StringArray getAvailablePresetNames();
+    bool createDefaultPreset();
+    bool isValidPresetName(const juce::String& name) const;
+
     juce::Colour stringToColor(const juce::String& colorString);
     juce::String colorToString(const juce::Colour& color);
 

@@ -966,7 +966,7 @@ namespace LayoutConstants {
    // Pattern matrix minimum space requirement (percentage-based)
    constexpr float MIN_PATTERN_MATRIX_HEIGHT_PERCENT = 41.67f; // ~300px / 720px
    constexpr int MIN_PATTERN_MATRIX_HEIGHT = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (MIN_PATTERN_MATRIX_HEIGHT_PERCENT / 100.0f));
-   
+
    static_assert(ROW_5_HEIGHT >= MIN_PATTERN_MATRIX_HEIGHT,
                  "Row 5 height insufficient for pattern matrix main content");
 
@@ -1380,8 +1380,8 @@ namespace LayoutConstants {
        static const int MAX_PATTERN_STEPS = 64;
        static const float MIN_LOOP_POSITION = 0.0f;
        static const float MAX_LOOP_POSITION = 100.0f;
-       static const float MIN_INTERFACE_SCALE = 0.5f;
-       static const float MAX_INTERFACE_SCALE = 2.0f;
+       static const float MIN_INTERFACE_SCALE = 0.75f;
+       static const float MAX_INTERFACE_SCALE = 3.0f;
        static const float MIN_VOLUME = 0.0f;
        static const float MAX_VOLUME = 1.0f;
        static const int MIN_QUANTIZE_VALUE = 1;

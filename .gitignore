@@ -126,3 +126,9 @@ OTTO copy.jucer
 
 #zencoder directives
 ZENCODER_RULES.md
+
+#images for Zencoder
+HISE_Image.png
+
+#logs
+build_test.log

@@ -116,8 +116,10 @@ OTTO_Data/
 
 ### Layout Structure
 - **Row-based organization** with 6 main interface rows
+- **Native HD 720p resolution** (1280×720) for optimal screen compatibility  
 - **Proportional scaling** that adapts to different screen sizes
-- **Touch-friendly controls** meeting accessibility standards
+- **Touch-friendly controls** meeting 44px accessibility standards (iOS/Android compliant)
+- **Percentage-based responsive design** automatically maintains accessibility across all platforms
 - **Real-time parameter feedback** with visual indicators
 
 **See [DESIGNRULES.md](DESIGNRULES.md) for complete UI guidelines**

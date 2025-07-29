@@ -36,8 +36,14 @@ namespace INIConfig {
     static const juce::String FILE_FORMAT_VERSION = "2.0";
 
     namespace Defaults {
-        static const int DEFAULT_INTERFACE_WIDTH = 1280;
-        static const int DEFAULT_INTERFACE_HEIGHT = 720;
+        // MINIMUM SYSTEM REQUIREMENT: 1024x768 display resolution
+        // This is the smallest supported screen size that maintains:
+        // - 44px minimum touch targets (accessibility compliance)
+        // - 300px minimum pattern matrix height (core functionality)  
+        // - Proper component spacing and text readability
+        // See: MINIMUM_SYSTEM_REQUIREMENTS.md for full details
+        static const int DEFAULT_INTERFACE_WIDTH = 1024;
+        static const int DEFAULT_INTERFACE_HEIGHT = 768;
         static const int DEFAULT_INTERFACE_X = 100;
         static const int DEFAULT_INTERFACE_Y = 100;
         static const int DEFAULT_WINDOW_X = 100;
@@ -919,13 +925,13 @@ namespace LayoutConstants {
    // Percentage-based row structure for consistent GUI layout across all platforms
    // Base calculations use Defaults::DEFAULT_INTERFACE_HEIGHT for responsive scaling
 
-   // Row height percentages (must total 100%)
-   constexpr float ROW_1_HEIGHT_PERCENT = 10.0f;  // TopBar Component
-   constexpr float ROW_2_HEIGHT_PERCENT = 8.5f;   // PlayerTabs Component (increased for 44px touch targets)
-   constexpr float ROW_3_HEIGHT_PERCENT = 14.0f;  // Player# + DrumKit Controls (increased for 44px buttons)
-   constexpr float ROW_4_HEIGHT_PERCENT = 11.5f;  // Pattern Group Controls (increased for 44px dropdown)
-   constexpr float ROW_5_HEIGHT_PERCENT = 48.0f;  // Pattern Matrix + Controls (MAIN CONTENT)
-   constexpr float ROW_6_HEIGHT_PERCENT = 8.0f;   // Loop Section (increased for 44px slider)
+   // Row height percentages (must total 100%) - HISE-PROPORTIONED LAYOUT @ 1920x1080
+   constexpr float ROW_1_HEIGHT_PERCENT = 7.0f;   // TopBar Component (cleaner, more compact)
+   constexpr float ROW_2_HEIGHT_PERCENT = 6.0f;   // PlayerTabs Component (thinner player tabs)
+   constexpr float ROW_3_HEIGHT_PERCENT = 16.0f;  // Player# + DrumKit Controls (larger player number display)
+   constexpr float ROW_4_HEIGHT_PERCENT = 14.0f;  // Pattern Group Controls (more space for labels/dropdowns)
+   constexpr float ROW_5_HEIGHT_PERCENT = 45.0f;  // Pattern Matrix + Controls (MAIN CONTENT - still dominant)
+   constexpr float ROW_6_HEIGHT_PERCENT = 12.0f;  // Loop Section (larger for improved loop control)
 
    // Compile-time validation that percentages total 100%
    static_assert(ROW_1_HEIGHT_PERCENT + ROW_2_HEIGHT_PERCENT + ROW_3_HEIGHT_PERCENT +
@@ -948,9 +954,9 @@ namespace LayoutConstants {
    constexpr int ROW_5_Y = ROW_4_Y + ROW_4_HEIGHT;
    constexpr int ROW_6_Y = ROW_5_Y + ROW_5_HEIGHT;
 
-   // Touch accessibility requirements as percentages of interface dimensions
-   constexpr float MIN_TOUCH_TARGET_HEIGHT_PERCENT = 6.12f;  // 44px / 720px = ~6.111% (rounded up)
-   constexpr float MIN_TOUCH_TARGET_WIDTH_PERCENT = 3.44f;   // 44px / 1280px = ~3.4375%
+   // Touch accessibility requirements as percentages of interface dimensions @ 1024x768
+   constexpr float MIN_TOUCH_TARGET_HEIGHT_PERCENT = 5.73f;  // 44px / 768px = ~5.729% (rounded up)
+   constexpr float MIN_TOUCH_TARGET_WIDTH_PERCENT = 4.30f;   // 44px / 1024px = ~4.297%
    constexpr int MIN_TOUCH_TARGET_PX = 44;                   // iOS/Android accessibility standard
 
    // Calculate minimum touch target dimensions
@@ -963,8 +969,8 @@ namespace LayoutConstants {
    static_assert(MIN_TOUCH_WIDTH >= MIN_TOUCH_TARGET_PX,
                  "Calculated minimum touch width below 44px accessibility standard");
 
-   // Pattern matrix minimum space requirement (percentage-based)
-   constexpr float MIN_PATTERN_MATRIX_HEIGHT_PERCENT = 41.67f; // ~300px / 720px
+   // Pattern matrix minimum space requirement (percentage-based) @ 1024x768
+   constexpr float MIN_PATTERN_MATRIX_HEIGHT_PERCENT = 39.06f; // ~300px / 768px
    constexpr int MIN_PATTERN_MATRIX_HEIGHT = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (MIN_PATTERN_MATRIX_HEIGHT_PERCENT / 100.0f));
 
    static_assert(ROW_5_HEIGHT >= MIN_PATTERN_MATRIX_HEIGHT,
@@ -1107,9 +1113,9 @@ namespace LayoutConstants {
        static_assert(totalUsedWidth <= Defaults::DEFAULT_INTERFACE_WIDTH,
                      "Row 3 components exceed interface width - reduce sizes or spacing");
 
-       // Font size validation for large player number
-       static_assert(largePlayerFontSize >= 20.0f && largePlayerFontSize <= 80.0f,
-                     "Large player font size out of reasonable range (20-80px)");
+       // Font size validation for large player number @ 1024x768
+       static_assert(largePlayerFontSize >= 20.0f && largePlayerFontSize <= 120.0f,
+                     "Large player font size out of reasonable range (20-120px)");
 
        // Component accessibility - using percentage-based touch target validation
        static_assert(buttonSize >= MIN_TOUCH_TARGET_PX,

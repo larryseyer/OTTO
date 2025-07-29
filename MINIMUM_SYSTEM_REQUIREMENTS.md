@@ -1,4 +1,4 @@
-# OTTO - Minimum System Requirements
+∑∑∑∑# OTTO - Minimum System Requirements
 
 ## Display Requirements
 

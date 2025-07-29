@@ -355,6 +355,40 @@ juce::Colour ColorScheme::getProgressBarForegroundColor() const
 {
     return getColor(ColorRole::Accent);
 }
+
+// ROW-SPECIFIC DEBUG BACKGROUND COLORS
+// These methods return the darker background colors defined in INIConfig::Color
+// for easy row identification during layout debugging
+juce::Colour ColorScheme::getRow1DebugBackgroundColor() const
+{
+    return juce::Colour(INIConfig::Color::ROW_1_DEBUG_BACKGROUND);
+}
+
+juce::Colour ColorScheme::getRow2DebugBackgroundColor() const
+{
+    return juce::Colour(INIConfig::Color::ROW_2_DEBUG_BACKGROUND);
+}
+
+juce::Colour ColorScheme::getRow3DebugBackgroundColor() const
+{
+    return juce::Colour(INIConfig::Color::ROW_3_DEBUG_BACKGROUND);
+}
+
+juce::Colour ColorScheme::getRow4DebugBackgroundColor() const
+{
+    return juce::Colour(INIConfig::Color::ROW_4_DEBUG_BACKGROUND);
+}
+
+juce::Colour ColorScheme::getRow5DebugBackgroundColor() const
+{
+    return juce::Colour(INIConfig::Color::ROW_5_DEBUG_BACKGROUND);
+}
+
+juce::Colour ColorScheme::getRow6DebugBackgroundColor() const
+{
+    return juce::Colour(INIConfig::Color::ROW_6_DEBUG_BACKGROUND);
+}
+
 bool ColorScheme::saveCurrentThemeSettings()
 {
     if (currentThemeName.isEmpty())

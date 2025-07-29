@@ -26,7 +26,8 @@ void MainContentComponentRightSection::setupComponents() {
     addAndMakeVisible(swingLabel);
     addAndMakeVisible(energyLabel);
     addAndMakeVisible(volumeLabel);
-    addAndMakeVisible(middleSeparator);
+    // REMOVED: middleSeparator - no internal separators in unified 6-row system
+    // addAndMakeVisible(middleSeparator);
 
     togglesLabel.setComponentID("toggles_label");
     togglesLabel.setText("Toggles", juce::dontSendNotification);
@@ -268,26 +269,30 @@ void MainContentComponentRightSection::saveCurrentPlayerToState(ComponentState& 
 }
 
 void MainContentComponentRightSection::paint(juce::Graphics& g) {
+    // ========================================================================
+    // CORRECTED: Remove internal separator - now part of unified 6-row system
+    // All row separators are handled by MainContentComponent using INI constants
+    // ========================================================================
     g.fillAll(colorScheme.getColor(ColorScheme::ColorRole::WindowBackground));
-
-    auto bounds = getLocalBounds();
-    int dividerY = bounds.getHeight() / INIConfig::LayoutConstants::topSectionHeightRatio;
-
-    if (auto* laf = dynamic_cast<CustomLookAndFeel*>(&getLookAndFeel())) {
-        laf->drawHorizontalSeparator(g, 0, dividerY, bounds.getWidth(), 2.0f);
-    } else {
-        g.setColour(colorScheme.getColor(ColorScheme::ColorRole::Separator));
-        g.fillRect(0, dividerY, bounds.getWidth(), static_cast<int>(layoutManager.scaled(INIConfig::LayoutConstants::separatorComponentDefaultThickness * 2)));
-    }
+    
+    // No internal separators - the 6-row system handles all visual divisions
+    // This component is positioned within Row 5 and should not draw additional separators
 }
 
 void MainContentComponentRightSection::resized() {
+    // ========================================================================
+    // CORRECTED: Use unified 6-row system - remove old topSectionHeightRatio logic
+    // This component is positioned within Row 5 by MainContentComponent
+    // Layout components using available space without internal separators
+    // ========================================================================
     auto bounds = getLocalBounds();
-
-    int topSectionHeight = bounds.getHeight() / INIConfig::LayoutConstants::topSectionHeightRatio;
-    bounds.removeFromTop(topSectionHeight);
-
-    int labelY = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionLabelY);
+    
+    // Calculate top section height as a percentage of Row 5 content area
+    // Use consistent percentage-based layout within the allocated Row 5 space
+    int topSectionHeight = static_cast<int>(bounds.getHeight() * 0.2f); // 20% for top labels
+    
+    // Position labels in top section
+    int labelY = layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
     int labelWidth = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionLabelWidth);
     int labelHeight = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionLabelHeight);
 
@@ -306,9 +311,11 @@ void MainContentComponentRightSection::resized() {
     energyLabel.setBounds(sliderCol2, labelY, sliderLabelWidth, labelHeight);
     volumeLabel.setBounds(sliderCol3, labelY, sliderLabelWidth + layoutManager.scaled(INIConfig::LayoutConstants::volumeLabelWidthExtra), labelHeight);
 
-    middleSeparator.setBounds(0, topSectionHeight, getWidth(), layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    // REMOVED: middleSeparator - no internal separators in unified 6-row system
+    // middleSeparator positioning removed - handled by MainContentComponent row separators
 
-    int buttonY = topSectionHeight + layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonY);
+    // Position buttons and sliders in remaining space
+    int buttonY = topSectionHeight + layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
     int buttonWidth = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonWidth);
     int buttonHeight = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonHeight);
     int buttonSpacing = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonSpacing);

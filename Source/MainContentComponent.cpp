@@ -25,7 +25,9 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
       // JUCE 8 - Initialize Row 4 components in initializer list
       patternAddButton("plus", FontManager::PhosphorWeight::Regular),
       patternDeleteButton("trash", FontManager::PhosphorWeight::Regular),
-      topSeparator(colorScheme), bottomSeparator(colorScheme) {
+      // Initialize row separators (one between each row)
+      row1Separator(colorScheme), row2Separator(colorScheme), row3Separator(colorScheme), 
+      row4Separator(colorScheme), row5Separator(colorScheme) {
 
     leftSection = std::make_unique<MainContentComponentLeftSection>(
         midiEngine, layoutManager, fontManager, colorScheme);
@@ -39,8 +41,20 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     addAndMakeVisible(*leftSection);
     addAndMakeVisible(*rightSection);
     addAndMakeVisible(*loopSection);
-    addAndMakeVisible(topSeparator);
-    addAndMakeVisible(bottomSeparator);
+    // Add the 5 row separators (between each row)
+    addAndMakeVisible(row1Separator);
+    addAndMakeVisible(row2Separator);
+    addAndMakeVisible(row3Separator);
+    addAndMakeVisible(row4Separator);
+    addAndMakeVisible(row5Separator);
+    
+    // TEMPORARY: Add row identification labels for debugging
+    addAndMakeVisible(rowLabel1);
+    addAndMakeVisible(rowLabel2);
+    addAndMakeVisible(rowLabel3);
+    addAndMakeVisible(rowLabel4);
+    addAndMakeVisible(rowLabel5);
+    addAndMakeVisible(rowLabel6);
     
     // Setup Row 3 components
     setupRow3Components();
@@ -58,6 +72,22 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     playerNumber.setText("1", juce::dontSendNotification); // Large number only - formatting changed
     playerNumber.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     playerNumber.setJustificationType(juce::Justification::centred); // Centered for large display
+    
+    // TEMPORARY: Setup row identification labels with red text using FontManager
+    auto setupRowLabel = [&](juce::Label& label, const juce::String& text) {
+        label.setText(text, juce::dontSendNotification);
+        label.setColour(juce::Label::textColourId, juce::Colours::red);
+        label.setColour(juce::Label::backgroundColourId, juce::Colours::yellow); // Yellow background for visibility
+        label.setJustificationType(juce::Justification::centred);
+        label.setFont(fontManager.getFont(FontManager::FontRole::Header, 32.0f)); // Even bigger font
+    };
+    
+    setupRowLabel(rowLabel1, "ROW 1");
+    setupRowLabel(rowLabel2, "ROW 2");
+    setupRowLabel(rowLabel3, "ROW 3");
+    setupRowLabel(rowLabel4, "ROW 4");
+    setupRowLabel(rowLabel5, "ROW 5");
+    setupRowLabel(rowLabel6, "ROW 6");
 
     leftSection->onEditModeChanged = [this](bool editMode) {
         if (onEditModeChanged) onEditModeChanged(editMode);
@@ -281,14 +311,70 @@ void MainContentComponent::resized() {
     int headerHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row1::height);
     int rhythmLabelWidth = layoutManager.scaled(INIConfig::LayoutConstants::rhythmLabelWidth);
 
-    // Position rhythm label in Row 1 (keep existing logic for now)
+    // Position rhythm label in Row 1 using proper Row1 constants
     rhythmLabel.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::rhythmLabelX),
-                         layoutManager.scaled(INIConfig::LayoutConstants::rhythmLabelY),
+                         layoutManager.scaled(INIConfig::LayoutConstants::Row1::yPosition + INIConfig::LayoutConstants::defaultPadding),
                          rhythmLabelWidth,
                          layoutManager.scaled(INIConfig::LayoutConstants::rhythmLabelHeight));
 
-    topSeparator.setBounds(0, headerHeight, bounds.getWidth(), 
-                          layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    // ========================================================================
+    // CORRECTED: Position EXACTLY 5 row separators (between rows 1-2, 2-3, 3-4, 4-5, 5-6)
+    // Row 6 is the last row and has no separator after it
+    // ========================================================================
+    int separatorThickness = layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness);
+    
+    // ========================================================================
+    // CORRECTED: MainContentComponent only handles separators for its own rows (3-6)
+    // Row 1-2 separators should be handled by parent PluginEditor, not here
+    // ========================================================================
+    
+    // Hide separators for rows not handled by MainContentComponent
+    row1Separator.setVisible(false);  // Between TopBar and PlayerTabs (handled by PluginEditor)
+    row2Separator.setVisible(false);  // Between PlayerTabs and MainContent (handled by PluginEditor)
+    
+    // Calculate separator positions using RELATIVE coordinates within MainContentComponent
+    int mainContentOffset = layoutManager.scaled(INIConfig::LayoutConstants::ROW_3_Y);
+    
+    int row3Bottom = (layoutManager.scaled(INIConfig::LayoutConstants::ROW_3_Y) + layoutManager.scaled(INIConfig::LayoutConstants::ROW_3_HEIGHT)) - mainContentOffset;
+    int row4Bottom = (layoutManager.scaled(INIConfig::LayoutConstants::ROW_4_Y) + layoutManager.scaled(INIConfig::LayoutConstants::ROW_4_HEIGHT)) - mainContentOffset;
+    int row5Bottom = (layoutManager.scaled(INIConfig::LayoutConstants::ROW_5_Y) + layoutManager.scaled(INIConfig::LayoutConstants::ROW_5_HEIGHT)) - mainContentOffset;
+    
+    // Position ONLY the 3 separators MainContentComponent is responsible for
+    row3Separator.setBounds(0, row3Bottom, bounds.getWidth(), separatorThickness);  // Between Row 3 and Row 4
+    row4Separator.setBounds(0, row4Bottom, bounds.getWidth(), separatorThickness);  // Between Row 4 and Row 5  
+    row5Separator.setBounds(0, row5Bottom, bounds.getWidth(), separatorThickness);  // Between Row 5 and Row 6
+    
+    // ========================================================================
+    // TEMPORARY DEBUG: Position row identification labels using INI-driven constants
+    // These should align EXACTLY with the 6 defined rows from INI
+    // If ROW 1 label appears in wrong position, there's a coordinate system issue
+    // ========================================================================
+    constexpr int rowLabelWidth = 120;  // Width for "ROW X" text
+    constexpr int rowLabelHeight = 50;  // Height for row labels  
+    int rowLabelX = bounds.getWidth() - rowLabelWidth - 20;  // Position on right side for visibility
+    
+    // ========================================================================
+    // CORRECTED: Only show Row labels 3-6 (the rows MainContentComponent handles)
+    // Row 1 = TopBar (separate component), Row 2 = PlayerTabs (separate component)
+    // MainContentComponent handles Rows 3-6 only
+    // ========================================================================
+    
+    // Hide Row 1 & 2 labels (they're handled by other components)
+    rowLabel1.setVisible(false);
+    rowLabel2.setVisible(false);
+    
+    // Position Row 3-6 labels using relative coordinates within MainContentComponent bounds
+    // mainContentOffset already declared above for separator positioning
+    
+    // Row 3 starts at Y=0 of MainContentComponent
+    rowLabel3.setBounds(rowLabelX, layoutManager.scaled(INIConfig::LayoutConstants::ROW_3_Y) - mainContentOffset, 
+                       rowLabelWidth, rowLabelHeight);
+    rowLabel4.setBounds(rowLabelX, layoutManager.scaled(INIConfig::LayoutConstants::ROW_4_Y) - mainContentOffset, 
+                       rowLabelWidth, rowLabelHeight);
+    rowLabel5.setBounds(rowLabelX, layoutManager.scaled(INIConfig::LayoutConstants::ROW_5_Y) - mainContentOffset, 
+                       rowLabelWidth, rowLabelHeight);
+    rowLabel6.setBounds(rowLabelX, layoutManager.scaled(INIConfig::LayoutConstants::ROW_6_Y) - mainContentOffset, 
+                       rowLabelWidth, rowLabelHeight);
     
     // Row 2: PlayerTabs - PHASE 4 IMPLEMENTATION
     // Note: PlayerTabs component positioning should be handled by parent (PluginEditor)
@@ -654,8 +740,6 @@ void MainContentComponent::updateRow5Layout() {
         return;
     }
     
-    auto bounds = getLocalBounds();
-    
     // Use responsive scaling for all dimensions
     int row5Y = layoutManager.scaled(INIConfig::LayoutConstants::Row5::yPosition);
     int row5Height = layoutManager.scaled(INIConfig::LayoutConstants::Row5::height);
@@ -700,10 +784,7 @@ void MainContentComponent::updateRow6Layout() {
     int row6Height = layoutManager.scaled(INIConfig::LayoutConstants::Row6::height);
     loopSection->setBounds(0, row6Y, bounds.getWidth(), row6Height);
     
-    // Keep bottom separator for visual consistency (positioned at the very bottom)
-    int separatorY = row6Y + row6Height - layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness);
-    bottomSeparator.setBounds(0, separatorY, bounds.getWidth(), 
-                             layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    // Row 6 (Loop Controls) - no separator needed after the last row
     
     // ========================================================================
     // VALIDATION: Ensure Row 6 fits within interface bounds

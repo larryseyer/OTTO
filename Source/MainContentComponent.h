@@ -88,6 +88,9 @@ private:
     juce::Label rhythmLabel;
     juce::Label playerNumber;
     
+    // TEMPORARY: Row identification labels for debugging layout
+    juce::Label rowLabel1, rowLabel2, rowLabel3, rowLabel4, rowLabel5, rowLabel6;
+    
     // Row 3: Player & DrumKit Controls
     PhosphorIconButton drumKitEditButton;
     PhosphorIconButton drumKitLeftChevron;
@@ -107,8 +110,12 @@ private:
     std::unique_ptr<MainContentComponentRightSection> rightSection;
     std::unique_ptr<SceneLauncherComponent> sceneLauncher;
     std::unique_ptr<LoopSectionComponent> loopSection;
-    SeparatorComponent topSeparator;
-    SeparatorComponent bottomSeparator;
+    // Row separators - one between each row for visual debugging
+    SeparatorComponent row1Separator;  // Between Row 1 (TopBar) and Row 2 (Player Tabs)
+    SeparatorComponent row2Separator;  // Between Row 2 (Player Tabs) and Row 3 (DrumKit Menu)
+    SeparatorComponent row3Separator;  // Between Row 3 (DrumKit Menu) and Row 4 (Pattern Menu)
+    SeparatorComponent row4Separator;  // Between Row 4 (Pattern Menu) and Row 5 (4x4 Matrix)
+    SeparatorComponent row5Separator;  // Between Row 5 (4x4 Matrix) and Row 6 (Loop Controls)
 
     int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     INIDataManager* iniDataManager = nullptr;

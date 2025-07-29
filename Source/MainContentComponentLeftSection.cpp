@@ -20,58 +20,65 @@ MainContentComponentLeftSection::MainContentComponentLeftSection(MidiEngine& mid
 }
 
 void MainContentComponentLeftSection::paint(juce::Graphics& g) {
+    // ========================================================================
+    // CORRECTED: Remove internal separator - now part of unified 6-row system
+    // All row separators are handled by MainContentComponent using INI constants
+    // ========================================================================
     g.fillAll(colorScheme.getColor(ColorScheme::ColorRole::WindowBackground));
-
-    auto bounds = getLocalBounds();
-    int dividerY = bounds.getHeight() / INIConfig::LayoutConstants::topSectionHeightRatio;
-
-    if (auto* laf = dynamic_cast<CustomLookAndFeel*>(&getLookAndFeel())) {
-        laf->drawHorizontalSeparator(g, 0, dividerY, bounds.getWidth(), INIConfig::LayoutConstants::separatorComponentDefaultThickness * 2);
-    } else {
-        g.setColour(colorScheme.getColor(ColorScheme::ColorRole::Separator));
-        g.fillRect(0, dividerY, bounds.getWidth(), layoutManager.scaled(static_cast<int>(INIConfig::LayoutConstants::separatorComponentDefaultThickness * 2)));
-    }
+    
+    // No internal separators - the 6-row system handles all visual divisions
+    // This component is positioned within Row 5 and should not draw additional separators
 }
 
 void MainContentComponentLeftSection::resized() {
+    // ========================================================================
+    // CORRECTED: Use unified 6-row system - remove old topSectionHeightRatio logic
+    // This component is positioned within Row 5 by MainContentComponent
+    // Layout components using available space without internal separators
+    // ========================================================================
     auto bounds = getLocalBounds();
-
-    int topSectionHeight = bounds.getHeight() / INIConfig::LayoutConstants::topSectionHeightRatio;
-    bounds.removeFromTop(topSectionHeight);
-
     int margin = layoutManager.scaled(INIConfig::LayoutConstants::defaultMargin);
-    editButton.setBounds(margin, layoutManager.scaled(INIConfig::LayoutConstants::editButtonY),
+    
+    // Calculate top section height as a percentage of Row 5 content area
+    // Use consistent percentage-based layout within the allocated Row 5 space
+    int topSectionHeight = static_cast<int>(bounds.getHeight() * 0.2f); // 20% for top controls
+    
+    // Position top section controls (edit, chevrons, MIDI beats, favorite)
+    editButton.setBounds(margin, layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding),
                         layoutManager.scaled(INIConfig::LayoutConstants::editButtonSize),
                         layoutManager.scaled(INIConfig::LayoutConstants::editButtonSize));
+    
     leftChevronButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::leftChevronX),
-                               layoutManager.scaled(INIConfig::LayoutConstants::leftChevronY),
+                               layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding),
                                layoutManager.scaled(INIConfig::LayoutConstants::chevronButtonWidth),
                                layoutManager.scaled(INIConfig::LayoutConstants::chevronButtonHeight));
 
     int menuWidth = getWidth() - layoutManager.scaled(INIConfig::LayoutConstants::midiGroupMenuWidthOffset);
     midiBeatsButtonGroup.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::midiGroupMenuX),
-                                  INIConfig::LayoutConstants::midiGroupMenuY,
+                                  layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding),
                                   menuWidth,
-                                  topSectionHeight);
+                                  topSectionHeight - layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding * 2));
 
     rightChevronButton.setBounds(getWidth() - layoutManager.scaled(INIConfig::LayoutConstants::rightChevronX),
-                                layoutManager.scaled(INIConfig::LayoutConstants::rightChevronY),
+                                layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding),
                                 layoutManager.scaled(INIConfig::LayoutConstants::chevronButtonWidth),
                                 layoutManager.scaled(INIConfig::LayoutConstants::chevronButtonHeight));
 
     favoriteButton.setBounds(getWidth() - layoutManager.scaled(INIConfig::LayoutConstants::favoriteButtonX),
-                            INIConfig::LayoutConstants::favoriteButtonY,
+                            layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding),
                             layoutManager.scaled(INIConfig::LayoutConstants::favoriteButtonSize),
                             layoutManager.scaled(INIConfig::LayoutConstants::favoriteButtonSize));
 
-    middleSeparator.setBounds(0, topSectionHeight, getWidth(), layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    // REMOVED: middleSeparator - no internal separators in unified 6-row system
+    // middleSeparator positioning removed - handled by MainContentComponent row separators
 
+    // Position 4x4 drum button matrix in remaining space
     int buttonWidth = layoutManager.scaled(INIConfig::LayoutConstants::drumButtonWidth);
     int buttonHeight = layoutManager.scaled(INIConfig::LayoutConstants::drumButtonHeight);
     int colSpacing = layoutManager.scaled(INIConfig::LayoutConstants::drumButtonGridSpacingX);
     int rowSpacing = layoutManager.scaled(INIConfig::LayoutConstants::drumButtonGridSpacingY);
     int gridStartX = layoutManager.scaled(INIConfig::LayoutConstants::drumButtonGridStartX);
-    int gridStartY = topSectionHeight + layoutManager.scaled(INIConfig::LayoutConstants::drumButtonGridStartY);
+    int gridStartY = topSectionHeight + layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
 
     for (int i = 0; i < 16; ++i) {
         int row = i / INIConfig::LayoutConstants::drumButtonsPerRow;
@@ -125,7 +132,8 @@ void MainContentComponentLeftSection::setupComponents() {
     addAndMakeVisible(rightChevronButton);
     addAndMakeVisible(midiBeatsButtonGroup);
     addAndMakeVisible(favoriteButton);
-    addAndMakeVisible(middleSeparator);
+    // REMOVED: middleSeparator - no internal separators in unified 6-row system
+    // addAndMakeVisible(middleSeparator);
 
     editButton.onClick = [this] {
         closeCurrentDropdown();

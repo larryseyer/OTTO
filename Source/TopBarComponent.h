@@ -85,6 +85,9 @@ private:
     juce::Label clockSyncLabel;
     juce::Label tapTempoLabel;
     SeparatorComponent bottomSeparator;
+    
+    // TEMPORARY: Debug label to identify Row 1
+    juce::Label row1DebugLabel;
 
     bool isPlaying = false;
     juce::String currentPresetName = "Default";

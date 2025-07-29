@@ -11,6 +11,14 @@ PlayerTabsComponent::PlayerTabsComponent(MidiEngine& midiEngine,
 
     setupTabs();
     addAndMakeVisible(bottomSeparator);
+    
+    // TEMPORARY: Add debug label for Row 2 identification
+    addAndMakeVisible(row2DebugLabel);
+    row2DebugLabel.setText("ROW 2", juce::dontSendNotification);
+    row2DebugLabel.setColour(juce::Label::textColourId, juce::Colours::red);
+    row2DebugLabel.setColour(juce::Label::backgroundColourId, juce::Colours::yellow);
+    row2DebugLabel.setJustificationType(juce::Justification::centred);
+    row2DebugLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 32.0f));
 }
 
 void PlayerTabsComponent::setupTabs() {
@@ -212,6 +220,10 @@ void PlayerTabsComponent::resized() {
 
     bottomSeparator.setBounds(0, bounds.getBottom() - layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness),
                              bounds.getWidth(), layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    
+    // TEMPORARY: Position Row 2 debug label on right side for visibility
+    row2DebugLabel.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding), 
+                            120, 50);
 }
 
 // PHASE 4: Removed calculatePlayerButtonLayout method

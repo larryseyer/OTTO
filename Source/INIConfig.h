@@ -39,7 +39,7 @@ namespace INIConfig {
         // MINIMUM SYSTEM REQUIREMENT: 1024x768 display resolution
         // This is the smallest supported screen size that maintains:
         // - 44px minimum touch targets (accessibility compliance)
-        // - 300px minimum pattern matrix height (core functionality)  
+        // - 300px minimum pattern matrix height (core functionality)
         // - Proper component spacing and text readability
         // See: MINIMUM_SYSTEM_REQUIREMENTS.md for full details
         static const int DEFAULT_INTERFACE_WIDTH = 1024;
@@ -333,7 +333,7 @@ namespace LayoutConstants {
     constexpr int defaultMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0167f);
     constexpr int defaultPadding = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0083f);
     constexpr int defaultSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0083f);
-    constexpr int separatorThickness = 1;
+    constexpr int separatorThickness = 3;
 
     constexpr int mainHeaderHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.075f);
     constexpr int rhythmLabelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
@@ -638,7 +638,7 @@ namespace LayoutConstants {
     constexpr int editableNumericDecimalPlaces = 1;
 
     constexpr int separatorComponentDefaultWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
-    constexpr float separatorComponentDefaultThickness = 1.0f;
+    constexpr float separatorComponentDefaultThickness = 3.0f;
 
     constexpr int meterComponentTimerHz = 30;
     constexpr float meterComponentPadding = 4.0f;
@@ -689,6 +689,7 @@ namespace LayoutConstants {
 
     constexpr int velocityEditorNumPoints = 128;
     constexpr float velocityEditorLineWidth = 2.0f;
+
 
     constexpr int padEditorTextSize = 16;
     constexpr float padEditorSmallTextSize = 12.0f;
@@ -925,13 +926,14 @@ namespace LayoutConstants {
    // Percentage-based row structure for consistent GUI layout across all platforms
    // Base calculations use Defaults::DEFAULT_INTERFACE_HEIGHT for responsive scaling
 
-   // Row height percentages (must total 100%) - HISE-PROPORTIONED LAYOUT @ 1920x1080
-   constexpr float ROW_1_HEIGHT_PERCENT = 7.0f;   // TopBar Component (cleaner, more compact)
-   constexpr float ROW_2_HEIGHT_PERCENT = 6.0f;   // PlayerTabs Component (thinner player tabs)
-   constexpr float ROW_3_HEIGHT_PERCENT = 16.0f;  // Player# + DrumKit Controls (larger player number display)
-   constexpr float ROW_4_HEIGHT_PERCENT = 14.0f;  // Pattern Group Controls (more space for labels/dropdowns)
-   constexpr float ROW_5_HEIGHT_PERCENT = 45.0f;  // Pattern Matrix + Controls (MAIN CONTENT - still dominant)
-   constexpr float ROW_6_HEIGHT_PERCENT = 12.0f;  // Loop Section (larger for improved loop control)
+   // Row height percentages (must total 100%) - CORRECTED OTTO LAYOUT STRUCTURE
+    constexpr float ROW_1_HEIGHT_PERCENT = 10.0f;  // Row 1: TopBar (Transport, Tempo, Gear)
+    constexpr float ROW_2_HEIGHT_PERCENT = 8.0f;   // Row 2: Player Buttons/Tabs
+    constexpr float ROW_3_HEIGHT_PERCENT = 12.0f;  // Row 3: DrumKit Menu Controls
+    constexpr float ROW_4_HEIGHT_PERCENT = 12.0f;  // Row 4: Drum Pattern Menu and Labels
+    constexpr float ROW_5_HEIGHT_PERCENT = 50.0f;  // Row 5: Large 4x4 Matrix, Buttons, Sliders
+    constexpr float ROW_6_HEIGHT_PERCENT = 8.0f;   // Row 6: Small Loop Controls (Start, End, Position)
+
 
    // Compile-time validation that percentages total 100%
    static_assert(ROW_1_HEIGHT_PERCENT + ROW_2_HEIGHT_PERCENT + ROW_3_HEIGHT_PERCENT +
@@ -976,9 +978,9 @@ namespace LayoutConstants {
    static_assert(ROW_5_HEIGHT >= MIN_PATTERN_MATRIX_HEIGHT,
                  "Row 5 height insufficient for pattern matrix main content");
 
-   // Row-specific namespaces for component positioning (Phase 2+ will populate these)
+   // Row-specific namespaces for component positioning
    namespace Row1 {
-       // TopBar Component (Transport, Tempo, Gear)
+       // Row 1: TopBar Component (Transport, Tempo, Gear) - 7%
        constexpr int height = ROW_1_HEIGHT;
        constexpr int yPosition = ROW_1_Y;
        constexpr int contentHeight = height - (defaultPadding * 2); // Account for padding
@@ -987,7 +989,7 @@ namespace LayoutConstants {
    }
 
    namespace Row2 {
-       // PlayerTabs Component (Thin tab indicators)
+       // Row 2: Player Buttons/Tabs - 6%
        constexpr int height = ROW_2_HEIGHT;
        constexpr int yPosition = ROW_2_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
@@ -1041,15 +1043,15 @@ namespace LayoutConstants {
    }
 
    namespace Row3 {
-       // Player# + DrumKit Controls (The consolidated row)
+       // Row 3: DrumKit Menu Controls - 16%
        constexpr int height = ROW_3_HEIGHT;
        constexpr int yPosition = ROW_3_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // PHASE 2: Component Layout Definition
+       // CORRECTED LAYOUT: DrumKit Menu Row
        // =====================================
-       // Layout: [LARGE PLAYER #] [Edit] [<] [DrumKit ▼] [>] [Mute] [Mixer]
+       // Layout: [Edit] [<] [DrumKit ▼] [>] [Mute] [Mixer]
 
        // Large player number font size and dimensions - PERCENTAGE-BASED
        constexpr float largePlayerFontSizePercent = 70.0f;  // 70% of content height
@@ -1134,15 +1136,15 @@ namespace LayoutConstants {
    }
 
    namespace Row4 {
-       // Pattern Group Controls (Pattern group dropdown + labels)
+       // Row 4: Drum Pattern Menu and Labels - 14%
        constexpr int height = ROW_4_HEIGHT;
        constexpr int yPosition = ROW_4_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // PHASE 4: Pattern Group Controls Layout Definition - PERCENTAGE-BASED
+       // CORRECTED LAYOUT: Drum Pattern Menu and Labels
        // ===================================================================
-       // Layout: [Group Label] [Pattern Group Dropdown] [Status Info] [Actions]
+       // Layout: [Pattern Label] [Pattern Group Dropdown] [Status Info] [Actions]
 
        // Component width percentages (based on interface width)
        constexpr float groupLabelWidthPercent = 8.0f;     // "Group" label: 8% of interface width
@@ -1205,15 +1207,15 @@ namespace LayoutConstants {
    }
 
    namespace Row5 {
-       // Pattern Matrix + Controls (4x4 grid + toggles + sliders - MAIN CONTENT)
+       // Row 5: Large 4x4 Matrix, Buttons, and Sliders (MAIN CONTENT) - 45%
        constexpr int height = ROW_5_HEIGHT;
        constexpr int yPosition = ROW_5_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // PHASE 5: Row 5 Left/Right Section Layout - PERCENTAGE-BASED SPLIT
+       // CORRECTED LAYOUT: 4x4 Matrix + Controls (Main Content Area)
        // ================================================================
-       // Left Section: Pattern Matrix (4x4 drum button grid) needs more space
+       // Left Section: 4x4 drum matrix (buttons) needs more space
        // Right Section: Controls (toggles, fills, sliders) needs less space
        // Split optimized for content: 65% left (pattern matrix) / 35% right (controls)
 
@@ -1250,16 +1252,16 @@ namespace LayoutConstants {
    }
 
    namespace Row6 {
-       // Loop Section (Loop timeline slider)
+       // Row 6: Small Loop Controls (Start, End, Position Indicator) - 12%
        constexpr int height = ROW_6_HEIGHT;
        constexpr int yPosition = ROW_6_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // PHASE 5: Row 6 Loop Section Component Layout - FULL-WIDTH INTEGRATION
+       // CORRECTED LAYOUT: Loop Start/End Controls + Position Indicator
        // ===================================================================
        // Layout: [LOOP START] [================== Loop Slider ==================] [LOOP END]
-       // Full-width responsive layout for loop timeline control
+       // Compact row for loop timeline control
 
        // Loop section positioning - full interface width utilization
        constexpr float labelWidthPercent = 8.5f;          // "LOOP START"/"LOOP END" labels
@@ -1510,6 +1512,15 @@ namespace LayoutConstants {
        static const uint32_t DEFAULT_METER_MID_COLOR = 0xffffaa44;
        static const uint32_t DEFAULT_METER_HIGH_COLOR = 0xffff4444;
        static const float ALPHA_OVERLAY = 0.375f;
+
+       // ROW-SPECIFIC DEBUG BACKGROUND COLORS (Dark variants for easy identification)
+       // These darker colors help distinguish rows during layout debugging
+       static const uint32_t ROW_1_DEBUG_BACKGROUND = 0xff1a1a2e;  // Dark blue-purple (TopBar)
+       static const uint32_t ROW_2_DEBUG_BACKGROUND = 0xff2e1a1a;  // Dark red-brown (PlayerTabs)
+       static const uint32_t ROW_3_DEBUG_BACKGROUND = 0xff1a2e1a;  // Dark green (Player# + DrumKit)
+       static const uint32_t ROW_4_DEBUG_BACKGROUND = 0xff2e2e1a;  // Dark yellow-brown (Pattern Groups)
+       static const uint32_t ROW_5_DEBUG_BACKGROUND = 0xff1a1a1a;  // Darkest grey (Pattern Matrix - main content)
+       static const uint32_t ROW_6_DEBUG_BACKGROUND = 0xff2e1a2e;  // Dark purple (Loop Section)
    }
 
    namespace Audio {

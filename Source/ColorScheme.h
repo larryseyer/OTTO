@@ -77,6 +77,15 @@ public:
     juce::Colour getProgressBarBackgroundColor() const;
     juce::Colour getProgressBarForegroundColor() const;
 
+    // ROW-SPECIFIC DEBUG BACKGROUND COLORS
+    // These methods return darker background colors for easy row identification during debugging
+    juce::Colour getRow1DebugBackgroundColor() const;
+    juce::Colour getRow2DebugBackgroundColor() const;
+    juce::Colour getRow3DebugBackgroundColor() const;
+    juce::Colour getRow4DebugBackgroundColor() const;
+    juce::Colour getRow5DebugBackgroundColor() const;
+    juce::Colour getRow6DebugBackgroundColor() const;
+
     void setColor(const juce::String& component, const juce::String& property, const juce::Colour& color, float alpha = INIConfig::Defaults::DEFAULT_ALPHA_FULL);
     void resetToDefaults();
 

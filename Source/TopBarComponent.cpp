@@ -35,6 +35,14 @@ void TopBarComponent::setupComponents() {
     addAndMakeVisible(versionLabel);
     addAndMakeVisible(clockSyncLabel);
     addAndMakeVisible(bottomSeparator);
+    
+    // TEMPORARY: Add debug label for Row 1 identification
+    addAndMakeVisible(row1DebugLabel);
+    row1DebugLabel.setText("ROW 1", juce::dontSendNotification);
+    row1DebugLabel.setColour(juce::Label::textColourId, juce::Colours::red);
+    row1DebugLabel.setColour(juce::Label::backgroundColourId, juce::Colours::yellow);
+    row1DebugLabel.setJustificationType(juce::Justification::centred);
+    row1DebugLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 32.0f));
 
     addAndMakeVisible(recordButton);
     addAndMakeVisible(tapTempoButton);
@@ -1185,4 +1193,8 @@ void TopBarComponent::resized() {
 
     bottomSeparator.setBounds(0, bounds.getBottom() - layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness),
                              bounds.getWidth(), layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    
+    // TEMPORARY: Position Row 1 debug label on right side for visibility
+    row1DebugLabel.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding), 
+                            120, 50);
 }

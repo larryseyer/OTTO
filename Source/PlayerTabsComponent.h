@@ -47,6 +47,9 @@ private:
 
     juce::TextButton tabs[INIConfig::Defaults::MAX_PLAYERS];
     SeparatorComponent bottomSeparator;
+    
+    // TEMPORARY: Debug label to identify Row 2
+    juce::Label row2DebugLabel;
 
     int selectedTab = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     bool clipLaunchMode = false;

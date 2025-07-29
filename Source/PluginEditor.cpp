@@ -553,22 +553,31 @@ void OTTOAudioProcessorEditor::resized()
         splashOverlay->setBounds(getLocalBounds());
     }
 
-    // Calculate responsive window areas - simplified without drumkit section
-    // These proportions are based on the original design at 1200x800
-    const float topBarHeightRatio = 0.075f;        // 7.5% of height (60/800)
-    const float playerTabsHeightRatio = 0.0625f;   // 6.25% of height (50/800) 
+    // ========================================================================
+    // CORRECTED: Use INI-driven Row system for consistent 6-row layout
+    // TopBar = Row 1, PlayerTabs = Row 2, MainContent handles Rows 3-6
+    // ========================================================================
     
-    // Calculate actual dimensions based on current window size
-    const int topBarHeight = static_cast<int>(getHeight() * topBarHeightRatio);
-    const int playerTabsHeight = static_cast<int>(getHeight() * playerTabsHeightRatio);
+    // Calculate actual dimensions using INI Row constants
+    const int topBarHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_1_HEIGHT) : 
+                             static_cast<int>(getHeight() * (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT / 100.0f));
+    const int playerTabsHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_2_HEIGHT) :
+                                static_cast<int>(getHeight() * (INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT / 100.0f));
     
-    // Ensure minimum sizes for usability - these scale with the interface
-    const int minTopBarHeight = layoutManager ? layoutManager->scaled(50) : 50;
-    const int minPlayerTabsHeight = layoutManager ? layoutManager->scaled(40) : 40;
+    // ========================================================================
+    // CORRECTED: Use INI-driven minimum/maximum constraints for Row 1 & 2
+    // Ensure consistency with the 6-row system percentages
+    // ========================================================================
     
-    // Maximum sizes to prevent areas from becoming too large on very big screens
-    const int maxTopBarHeight = layoutManager ? layoutManager->scaled(120) : 120;
-    const int maxPlayerTabsHeight = layoutManager ? layoutManager->scaled(80) : 80;
+    // Minimum sizes based on INI defaults (scaled for current interface)
+    const int minTopBarHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_1_HEIGHT) : 
+                               static_cast<int>(INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT * (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT / 100.0f));
+    const int minPlayerTabsHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_2_HEIGHT) :
+                                   static_cast<int>(INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT * (INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT / 100.0f));
+    
+    // Maximum sizes should respect INI constraints (allow some flexibility for larger screens)
+    const int maxTopBarHeight = static_cast<int>(minTopBarHeight * 1.5f);  // 50% larger than standard
+    const int maxPlayerTabsHeight = static_cast<int>(minPlayerTabsHeight * 1.5f);
     
     // Apply constraints
     const int finalTopBarHeight = juce::jlimit(minTopBarHeight, maxTopBarHeight, topBarHeight);

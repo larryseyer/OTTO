@@ -17,14 +17,14 @@ OTTO uses a **Reaper-style INI plain text database** for all data storage and co
 ### Primary Data Directory
 ```
 OTTO_Data/
-├── Settings/           # Global application settings
+├── Settings/          # Global application settings
 ├── Presets/           # User-created plugin presets
 ├── Performance/       # Performance and optimization settings
 ├── Patterns/          # MIDI pattern configurations
-├── Kits/             # Drum kit configurations  
-├── Mix/              # Mixer and effects presets
-├── System/           # System-level configuration
-└── Backup/           # Automated backup files
+├── Kits/              # Drum kit configurations
+├── Mix/               # Mixer and effects presets
+├── System/            # System-level configuration
+└── Backup/            # Automated backup files
 ```
 
 ### INI File Categories
@@ -68,33 +68,33 @@ namespace INIConfig::LayoutConstants {
     constexpr int defaultInterfaceWidth = 1200;
     constexpr int defaultInterfaceHeight = 800;
     constexpr float defaultScaleFactor = 1.0f;
-    
+
     // Row Height Percentages (must total 100%)
     constexpr float row1HeightPercent = 8.0f;   // Top Bar
-    constexpr float row2HeightPercent = 10.0f;  // Player Tabs  
+    constexpr float row2HeightPercent = 10.0f;  // Player Tabs
     constexpr float row3HeightPercent = 15.0f;  // Drum Kit Section
     constexpr float row4HeightPercent = 20.0f;  // Scene Launcher
     constexpr float row5HeightPercent = 32.0f;  // Pattern Matrix
     constexpr float row6HeightPercent = 15.0f;  // Loop Section
-    
+
     // Component Sizing
     constexpr int defaultMargin = 10;
     constexpr int defaultSpacing = 5;
     constexpr int defaultButtonHeight = 30;
     constexpr int defaultSliderHeight = 30;
     constexpr int defaultCornerRadius = 4;
-    
+
     // Font Sizes
     constexpr float fontSizeSmall = 12.0f;
     constexpr float fontSizeNormal = 14.0f;
     constexpr float fontSizeTitle = 16.0f;
     constexpr float fontSizeLarge = 18.0f;
-    
+
     // Player Button Layout (Special Case)
     constexpr float playerButtonMarginPercent = 2.5f;    // 1/4 width
     constexpr float playerButtonStartMarginPercent = 5.0f; // 1/2 width for first button
     constexpr float playerButtonEndMarginPercent = 5.0f;   // 1/2 width for last button
-    
+
     // Row-Specific Layout Constants
     namespace Row1 { /* Top Bar constants */ }
     namespace Row2 { /* Player Tabs constants */ }
@@ -121,30 +121,30 @@ namespace INIConfig::Defaults {
     static const int DEFAULT_INPUT_CHANNELS = 2;
     static const int DEFAULT_OUTPUT_CHANNELS = 2;
     static const int DEFAULT_BIT_DEPTH = 24;
-    
+
     // Player Settings
     static const bool DEFAULT_PLAYER_ENABLED = true;
     static const float DEFAULT_SWING = 10.0f;
     static const float DEFAULT_ENERGY = 75.0f;
     static const float DEFAULT_VOLUME = 0.8f;
     static const int DEFAULT_CURRENT_PLAYER = 0;
-    
+
     // Global Settings
     static const int DEFAULT_TEMPO = 120;
     static const juce::String DEFAULT_TIME_SIGNATURE = "4/4";
     static const bool DEFAULT_METRONOME_ENABLED = false;
     static const float DEFAULT_METRONOME_VOLUME = 0.5f;
-    
+
     // UI Settings
     static const int DEFAULT_THEME_ID = 1;
     static const bool DEFAULT_EDIT_MODE = false;
     static const int DEFAULT_SELECTED_BUTTON = 0;
-    
-    // Effects Settings  
+
+    // Effects Settings
     static const float DEFAULT_REVERB_MIX = 0.2f;
     static const float DEFAULT_DELAY_MIX = 0.1f;
     static const float DEFAULT_MASTER_VOLUME = 0.8f;
-    
+
     // Performance Settings
     static const int DEFAULT_MAX_VOICES = 64;
     static const int DEFAULT_MAX_VOICES_PER_NOTE = 4;
@@ -177,7 +177,7 @@ AudioDevice=Default
 EnableASIO=false
 EnableMulticore=true
 
-[UI_SETTINGS]  
+[UI_SETTINGS]
 WindowWidth=1200
 WindowHeight=800
 ScaleFactor=1.0
@@ -238,28 +238,28 @@ public:
     static GlobalSettings loadGlobalSettings() {
         auto file = getINIFile(INIConfig::GLOBAL_SETTINGS_FILE);
         GlobalSettings settings;
-        
-        settings.sampleRate = file.getValue("AUDIO_SETTINGS", "SampleRate", 
+
+        settings.sampleRate = file.getValue("AUDIO_SETTINGS", "SampleRate",
                                           INIConfig::Defaults::DEFAULT_SAMPLE_RATE);
         settings.bufferSize = file.getValue("AUDIO_SETTINGS", "BufferSize",
                                           INIConfig::Defaults::DEFAULT_BUFFER_SIZE);
         // ... continue for all settings
-        
+
         return settings;
     }
-    
+
     // Load player settings
     static PlayerSettings loadPlayerSettings(int playerIndex) {
         auto file = getINIFile(INIConfig::PLAYERS_FILE);
         auto section = "PLAYER_" + juce::String(playerIndex + 1);
-        
+
         PlayerSettings settings;
-        settings.enabled = file.getBoolValue(section, "Enabled", 
+        settings.enabled = file.getBoolValue(section, "Enabled",
                                            INIConfig::Defaults::DEFAULT_PLAYER_ENABLED);
         settings.energy = file.getFloatValue(section, "Energy",
                                            INIConfig::Defaults::DEFAULT_ENERGY);
         // ... continue for all player settings
-        
+
         return settings;
     }
 };
@@ -270,15 +270,15 @@ public:
 // Save global settings
 static void saveGlobalSettings(const GlobalSettings& settings) {
     auto file = getINIFile(INIConfig::GLOBAL_SETTINGS_FILE);
-    
+
     file.setValue("AUDIO_SETTINGS", "SampleRate", settings.sampleRate);
     file.setValue("AUDIO_SETTINGS", "BufferSize", settings.bufferSize);
     file.setValue("UI_SETTINGS", "WindowWidth", settings.windowWidth);
     file.setValue("UI_SETTINGS", "WindowHeight", settings.windowHeight);
-    
+
     // Add file header
     updateFileHeader(file);
-    
+
     // Save to disk
     file.save();
 }
@@ -289,14 +289,14 @@ static void savePlayerSettings(int playerIndex, const PlayerSettings& settings) 
     if (!validatePlayerSettings(settings)) {
         throw std::invalid_argument("Invalid player settings");
     }
-    
+
     auto file = getINIFile(INIConfig::PLAYERS_FILE);
     auto section = "PLAYER_" + juce::String(playerIndex + 1);
-    
+
     file.setValue(section, "Enabled", settings.enabled);
     file.setValue(section, "Energy", settings.energy);
     file.setValue(section, "DrumKit", settings.drumKit);
-    
+
     updateFileHeader(file);
     file.save();
 }
@@ -313,7 +313,7 @@ public:
         initializeFromINI();
         setupLayout();
     }
-    
+
 private:
     void initializeFromINI() {
         // Get dimensions from INI
@@ -321,21 +321,21 @@ private:
         defaultHeight = INIConfig::LayoutConstants::defaultInterfaceHeight;
         margin = INIConfig::LayoutConstants::defaultMargin;
         spacing = INIConfig::LayoutConstants::defaultSpacing;
-        
+
         // Load component-specific settings
         loadComponentSettings();
     }
-    
+
     void setupLayout() {
         // Calculate proportional layout based on INI constants
         auto area = getLocalBounds();
         auto scaleFactor = getWidth() / static_cast<float>(defaultWidth);
-        
+
         // Apply INI-driven sizing
         buttonHeight = INIConfig::LayoutConstants::defaultButtonHeight * scaleFactor;
         sliderHeight = INIConfig::LayoutConstants::defaultSliderHeight * scaleFactor;
     }
-    
+
     void resized() override {
         // Recalculate layout using INI constants
         setupLayout();
@@ -348,34 +348,34 @@ private:
 ```cpp
 std::tuple<int, int, int, int> calculatePlayerButtonLayout() {
     auto availableWidth = getWidth();
-    
+
     // Use INI constants for margin calculations
     auto buttonWidth = availableWidth / 10.75f; // Derived from INI percentages
-    auto quarterMargin = static_cast<int>(buttonWidth * 
+    auto quarterMargin = static_cast<int>(buttonWidth *
         INIConfig::LayoutConstants::playerButtonMarginPercent / 100.0f);
-    auto halfMargin = static_cast<int>(buttonWidth * 
+    auto halfMargin = static_cast<int>(buttonWidth *
         INIConfig::LayoutConstants::playerButtonStartMarginPercent / 100.0f);
-    
+
     // Layout based on INI configuration
     struct ButtonLayout {
         int x, y, width, height;
     };
-    
+
     std::vector<ButtonLayout> layouts(8);
-    
+
     // Player 1: half margin left
     layouts[0] = {halfMargin, 0, buttonWidth, getHeight()};
-    
-    // Players 2-7: quarter margin left  
+
+    // Players 2-7: quarter margin left
     for (int i = 1; i < 7; ++i) {
-        layouts[i] = {layouts[i-1].x + buttonWidth + quarterMargin, 0, 
+        layouts[i] = {layouts[i-1].x + buttonWidth + quarterMargin, 0,
                      buttonWidth, getHeight()};
     }
-    
+
     // Player 8: quarter margin left + half margin right
     layouts[7] = {layouts[6].x + buttonWidth + quarterMargin, 0,
                  buttonWidth, getHeight()};
-    
+
     return layouts;
 }
 ```
@@ -389,36 +389,36 @@ public:
     static bool validateAudioSettings(const AudioSettings& settings) {
         // Sample rate validation
         const std::vector<int> validSampleRates = {44100, 48000, 88200, 96000, 192000};
-        if (std::find(validSampleRates.begin(), validSampleRates.end(), 
+        if (std::find(validSampleRates.begin(), validSampleRates.end(),
                      settings.sampleRate) == validSampleRates.end()) {
             return false;
         }
-        
+
         // Buffer size validation (power of 2, reasonable range)
         if (settings.bufferSize < 32 || settings.bufferSize > 4096 ||
             (settings.bufferSize & (settings.bufferSize - 1)) != 0) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     static bool validatePlayerSettings(const PlayerSettings& settings) {
         // Energy range validation
         if (settings.energy < 0.0f || settings.energy > 100.0f) {
             return false;
         }
-        
-        // Swing range validation  
+
+        // Swing range validation
         if (settings.swing < 0.0f || settings.swing > 100.0f) {
             return false;
         }
-        
+
         // Volume range validation
         if (settings.volume < 0.0f || settings.volume > 1.0f) {
             return false;
         }
-        
+
         return true;
     }
 };
@@ -430,21 +430,21 @@ class INIErrorHandler {
 public:
     static void handleCorruptedFile(const juce::String& filename) {
         DBG("INI file corrupted: " + filename);
-        
+
         // Create backup of corrupted file
-        auto backupName = filename + ".corrupted." + 
+        auto backupName = filename + ".corrupted." +
                          juce::Time::getCurrentTime().toString(false, true);
         // ... backup logic
-        
+
         // Restore from backup or create default
         restoreOrCreateDefault(filename);
     }
-    
+
     static void handleMissingFile(const juce::String& filename) {
         DBG("INI file missing: " + filename);
         createDefaultFile(filename);
     }
-    
+
 private:
     static void createDefaultFile(const juce::String& filename) {
         // Create file with default values from INIConfig::Defaults
@@ -476,7 +476,7 @@ MasterVolume=0.85
 [PLAYER_STATES]
 ActivePlayers=1,2,3,4
 Player1Pattern=Rock_Kick
-Player2Pattern=Rock_Snare  
+Player2Pattern=Rock_Snare
 Player3Pattern=Rock_Hihat
 Player4Pattern=Rock_Crash
 
@@ -496,19 +496,19 @@ public:
     static bool loadPreset(const juce::String& presetName) {
         try {
             auto presetFile = getPresetFile(presetName);
-            
+
             // Load global settings
             auto globalSettings = loadGlobalSettingsFromPreset(presetFile);
             applyGlobalSettings(globalSettings);
-            
+
             // Load player states
             auto playerStates = loadPlayerStatesFromPreset(presetFile);
             applyPlayerStates(playerStates);
-            
+
             // Load mixer state
             auto mixerState = loadMixerStateFromPreset(presetFile);
             applyMixerState(mixerState);
-            
+
             return true;
         }
         catch (const std::exception& e) {
@@ -516,23 +516,23 @@ public:
             return false;
         }
     }
-    
-    static bool savePreset(const juce::String& presetName, 
+
+    static bool savePreset(const juce::String& presetName,
                           const PresetInfo& info) {
         try {
             auto presetFile = createPresetFile(presetName);
-            
+
             // Save preset info
             savePresetInfo(presetFile, info);
-            
-            // Save current application state  
+
+            // Save current application state
             saveCurrentGlobalSettings(presetFile);
             saveCurrentPlayerStates(presetFile);
             saveCurrentMixerState(presetFile);
-            
+
             updateFileHeader(presetFile);
             presetFile.save();
-            
+
             return true;
         }
         catch (const std::exception& e) {
@@ -551,7 +551,7 @@ class INIFileManager {
 public:
     static void initializeDataDirectories() {
         auto dataDir = getOTTODataDirectory();
-        
+
         // Create all required directories
         createDirectoryIfNotExists(dataDir.getChildFile(INIConfig::SETTINGS_FOLDER));
         createDirectoryIfNotExists(dataDir.getChildFile(INIConfig::PRESETS_FOLDER));
@@ -561,7 +561,7 @@ public:
         createDirectoryIfNotExists(dataDir.getChildFile(INIConfig::SYSTEM_FOLDER));
         createDirectoryIfNotExists(dataDir.getChildFile("Backup"));
     }
-    
+
     static juce::File getOTTODataDirectory() {
         #if JUCE_MAC
             return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
@@ -590,33 +590,33 @@ public:
     static void createBackup() {
         auto timestamp = juce::Time::getCurrentTime().toString(false, true, false, true);
         auto backupDir = getOTTODataDirectory().getChildFile("Backup").getChildFile(timestamp);
-        
+
         if (!backupDir.createDirectory()) {
             DBG("Failed to create backup directory");
             return;
         }
-        
+
         // Copy all INI files to backup
         copyAllINIFiles(getOTTODataDirectory(), backupDir);
     }
-    
+
     static bool restoreFromBackup(const juce::String& backupName) {
         auto backupDir = getOTTODataDirectory().getChildFile("Backup").getChildFile(backupName);
-        
+
         if (!backupDir.exists()) {
             return false;
         }
-        
+
         // Restore all INI files from backup
         copyAllINIFiles(backupDir, getOTTODataDirectory());
         return true;
     }
-    
+
     static void autoBackup() {
         // Create daily backup automatically
         static auto lastBackup = juce::Time();
         auto now = juce::Time::getCurrentTime();
-        
+
         if (now.toMilliseconds() - lastBackup.toMilliseconds() > 24 * 60 * 60 * 1000) {
             createBackup();
             lastBackup = now;

@@ -36,8 +36,8 @@ namespace INIConfig {
     static const juce::String FILE_FORMAT_VERSION = "2.0";
 
     namespace Defaults {
-        static const int DEFAULT_INTERFACE_WIDTH = 1200;
-        static const int DEFAULT_INTERFACE_HEIGHT = 800;
+        static const int DEFAULT_INTERFACE_WIDTH = 960;
+        static const int DEFAULT_INTERFACE_HEIGHT = 540;
         static const int DEFAULT_INTERFACE_X = 100;
         static const int DEFAULT_INTERFACE_Y = 100;
         static const int DEFAULT_WINDOW_X = 100;
@@ -918,7 +918,7 @@ namespace LayoutConstants {
    // ========================================================================
    // Percentage-based row structure for consistent GUI layout across all platforms
    // Base calculations use Defaults::DEFAULT_INTERFACE_HEIGHT for responsive scaling
-   
+
    // Row height percentages (must total 100%)
    constexpr float ROW_1_HEIGHT_PERCENT = 10.0f;  // TopBar Component
    constexpr float ROW_2_HEIGHT_PERCENT = 6.0f;   // PlayerTabs Component (increased for 44px touch targets)
@@ -926,12 +926,12 @@ namespace LayoutConstants {
    constexpr float ROW_4_HEIGHT_PERCENT = 10.0f;  // Pattern Group Controls
    constexpr float ROW_5_HEIGHT_PERCENT = 54.0f;  // Pattern Matrix + Controls (MAIN CONTENT)
    constexpr float ROW_6_HEIGHT_PERCENT = 8.0f;   // Loop Section
-   
+
    // Compile-time validation that percentages total 100%
-   static_assert(ROW_1_HEIGHT_PERCENT + ROW_2_HEIGHT_PERCENT + ROW_3_HEIGHT_PERCENT + 
+   static_assert(ROW_1_HEIGHT_PERCENT + ROW_2_HEIGHT_PERCENT + ROW_3_HEIGHT_PERCENT +
                  ROW_4_HEIGHT_PERCENT + ROW_5_HEIGHT_PERCENT + ROW_6_HEIGHT_PERCENT == 100.0f,
                  "Row height percentages must total exactly 100%");
-   
+
    // Calculate actual row heights based on interface height
    constexpr int ROW_1_HEIGHT = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (ROW_1_HEIGHT_PERCENT / 100.0f));
    constexpr int ROW_2_HEIGHT = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (ROW_2_HEIGHT_PERCENT / 100.0f));
@@ -939,7 +939,7 @@ namespace LayoutConstants {
    constexpr int ROW_4_HEIGHT = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (ROW_4_HEIGHT_PERCENT / 100.0f));
    constexpr int ROW_5_HEIGHT = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (ROW_5_HEIGHT_PERCENT / 100.0f));
    constexpr int ROW_6_HEIGHT = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (ROW_6_HEIGHT_PERCENT / 100.0f));
-   
+
    // Calculate cumulative Y positions for each row
    constexpr int ROW_1_Y = 0;
    constexpr int ROW_2_Y = ROW_1_Y + ROW_1_HEIGHT;
@@ -947,16 +947,16 @@ namespace LayoutConstants {
    constexpr int ROW_4_Y = ROW_3_Y + ROW_3_HEIGHT;
    constexpr int ROW_5_Y = ROW_4_Y + ROW_4_HEIGHT;
    constexpr int ROW_6_Y = ROW_5_Y + ROW_5_HEIGHT;
-   
+
    // Minimum height requirements validation for content-heavy rows
    constexpr int MIN_ROW_3_HEIGHT = 60;  // Player number + drumkit controls need minimum space
    constexpr int MIN_ROW_5_HEIGHT = 300; // Pattern matrix is main content area
-   
-   static_assert(ROW_3_HEIGHT >= MIN_ROW_3_HEIGHT, 
+
+   static_assert(ROW_3_HEIGHT >= MIN_ROW_3_HEIGHT,
                  "Row 3 height insufficient for player number and drumkit controls");
-   static_assert(ROW_5_HEIGHT >= MIN_ROW_5_HEIGHT, 
+   static_assert(ROW_5_HEIGHT >= MIN_ROW_5_HEIGHT,
                  "Row 5 height insufficient for pattern matrix main content");
-   
+
    // Row-specific namespaces for component positioning (Phase 2+ will populate these)
    namespace Row1 {
        // TopBar Component (Transport, Tempo, Gear)
@@ -966,32 +966,32 @@ namespace LayoutConstants {
        constexpr int contentY = yPosition + defaultPadding;
        // Component-specific constants will be added in future phases
    }
-   
+
    namespace Row2 {
        // PlayerTabs Component (Thin tab indicators)
        constexpr int height = ROW_2_HEIGHT;
        constexpr int yPosition = ROW_2_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
-       
+
        // PHASE 4: PlayerTabs Component Layout Definition - PERCENTAGE-BASED
        // =================================================================
        // Layout: 8 player tabs with responsive percentage-based positioning
        // Button 1: [4.5% margin][Button1] (left margin)
-       // Buttons 2-7: [2.25% margin][Button] (spacing between tabs) 
+       // Buttons 2-7: [2.25% margin][Button] (spacing between tabs)
        // Button 8: [2.25% margin][Button8][4.5% margin] (right margin)
-       
+
        // Tab configuration percentages
        constexpr int tabsCount = 8;
        constexpr float tabTopOffsetPercent = 0.25f;      // 0.25% of interface height
        constexpr float tabBottomMarginPercent = 0.625f;  // 0.625% of interface height
-       
+
        // Responsive tab width and spacing percentages (based on interface width)
        constexpr float tabWidthPercent = 9.0f;          // Each tab: 9% of interface width
        constexpr float leftMarginPercent = 4.5f;        // Left margin: 4.5% of interface width
-       constexpr float tabSpacingPercent = 2.25f;       // Between tabs: 2.25% of interface width  
+       constexpr float tabSpacingPercent = 2.25f;       // Between tabs: 2.25% of interface width
        constexpr float rightMarginPercent = 4.5f;       // Right margin: 4.5% of interface width
-       
+
        // Calculated dimensions using percentages
        constexpr int tabTopOffset = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (tabTopOffsetPercent / 100.0f));
        constexpr int tabBottomMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (tabBottomMarginPercent / 100.0f));
@@ -999,294 +999,294 @@ namespace LayoutConstants {
        constexpr int tabWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (tabWidthPercent / 100.0f));
        constexpr int leftMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (leftMarginPercent / 100.0f));
        constexpr int tabSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (tabSpacingPercent / 100.0f));
-       
+
        // Highlight bar dimensions (percentage-based)
        constexpr float highlightHeightPercent = 0.25f;  // 0.25% of interface height
        constexpr int highlightHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (highlightHeightPercent / 100.0f));
        constexpr int highlightMargin = defaultSpacing;
        constexpr int highlightWidthReduction = defaultMargin;
-       
+
        // Touch accessibility validation
        constexpr int minTouchTarget = 44;
        static_assert(tabContentHeight >= minTouchTarget || height >= minTouchTarget,
                      "Row 2 tabs below minimum touch target size (44px)");
-       
+
        // Layout validation - ensure all tabs fit within interface width
        constexpr int totalTabsWidth = (tabsCount * tabWidth) + ((tabsCount - 1) * tabSpacing) + leftMargin + rightMarginPercent;
        static_assert(totalTabsWidth <= Defaults::DEFAULT_INTERFACE_WIDTH * 1.05f, // Allow 5% tolerance
                      "Row 2 PlayerTabs exceed interface width - reduce tab percentages");
-       
+
        // Tab content height validation
        constexpr int minTabHeight = 24;
        static_assert(tabContentHeight >= minTabHeight,
                      "Row 2 insufficient height for player tabs");
    }
-   
+
    namespace Row3 {
        // Player# + DrumKit Controls (The consolidated row)
        constexpr int height = ROW_3_HEIGHT;
        constexpr int yPosition = ROW_3_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
-       
+
        // PHASE 2: Component Layout Definition
        // =====================================
        // Layout: [LARGE PLAYER #] [Edit] [<] [DrumKit ▼] [>] [Mute] [Mixer]
-       
+
        // Large player number font size and dimensions - PERCENTAGE-BASED
        constexpr float largePlayerFontSizePercent = 70.0f;  // 70% of content height
        constexpr float largePlayerFontSize = contentHeight * (largePlayerFontSizePercent / 100.0f);
        constexpr float playerNumberWidthPercent = 6.67f;    // 6.67% of interface width (~80px at 1200w)
        constexpr int playerNumberWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (playerNumberWidthPercent / 100.0f));
        constexpr int playerNumberHeight = contentHeight;
-       
+
        // Component sizing percentages for responsive scaling
        constexpr float buttonSizePercent = 75.0f;           // 75% of content height
        constexpr float buttonSpacingPercent = 0.83f;        // 0.83% of interface width (~10px at 1200w)
        constexpr int buttonSize = static_cast<int>(contentHeight * (buttonSizePercent / 100.0f));
        constexpr int buttonSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (buttonSpacingPercent / 100.0f));
-       
+
        // DrumKit dropdown dimensions - PERCENTAGE-BASED
        constexpr float dropdownWidthPercent = 12.5f;        // 12.5% of interface width (~150px at 1200w)
        constexpr float dropdownHeightPercent = 80.0f;       // 80% of content height
        constexpr int dropdownWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (dropdownWidthPercent / 100.0f));
        constexpr int dropdownHeight = static_cast<int>(contentHeight * (dropdownHeightPercent / 100.0f));
-       
+
        // Layout positioning - left to right flow
        constexpr int startX = defaultMargin; // Start with default margin from left edge
-       
+
        // Player number positioning
        constexpr int playerNumberX = startX;
        constexpr int playerNumberY = contentY + ((contentHeight - playerNumberHeight) / 2); // Vertically centered
-       
+
        // Edit button positioning (after player number)
        constexpr int editButtonX = playerNumberX + playerNumberWidth + buttonSpacing;
        constexpr int editButtonY = contentY + ((contentHeight - buttonSize) / 2);
        constexpr int editButtonSize = buttonSize;
-       
+
        // Left chevron button positioning
        constexpr int leftChevronX = editButtonX + editButtonSize + buttonSpacing;
        constexpr int leftChevronY = editButtonY;
        constexpr int leftChevronSize = buttonSize;
-       
+
        // DrumKit dropdown positioning (centered between chevrons)
        constexpr int dropdownX = leftChevronX + leftChevronSize + buttonSpacing;
        constexpr int dropdownY = contentY + ((contentHeight - dropdownHeight) / 2);
-       
+
        // Right chevron button positioning
        constexpr int rightChevronX = dropdownX + dropdownWidth + buttonSpacing;
        constexpr int rightChevronY = editButtonY;
        constexpr int rightChevronSize = buttonSize;
-       
+
        // Mute button positioning
        constexpr int muteButtonX = rightChevronX + rightChevronSize + buttonSpacing;
        constexpr int muteButtonY = editButtonY;
        constexpr int muteButtonSize = buttonSize;
-       
+
        // Mixer button positioning (rightmost)
        constexpr int mixerButtonX = muteButtonX + muteButtonSize + buttonSpacing;
        constexpr int mixerButtonY = editButtonY;
        constexpr int mixerButtonSize = buttonSize;
-       
+
        // Total width calculation for validation
        constexpr int totalUsedWidth = mixerButtonX + mixerButtonSize + defaultMargin - startX;
-       
+
        // Ensure all components fit within interface width
        static_assert(totalUsedWidth <= Defaults::DEFAULT_INTERFACE_WIDTH,
                      "Row 3 components exceed interface width - reduce sizes or spacing");
-       
+
        // Font size validation for large player number
        static_assert(largePlayerFontSize >= 20.0f && largePlayerFontSize <= 80.0f,
                      "Large player font size out of reasonable range (20-80px)");
-       
+
        // Component accessibility - minimum touch target sizes (44px recommended)
        constexpr int minTouchTarget = 44;
        static_assert(buttonSize >= minTouchTarget,
                      "Row 3 buttons below minimum touch target size (44px)");
        static_assert(dropdownHeight >= minTouchTarget,
                      "Row 3 dropdown below minimum touch target size (44px)");
-       
+
        // Alternative smaller button size for constrained layouts
        constexpr int compactButtonSize = minTouchTarget;
        constexpr int compactSpacing = static_cast<int>(buttonSpacing * 0.75f);
-       
+
        // Backup positioning for compact mode (if needed)
        constexpr bool useCompactMode = (totalUsedWidth > Defaults::DEFAULT_INTERFACE_WIDTH * 0.9f);
        constexpr int activeButtonSize = useCompactMode ? compactButtonSize : buttonSize;
        constexpr int activeSpacing = useCompactMode ? compactSpacing : buttonSpacing;
    }
-   
+
    namespace Row4 {
        // Pattern Group Controls (Pattern group dropdown + labels)
        constexpr int height = ROW_4_HEIGHT;
        constexpr int yPosition = ROW_4_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
-       
+
        // PHASE 4: Pattern Group Controls Layout Definition - PERCENTAGE-BASED
        // ===================================================================
        // Layout: [Group Label] [Pattern Group Dropdown] [Status Info] [Actions]
-       
+
        // Component width percentages (based on interface width)
        constexpr float groupLabelWidthPercent = 8.0f;     // "Group" label: 8% of interface width
        constexpr float dropdownWidthPercent = 20.0f;      // Pattern group dropdown: 20% of interface width
        constexpr float statusWidthPercent = 15.0f;        // Status display: 15% of interface width
        constexpr float actionButtonWidthPercent = 8.0f;   // Action buttons: 8% each
        constexpr float componentSpacingPercent = 2.0f;    // Spacing between components: 2%
-       
+
        // Component height percentages (based on row content height)
        constexpr float labelHeightPercent = 70.0f;        // Labels: 70% of content height
        constexpr float dropdownHeightPercent = 80.0f;     // Dropdown: 80% of content height
        constexpr float buttonHeightPercent = 75.0f;       // Buttons: 75% of content height
-       
+
        // Calculated dimensions
        constexpr int groupLabelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (groupLabelWidthPercent / 100.0f));
        constexpr int dropdownWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (dropdownWidthPercent / 100.0f));
        constexpr int statusWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (statusWidthPercent / 100.0f));
        constexpr int actionButtonWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (actionButtonWidthPercent / 100.0f));
        constexpr int componentSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (componentSpacingPercent / 100.0f));
-       
+
        constexpr int labelHeight = static_cast<int>(contentHeight * (labelHeightPercent / 100.0f));
        constexpr int dropdownHeight = static_cast<int>(contentHeight * (dropdownHeightPercent / 100.0f));
        constexpr int buttonHeight = static_cast<int>(contentHeight * (buttonHeightPercent / 100.0f));
-       
+
        // Layout positioning - left to right flow
        constexpr int startX = defaultMargin;
-       
+
        // Group label positioning
        constexpr int groupLabelX = startX;
        constexpr int groupLabelY = contentY + ((contentHeight - labelHeight) / 2);
-       
-       // Pattern group dropdown positioning  
+
+       // Pattern group dropdown positioning
        constexpr int dropdownX = groupLabelX + groupLabelWidth + componentSpacing;
        constexpr int dropdownY = contentY + ((contentHeight - dropdownHeight) / 2);
-       
+
        // Status display positioning
        constexpr int statusX = dropdownX + dropdownWidth + componentSpacing;
        constexpr int statusY = contentY + ((contentHeight - labelHeight) / 2);
-       
+
        // Action buttons positioning (add, delete, etc.)
        constexpr int firstActionButtonX = statusX + statusWidth + componentSpacing;
        constexpr int actionButtonY = contentY + ((contentHeight - buttonHeight) / 2);
        constexpr int secondActionButtonX = firstActionButtonX + actionButtonWidth + componentSpacing;
-       
+
        // Total width calculation for validation
        constexpr int totalUsedWidth = secondActionButtonX + actionButtonWidth + defaultMargin - startX;
-       
+
        // Layout validation
        static_assert(totalUsedWidth <= Defaults::DEFAULT_INTERFACE_WIDTH,
                      "Row 4 Pattern Group controls exceed interface width - reduce percentages");
-       
+
        // Touch accessibility validation
        constexpr int minTouchTarget = 44;
        static_assert(dropdownHeight >= minTouchTarget && buttonHeight >= minTouchTarget,
                      "Row 4 components below minimum touch target size (44px)");
-       
+
        // Content height validation
        constexpr int minComponentHeight = 20;
        static_assert(labelHeight >= minComponentHeight && dropdownHeight >= minComponentHeight,
                      "Row 4 components too small for usable interaction");
    }
-   
+
    namespace Row5 {
        // Pattern Matrix + Controls (4x4 grid + toggles + sliders - MAIN CONTENT)
        constexpr int height = ROW_5_HEIGHT;
        constexpr int yPosition = ROW_5_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
-       
+
        // PHASE 5: Row 5 Left/Right Section Layout - PERCENTAGE-BASED SPLIT
        // ================================================================
        // Left Section: Pattern Matrix (4x4 drum button grid) needs more space
        // Right Section: Controls (toggles, fills, sliders) needs less space
        // Split optimized for content: 65% left (pattern matrix) / 35% right (controls)
-       
+
        constexpr float leftSectionWidthPercent = 63.5f;    // Pattern matrix gets more space
-       constexpr float rightSectionWidthPercent = 35.0f;   // Controls get remaining space  
+       constexpr float rightSectionWidthPercent = 35.0f;   // Controls get remaining space
        constexpr float sectionMarginPercent = 0.3f;        // Small margin between sections
-       
+
        // Validate percentages
        static_assert(leftSectionWidthPercent + rightSectionWidthPercent <= 100.0f,
                      "Row 5 section widths exceed 100%");
-       
+
        // Calculate actual dimensions based on interface width
        constexpr int leftSectionWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (leftSectionWidthPercent / 100.0f));
        constexpr int rightSectionWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (rightSectionWidthPercent / 100.0f));
        constexpr int sectionMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (sectionMarginPercent / 100.0f));
-       
+
        // Section positioning
        constexpr int leftSectionX = 0;
        constexpr int rightSectionX = leftSectionWidth + sectionMargin;
-       
+
        // Validation - ensure sections fit within interface width
        constexpr int totalUsedWidth = leftSectionWidth + rightSectionWidth + sectionMargin;
        static_assert(totalUsedWidth <= Defaults::DEFAULT_INTERFACE_WIDTH,
                      "Row 5 sections exceed interface width");
-                     
+
        // Content area definitions for responsive layouts within sections
        constexpr int leftContentWidth = leftSectionWidth - (defaultPadding * 2);
        constexpr int rightContentWidth = rightSectionWidth - (defaultPadding * 2);
-       
+
        // Minimum size validation for usability
        constexpr int minSectionWidth = 200;  // Minimum for pattern matrix
        static_assert(leftSectionWidth >= minSectionWidth && rightSectionWidth >= minSectionWidth / 2,
                      "Row 5 sections too narrow for usable content");
    }
-   
+
    namespace Row6 {
        // Loop Section (Loop timeline slider)
        constexpr int height = ROW_6_HEIGHT;
        constexpr int yPosition = ROW_6_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
-       
+
        // PHASE 5: Row 6 Loop Section Component Layout - FULL-WIDTH INTEGRATION
        // ===================================================================
        // Layout: [LOOP START] [================== Loop Slider ==================] [LOOP END]
        // Full-width responsive layout for loop timeline control
-       
+
        // Loop section positioning - full interface width utilization
        constexpr float labelWidthPercent = 8.5f;          // "LOOP START"/"LOOP END" labels
        constexpr float labelMarginPercent = 1.0f;         // Margins for labels
        constexpr float sliderMarginPercent = 0.5f;        // Margins around slider
-       
+
        // Calculate actual dimensions
        constexpr int labelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (labelWidthPercent / 100.0f));
        constexpr int labelMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (labelMarginPercent / 100.0f));
        constexpr int sliderMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (sliderMarginPercent / 100.0f));
-       
+
        // Label positioning
        constexpr int startLabelX = labelMargin;
        constexpr int endLabelX = Defaults::DEFAULT_INTERFACE_WIDTH - labelWidth - labelMargin;
        constexpr int labelY = (height - 20) / 2;  // Center vertically in row
        constexpr int labelHeight = 20;            // Standard label height
-       
+
        // Slider positioning - fills space between labels
        constexpr int sliderX = startLabelX + labelWidth + sliderMargin;
        constexpr int sliderWidth = endLabelX - sliderX - sliderMargin;
        constexpr int sliderY = (height - 30) / 2;  // Center vertically, slightly thicker than labels
        constexpr int sliderHeight = 30;            // Touch-friendly slider height
-       
+
        // Layout validation
        constexpr int totalUsedWidth = (labelMargin * 2) + (labelWidth * 2) + (sliderMargin * 2) + sliderWidth;
        static_assert(totalUsedWidth <= Defaults::DEFAULT_INTERFACE_WIDTH,
                      "Row 6 loop components exceed interface width");
-       
+
        // Touch accessibility validation
        constexpr int minTouchTarget = 44;
        static_assert(sliderHeight >= minTouchTarget || height >= minTouchTarget,
                      "Row 6 loop slider below minimum touch target size");
-       
+
        // Content area validation
        constexpr int minSliderWidth = 200;  // Minimum usable slider width
        static_assert(sliderWidth >= minSliderWidth,
                      "Row 6 loop slider too narrow for usable interaction");
    }
-   
+
    // Verification that all rows fit within interface height
    static_assert(ROW_6_Y + ROW_6_HEIGHT <= Defaults::DEFAULT_INTERFACE_HEIGHT,
                  "Total row heights exceed default interface height");
-   
+
    // ========================================================================
    // END OTTO GUI 6-ROW LAYOUT SYSTEM - PHASE 1
    // ========================================================================

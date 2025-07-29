@@ -8,7 +8,7 @@ OTTO follows a **modern, professional design system** built specifically for aud
 
 - **Professional Studio Aesthetic**: Clean, functional interface suitable for professional music production
 - **Responsive & Adaptive**: Interface scales seamlessly across different devices and screen sizes
-- **INI-Driven Layout**: Zero hardcoded values - all positioning and sizing controlled via INI configuration
+- **INI-Driven Layout**: Zero hardcoded values - all positioning and sizing controlled via INI configuration stored and retrived in percentages of interface width and height.
 - **JUCE 8 Native**: Leverages modern JUCE 8 UI components and best practices
 - **Cross-Platform Consistency**: Identical appearance and behavior across all 5 supported platforms
 
@@ -19,7 +19,7 @@ OTTO uses a **6-row layout system** for optimal organization:
 
 ```
 Row 1: Top Bar (Transport, Global Controls)
-Row 2: Player Tabs (8 Player Selection)  
+Row 2: Player Tabs (8 Player Selection)
 Row 3: Drum Kit Section (Kit Selection & Controls)
 Row 4: Scene Launcher (Pattern Triggers)
 Row 5: Pattern Matrix + Controls (Beat Grid + Right Panel)
@@ -31,7 +31,7 @@ Row 6: Loop Section (Timeline Controls)
 
 ```cpp
 // ✅ CORRECT - INI-driven layout
-auto buttonWidth = static_cast<int>(getWidth() * 
+auto buttonWidth = static_cast<int>(getWidth() *
     INIConfig::LayoutConstants::buttonWidthPercent / 100.0f);
 
 // ❌ WRONG - Hardcoded values
@@ -44,7 +44,7 @@ namespace INIConfig::LayoutConstants {
     // Interface Dimensions
     constexpr int defaultInterfaceWidth = 1200;
     constexpr int defaultInterfaceHeight = 800;
-    
+
     // Row Heights (percentages of total height)
     constexpr float row1HeightPercent = 8.0f;   // Top Bar
     constexpr float row2HeightPercent = 10.0f;  // Player Tabs
@@ -52,12 +52,12 @@ namespace INIConfig::LayoutConstants {
     constexpr float row4HeightPercent = 20.0f;  // Scene Launcher
     constexpr float row5HeightPercent = 32.0f;  // Pattern Matrix
     constexpr float row6HeightPercent = 15.0f;  // Loop Section
-    
+
     // Margins and Spacing
     constexpr int defaultMargin = 10;
     constexpr int defaultSpacing = 5;
     constexpr int defaultButtonHeight = 30;
-    
+
     // Font Sizes
     constexpr float fontSizeSmall = 12.0f;
     constexpr float fontSizeNormal = 14.0f;
@@ -75,7 +75,7 @@ class StandardButton : public juce::TextButton {
     static constexpr int minWidth = 80;
     static constexpr int standardHeight = 30;
     static constexpr int cornerRadius = 4;
-    
+
     // Colors from ColorScheme
     juce::Colour normalColor = colorScheme.getButtonColor();
     juce::Colour hoverColor = colorScheme.getButtonHoverColor();
@@ -87,7 +87,7 @@ class StandardButton : public juce::TextButton {
 **Special Case**: Player buttons use precise margin calculations:
 ```cpp
 // Player 1: 1/2w margin LEFT only
-// Players 2-7: 1/4w margin LEFT only  
+// Players 2-7: 1/4w margin LEFT only
 // Player 8: 1/4w margin LEFT + 1/2w margin RIGHT
 auto buttonWidth = availableWidth / 10.75f;
 ```
@@ -99,7 +99,7 @@ class StandardSlider : public juce::Slider {
     static constexpr int minWidth = 100;
     static constexpr int standardHeight = 30;
     static constexpr int knobSize = 20;
-    
+
     // Touch-friendly sizing for mobile
     static constexpr int touchHeight = 44;  // iOS guideline
 };
@@ -118,12 +118,12 @@ public:
     juce::Colour getBackgroundColor() const;
     juce::Colour getForegroundColor() const;
     juce::Colour getAccentColor() const;
-    
+
     // Component-Specific Colors
     juce::Colour getButtonColor() const;
     juce::Colour getSliderColor() const;
     juce::Colour getTextColor() const;
-    
+
     // State Colors
     juce::Colour getActiveColor() const;
     juce::Colour getInactiveColor() const;
@@ -179,7 +179,7 @@ void resized() override {
     // Calculate proportional dimensions
     auto area = getLocalBounds();
     auto scaleFactor = getWidth() / static_cast<float>(INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH);
-    
+
     // Apply scaling to all components
     updateRow1Layout(area.removeFromTop(getRowHeight(1)));
     updateRow2Layout(area.removeFromTop(getRowHeight(2)));
@@ -222,7 +222,7 @@ private:
     std::unique_ptr<SceneLauncherComponent> sceneLauncher;
     std::unique_ptr<MainContentComponentRightSection> rightSection;
     std::unique_ptr<LoopSectionComponent> loopSection;
-    
+
     // Layout methods for each row
     void updateRow1Layout(juce::Rectangle<int> area);
     void updateRow2Layout(juce::Rectangle<int> area);
@@ -243,19 +243,19 @@ public:
     static constexpr int defaultWidth = 400;
     static constexpr int defaultHeight = 300;
     static constexpr int cornerRadius = 8;
-    
+
     // Standard layout
     void setupStandardLayout() {
         auto area = getLocalBounds().reduced(INIConfig::LayoutConstants::defaultMargin);
-        
+
         // Title area
         auto titleArea = area.removeFromTop(30);
         titleLabel.setBounds(titleArea);
-        
+
         // Content area
         area.removeFromTop(INIConfig::LayoutConstants::defaultSpacing);
         contentArea = area.removeFromTop(area.getHeight() - 50);
-        
+
         // Button area
         area.removeFromTop(INIConfig::LayoutConstants::defaultSpacing);
         setupButtons(area);
@@ -271,7 +271,7 @@ All UI graphics are embedded via JUCE BinaryData:
 ```cpp
 // Loading embedded button graphics
 auto buttonImage = juce::ImageCache::getFromMemory(
-    BinaryData::Button080_png, 
+    BinaryData::Button080_png,
     BinaryData::Button080_pngSize
 );
 
@@ -286,19 +286,19 @@ if (!buttonImage.isValid()) {
 ```cpp
 class OTTOLookAndFeel : public juce::LookAndFeel_V4 {
 public:
-    void drawButtonBackground(juce::Graphics& g, juce::Button& button, 
+    void drawButtonBackground(juce::Graphics& g, juce::Button& button,
                             const juce::Colour& backgroundColour,
                             bool shouldDrawButtonAsHighlighted,
                             bool shouldDrawButtonAsDown) override {
-        
+
         auto bounds = button.getLocalBounds().toFloat();
         auto cornerRadius = INIConfig::LayoutConstants::buttonCornerRadius;
-        
+
         // Use color scheme
         auto color = shouldDrawButtonAsDown ? colorScheme.getButtonPressedColor() :
                     shouldDrawButtonAsHighlighted ? colorScheme.getButtonHoverColor() :
                     colorScheme.getButtonColor();
-        
+
         g.setColour(color);
         g.fillRoundedRectangle(bounds, cornerRadius);
     }
@@ -322,10 +322,10 @@ public:
 void setupKeyboardNavigation() {
     setWantsKeyboardFocus(true);
     setFocusContainer(true);
-    
+
     // Tab order for components
     addAndMakeVisible(component1);
-    addAndMakeVisible(component2); 
+    addAndMakeVisible(component2);
     // Components automatically get tab order based on add order
 }
 ```
@@ -339,27 +339,27 @@ public:
     StandardComponent() {
         // Initialize with INI config
         setupFromConfig();
-        
+
         // Setup look and feel
         setLookAndFeel(&lookAndFeel);
     }
-    
+
     ~StandardComponent() override {
         setLookAndFeel(nullptr);
     }
-    
+
     void resized() override {
         // Always use proportional layout
         calculateProportionalLayout();
     }
-    
+
 private:
     void setupFromConfig() {
         // Load all settings from INI
         setSize(INIConfig::getComponentWidth(componentId),
                 INIConfig::getComponentHeight(componentId));
     }
-    
+
     void calculateProportionalLayout() {
         // All positioning based on current size, not hardcoded values
         auto area = getLocalBounds();
@@ -373,17 +373,17 @@ private:
 class ComponentWithState : public juce::Component {
 private:
     ComponentState state;  // Centralized state management
-    
+
 public:
     void setState(const ComponentState& newState) {
         state = newState;
         repaint();
     }
-    
+
     void saveToINI() {
         INIDataManager::saveComponentState(componentId, state);
     }
-    
+
     void loadFromINI() {
         state = INIDataManager::loadComponentState(componentId);
         updateFromState();

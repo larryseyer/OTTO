@@ -124,3 +124,5 @@ cmake-build-*/
 #Safety Stuff
 OTTO copy.jucer
 
+#zencoder directives
+ZENCODER_RULES.md

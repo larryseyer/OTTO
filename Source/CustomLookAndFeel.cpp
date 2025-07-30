@@ -431,8 +431,17 @@ void CustomLookAndFeel::drawIconButton(juce::Graphics& g, juce::TextButton& butt
 
     juce::String iconChar = fontManager.getIconString(iconName);
 
-    juce::Font iconFont = fontManager.getPhosphorFont(fontManager.getPhosphorWeight(),
-                                                      button.getHeight() * INIConfig::LayoutConstants::phosphorIconButtonFontSizeRatio);
+    // Intelligent font sizing: Consider both button bounds and row height with min/max clamps
+    float buttonBasedSize = button.getHeight() * INIConfig::LayoutConstants::phosphorIconButtonFontSizeRatio;
+    float widthBasedSize = button.getWidth() * INIConfig::LayoutConstants::phosphorIconButtonFontSizeRatio;
+    float contentBasedSize = juce::jmin(buttonBasedSize, widthBasedSize); // Use smaller dimension
+    
+    // Apply intelligent bounds: minimum for small GUI, maximum to prevent dots
+    float finalFontSize = juce::jlimit(INIConfig::LayoutConstants::phosphorIconButtonMinFontSize,
+                                      INIConfig::LayoutConstants::phosphorIconButtonMaxFontSize,
+                                      contentBasedSize);
+    
+    juce::Font iconFont = fontManager.getPhosphorFont(fontManager.getPhosphorWeight(), finalFontSize);
     g.setFont(iconFont);
     g.drawText(iconChar, button.getLocalBounds(), juce::Justification::centred);
 }

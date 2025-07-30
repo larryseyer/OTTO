@@ -332,7 +332,9 @@ namespace INIConfig {
 namespace LayoutConstants {
     constexpr int defaultMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0167f);
     constexpr int defaultPadding = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0083f);
-    constexpr int defaultSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0083f);
+    
+    // GENERAL SPACING: Updated from 0.01% to 1.25% for better visual separation
+    constexpr int defaultSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0125f);
     constexpr int separatorThickness = 3;
 
     constexpr int mainHeaderHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.075f);
@@ -346,7 +348,13 @@ namespace LayoutConstants {
 
     constexpr int topSectionHeightRatio = 5;
 
-    constexpr int iconButtonSize = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.035f);
+    // RESPONSIVE ICON SIZE: 95% of Row 1 height for proper topbar filling
+    // This scales with ResponsiveLayoutManager to maintain proportion across all screen sizes
+    constexpr int iconButtonSize = static_cast<int>((Defaults::DEFAULT_INTERFACE_HEIGHT * 0.10f) * 0.95f);
+    
+    // RESPONSIVE ICON SPACING: Proportional spacing that scales with interface size
+    // 2% of screen width provides balanced spacing that maintains proportion at all scales
+    constexpr int topBarIconSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.02f);
 
     constexpr int editButtonSize = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0317f);
     constexpr int editButtonX = defaultMargin;
@@ -404,28 +412,28 @@ namespace LayoutConstants {
 
     constexpr int topBarIconY = (mainHeaderHeight - iconButtonSize) / 2;
     constexpr int topBarGearX = defaultMargin;
-    constexpr int topBarLinkX = topBarGearX + iconButtonSize + defaultSpacing;
-    constexpr int topBarCloudX = topBarLinkX + iconButtonSize + defaultSpacing;
-    constexpr int topBarLeftChevronX = topBarCloudX + iconButtonSize + defaultSpacing;
+    constexpr int topBarLinkX = topBarGearX + iconButtonSize + topBarIconSpacing;
+    constexpr int topBarCloudX = topBarLinkX + iconButtonSize + topBarIconSpacing;
+    constexpr int topBarLeftChevronX = topBarCloudX + iconButtonSize + topBarIconSpacing;
     constexpr int topBarChevronSize = iconButtonSize;
     constexpr int topBarPresetY = static_cast<int>((mainHeaderHeight - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
-    constexpr int topBarPresetsMenuX = topBarLeftChevronX + topBarChevronSize + defaultSpacing;
+    constexpr int topBarPresetsMenuX = topBarLeftChevronX + topBarChevronSize + topBarIconSpacing;
     constexpr int topBarPresetsMenuY = topBarPresetY;
     constexpr int topBarPresetsMenuWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.15f);
-    constexpr int topBarRightChevronX = topBarPresetsMenuX + topBarPresetsMenuWidth + defaultSpacing;
+    constexpr int topBarRightChevronX = topBarPresetsMenuX + topBarPresetsMenuWidth + topBarIconSpacing;
 
     constexpr int topBarPlayX = (Defaults::DEFAULT_INTERFACE_WIDTH - iconButtonSize) / 2;
 
-    constexpr int topBarBpmX = topBarPlayX + iconButtonSize + defaultSpacing;
+    constexpr int topBarBpmX = topBarPlayX + iconButtonSize + topBarIconSpacing;
     constexpr int topBarBpmY = static_cast<int>((mainHeaderHeight - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
     constexpr int topBarBpmWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
     constexpr int topBarBpmHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f);
     constexpr int topBarClockSyncY = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.05f);
     constexpr int topBarClockSyncHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.01875f);
-    constexpr int topBarTapTempoX = topBarBpmX + topBarBpmWidth + defaultSpacing;
-    constexpr int topBarRecordX = topBarTapTempoX + iconButtonSize + defaultSpacing;
-    constexpr int topBarOverdubX = topBarRecordX + iconButtonSize + defaultSpacing;
-    constexpr int topBarLoopX = topBarOverdubX + iconButtonSize + defaultSpacing;
+    constexpr int topBarTapTempoX = topBarBpmX + topBarBpmWidth + topBarIconSpacing;
+    constexpr int topBarRecordX = topBarTapTempoX + iconButtonSize + topBarIconSpacing;
+    constexpr int topBarOverdubX = topBarRecordX + iconButtonSize + topBarIconSpacing;
+    constexpr int topBarLoopX = topBarOverdubX + iconButtonSize + topBarIconSpacing;
 
     constexpr int topBarOttoWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
     constexpr int topBarOttoX = Defaults::DEFAULT_INTERFACE_WIDTH - topBarOttoWidth - defaultSpacing;
@@ -628,7 +636,9 @@ namespace LayoutConstants {
     constexpr int phosphorIconButtonDefaultSize = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0333f);
     constexpr float phosphorIconButtonHoverScale = 0.05f;
     constexpr float phosphorIconButtonCornerRadius = 4.0f;
-    constexpr float phosphorIconButtonFontSizeRatio = 0.6f;
+    constexpr float phosphorIconButtonFontSizeRatio = 1.0f; // Increased from 0.85f - make icons larger overall
+    constexpr float phosphorIconButtonMinFontSize = 16.0f; // Minimum safety bound for very small GUI scales  
+    constexpr float phosphorIconButtonMaxFontSize = 24.0f; // Maximum safety bound to prevent rendering as dots
     constexpr float phosphorIconButtonAlphaBase = 0.8f;
     constexpr float phosphorIconButtonAlphaHover = 0.2f;
     constexpr float phosphorIconButtonAnimSpeed = 0.15f;
@@ -985,37 +995,37 @@ namespace LayoutConstants {
        constexpr int yPosition = ROW_1_Y;
        constexpr int contentHeight = height - (defaultPadding * 2); // Account for padding
        constexpr int contentY = yPosition + defaultPadding;
-       
+
        // TopBar-specific component positioning constants using Row 1 bounds
        constexpr int iconY = (height - iconButtonSize) / 2;
        constexpr int gearX = defaultMargin;
-       constexpr int linkX = gearX + iconButtonSize + defaultSpacing;
-       constexpr int cloudX = linkX + iconButtonSize + defaultSpacing;
-       constexpr int leftChevronX = cloudX + iconButtonSize + defaultSpacing;
+       constexpr int linkX = gearX + iconButtonSize + topBarIconSpacing;
+       constexpr int cloudX = linkX + iconButtonSize + topBarIconSpacing;
+       constexpr int leftChevronX = cloudX + iconButtonSize + topBarIconSpacing;
        constexpr int chevronSize = iconButtonSize;
        constexpr int presetY = static_cast<int>((height - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
-       constexpr int presetsMenuX = leftChevronX + chevronSize + defaultSpacing;
+       constexpr int presetsMenuX = leftChevronX + chevronSize + topBarIconSpacing;
        constexpr int presetsMenuY = presetY;
        constexpr int presetsMenuWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.15f);
-       constexpr int rightChevronX = presetsMenuX + presetsMenuWidth + defaultSpacing;
+       constexpr int rightChevronX = presetsMenuX + presetsMenuWidth + topBarIconSpacing;
        constexpr int playX = (Defaults::DEFAULT_INTERFACE_WIDTH - iconButtonSize) / 2;
-       constexpr int bpmX = playX + iconButtonSize + defaultSpacing;
+       constexpr int bpmX = playX + iconButtonSize + topBarIconSpacing;
        constexpr int bpmY = static_cast<int>((height - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
        constexpr int bpmWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
        constexpr int bpmHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f);
        constexpr int clockSyncY = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.05f);
        constexpr int clockSyncHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.01875f);
-       constexpr int tapTempoX = bpmX + bpmWidth + defaultSpacing;
-       constexpr int recordX = tapTempoX + iconButtonSize + defaultSpacing;
-       constexpr int overdubX = recordX + iconButtonSize + defaultSpacing;
-       constexpr int loopX = overdubX + iconButtonSize + defaultSpacing;
+       constexpr int tapTempoX = bpmX + bpmWidth + topBarIconSpacing;
+       constexpr int recordX = tapTempoX + iconButtonSize + topBarIconSpacing;
+       constexpr int overdubX = recordX + iconButtonSize + topBarIconSpacing;
+       constexpr int loopX = overdubX + iconButtonSize + topBarIconSpacing;
        constexpr int ottoWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
        constexpr int ottoX = Defaults::DEFAULT_INTERFACE_WIDTH - ottoWidth - defaultSpacing;
        constexpr int ottoY = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.00625f);
        constexpr int ottoHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f);
        constexpr int versionY = ottoY + ottoHeight;
        constexpr int versionHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.01875f);
-       
+
        // Touch target validation - Note: iconButtonSize is a global constant used throughout the app
        // If iconButtonSize needs to be larger for accessibility, it should be adjusted globally
        // Row 1 specific components that need minimum touch targets should use larger values

@@ -420,14 +420,14 @@ namespace LayoutConstants {
     constexpr int topBarPresetY = static_cast<int>((mainHeaderHeight - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
     constexpr int topBarPresetsMenuX = topBarLeftChevronX + topBarChevronSize + topBarIconSpacing;
     constexpr int topBarPresetsMenuY = topBarPresetY;
-    constexpr int topBarPresetsMenuWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.15f);
+    constexpr int topBarPresetsMenuWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.2f);
     constexpr int topBarRightChevronX = topBarPresetsMenuX + topBarPresetsMenuWidth + topBarIconSpacing;
 
     constexpr int topBarPlayX = (Defaults::DEFAULT_INTERFACE_WIDTH - iconButtonSize) / 2;
 
     constexpr int topBarBpmX = topBarPlayX + iconButtonSize + topBarIconSpacing;
     constexpr int topBarBpmY = static_cast<int>((mainHeaderHeight - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
-    constexpr int topBarBpmWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
+    constexpr int topBarBpmWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.11f);
     constexpr int topBarBpmHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f);
     constexpr int topBarClockSyncY = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.05f);
     constexpr int topBarClockSyncHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.01875f);

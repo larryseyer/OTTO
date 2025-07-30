@@ -1235,12 +1235,12 @@ void TopBarComponent::resized() {
     int totalAllSpacingWidth = (allIconCount + 2) * estimatedSpacing; // +2 for spacing around preset menu and BPM
     
     // Add widths for non-icon elements that must be visible
-    int estimatedPresetsMenuWidth = static_cast<int>(actualInterfaceWidth * 0.08f); // 8% for preset menu
-    int estimatedBpmWidth = static_cast<int>(actualInterfaceWidth * 0.04f);         // 4% for BPM display  
+    int estimatedPresetsMenuWidth = static_cast<int>(actualInterfaceWidth * 0.11f); // 11% for preset menu (33% increase)
+    int estimatedBmpWidth = static_cast<int>(actualInterfaceWidth * 0.053f);        // 5.3% for BPM display (33% increase)
     int estimatedOttoWidth = static_cast<int>(actualInterfaceWidth * 0.08f);        // 8% for OTTO logo
     
     int totalRequiredWidth = totalAllIconsWidth + totalAllSpacingWidth + 
-                            estimatedPresetsMenuWidth + estimatedBpmWidth + estimatedOttoWidth + (2 * margin);
+                            estimatedPresetsMenuWidth + estimatedBmpWidth + estimatedOttoWidth + (2 * margin);
     
     // If layout doesn't fit, reduce icon size proportionally
     if (totalRequiredWidth > currentWidth) {
@@ -1281,9 +1281,9 @@ void TopBarComponent::resized() {
     // Calculate total available space for preset area (left chevron to play button)
     int totalPresetAreaSpace = playX - leftChevronX - iconSpacing;
     
-    // Define preset menu width constraints based on actual interface width
-    int minPresetMenuWidth = static_cast<int>(actualInterfaceWidth * 0.08f);  // 8% minimum for "Default"
-    int maxPresetMenuWidth = static_cast<int>(actualInterfaceWidth * 0.12f);  // 12% maximum (reduced)
+    // Define preset menu width constraints based on actual interface width - 1/3 wider
+    int minPresetMenuWidth = static_cast<int>(actualInterfaceWidth * 0.11f);  // 11% minimum for "Default" (33% increase from 8%)
+    int maxPresetMenuWidth = static_cast<int>(actualInterfaceWidth * 0.16f);  // 16% maximum (33% increase from 12%)
     
     // Calculate optimal preset menu width (total space minus 2 chevrons and ultra-tight spacing)
     int chevronSpacing = static_cast<int>(actualInterfaceWidth * 0.0005f);  // 0.05% ultra-tight chevron spacing
@@ -1333,10 +1333,10 @@ void TopBarComponent::resized() {
     // Calculate available space between play button and OTTO logo for all right-side controls
     int totalAvailableRightSpace = ottoX - bpmX - iconSpacing;
     
-    // BPM width: Even more generous allocation to fully prevent truncation
-    int absoluteMinBpmWidth = static_cast<int>(iconSize * 2.0f);  // 200% of icon size - much more space for tempo
-    int preferredMinBmpWidth = static_cast<int>(actualInterfaceWidth * 0.06f);   // 6% of actual interface width 
-    int maxBmpWidth = static_cast<int>(actualInterfaceWidth * 0.1f);   // 10% maximum - generous space
+    // BPM width: 1/3 wider allocation for tempo decimals
+    int absoluteMinBpmWidth = static_cast<int>(iconSize * 2.6f);  // 260% of icon size - 33% increase from 200%
+    int preferredMinBmpWidth = static_cast<int>(actualInterfaceWidth * 0.08f);   // 8% of actual interface width (33% increase from 6%)
+    int maxBmpWidth = static_cast<int>(actualInterfaceWidth * 0.133f);   // 13.3% maximum - 33% increase from 10%
     
     // Use the larger of absolute minimum or preferred minimum, but cap at maximum
     int bpmWidth = juce::jmax(absoluteMinBpmWidth, preferredMinBmpWidth);
@@ -1349,12 +1349,12 @@ void TopBarComponent::resized() {
     clockSyncLabel.setBounds(bpmX, iconY + iconSize - static_cast<int>(currentHeight * 0.01875f), 
                            bpmWidth, static_cast<int>(currentHeight * 0.01875f));
 
-    // Right-side icons positioned to "hug" the right edge of tempo display
-    // This ensures tempo gets maximum space and remains readable
-    int tapTempoX = bpmX + bpmWidth + iconSpacing;  // Start immediately after tempo field
-    int recordX = tapTempoX + iconSize + iconSpacing;
-    int overdubX = recordX + iconSize + iconSpacing;
-    int loopX = overdubX + iconSize + iconSpacing;
+    // Right-side icons positioned to be right-aligned to OTTO logo (right-aligned layout)
+    // This gives tempo maximum space and creates cleaner visual alignment
+    int loopX = ottoX - margin - iconSize;  // Start from OTTO logo and work backwards
+    int overdubX = loopX - iconSize - iconSpacing;
+    int recordX = overdubX - iconSize - iconSpacing;
+    int tapTempoX = recordX - iconSize - iconSpacing;
     
     // Position ALL icons to "hug" the tempo display, then control visibility based on space
     tapTempoButton.setBounds(tapTempoX, iconY, iconSize, iconSize);

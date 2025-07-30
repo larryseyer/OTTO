@@ -160,6 +160,12 @@ juce::Font CustomLookAndFeel::getLabelFont(juce::Label& label) {
         return fontManager.getFont(FontManager::FontRole::Version, INIConfig::LayoutConstants::fontSizeSmall * sizeMult);
     }
 
+    if (componentID == "preset_display_label") {
+        // Make preset label prominent - about 4x bigger than previous calculation
+        float fontSize = INIConfig::LayoutConstants::Row1::ottoHeight * 2.4f;
+        return fontManager.getFont(FontManager::FontRole::Header, fontSize * sizeMult);
+    }
+
     if (componentID == "bpm_label" || componentID == "rhythm_number" || componentID == "kit_number") {
         return fontManager.getFont(FontManager::FontRole::Numeric,
             componentID == "kit_number" ? INIConfig::LayoutConstants::fontSizeNumeric * 1.5f * sizeMult :

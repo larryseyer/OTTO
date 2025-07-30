@@ -132,12 +132,12 @@ void TopBarComponent::setupComponents() {
     tapTempoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     tapTempoLabel.setVisible(false);
 
-    // Configure preset display label with Playfair Display font
+    // Configure preset display label with Playfair Display font - make it prominent
     presetDisplayLabel.setComponentID("preset_display_label");  
     presetDisplayLabel.setText(currentPresetName, juce::dontSendNotification);
     presetDisplayLabel.setJustificationType(juce::Justification::centred);
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
-                               layoutManager.scaled(INIConfig::LayoutConstants::fontSizePresetLabel)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 2.4f)));
     presetDisplayLabel.setColour(juce::Label::textColourId, 
                                 colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     
@@ -181,9 +181,9 @@ void TopBarComponent::lookAndFeelChanged() {
                           layoutManager.scaled(INIConfig::LayoutConstants::Row1::clockSyncHeight * 0.8f)));
     tapTempoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
 
-    // Update preset display label font and color
+    // Update preset display label font and color - make it prominent
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
-                               layoutManager.scaled(INIConfig::LayoutConstants::fontSizePresetLabel)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 2.4f)));
     presetDisplayLabel.setColour(juce::Label::textColourId, 
                                 colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 
@@ -1460,9 +1460,9 @@ void TopBarComponent::mouseDown(const juce::MouseEvent& event) {
 }
 
 void TopBarComponent::refreshPresetLabelFont() {
-    // Force refresh the preset label font
+    // Force refresh the preset label font - make it prominent and readable
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
-                               layoutManager.scaled(INIConfig::LayoutConstants::fontSizePresetLabel)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 2.4f)));
     
     // Also refresh the color to ensure consistency
     presetDisplayLabel.setColour(juce::Label::textColourId, 

@@ -133,5 +133,8 @@ JUCE_Image.png
 HISE Image.svg
 JUCE Image.svg
 
+#HISE CPP Source
+HISE_CPP_Source
+
 #logs
 build_test.log

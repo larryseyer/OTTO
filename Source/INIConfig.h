@@ -980,12 +980,47 @@ namespace LayoutConstants {
 
    // Row-specific namespaces for component positioning
    namespace Row1 {
-       // Row 1: TopBar Component (Transport, Tempo, Gear) - 7%
+       // Row 1: TopBar Component (Transport, Tempo, Gear) - 10%
        constexpr int height = ROW_1_HEIGHT;
        constexpr int yPosition = ROW_1_Y;
        constexpr int contentHeight = height - (defaultPadding * 2); // Account for padding
        constexpr int contentY = yPosition + defaultPadding;
-       // Component-specific constants will be added in future phases
+       
+       // TopBar-specific component positioning constants using Row 1 bounds
+       constexpr int iconY = (height - iconButtonSize) / 2;
+       constexpr int gearX = defaultMargin;
+       constexpr int linkX = gearX + iconButtonSize + defaultSpacing;
+       constexpr int cloudX = linkX + iconButtonSize + defaultSpacing;
+       constexpr int leftChevronX = cloudX + iconButtonSize + defaultSpacing;
+       constexpr int chevronSize = iconButtonSize;
+       constexpr int presetY = static_cast<int>((height - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
+       constexpr int presetsMenuX = leftChevronX + chevronSize + defaultSpacing;
+       constexpr int presetsMenuY = presetY;
+       constexpr int presetsMenuWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.15f);
+       constexpr int rightChevronX = presetsMenuX + presetsMenuWidth + defaultSpacing;
+       constexpr int playX = (Defaults::DEFAULT_INTERFACE_WIDTH - iconButtonSize) / 2;
+       constexpr int bpmX = playX + iconButtonSize + defaultSpacing;
+       constexpr int bpmY = static_cast<int>((height - static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f)) / 2);
+       constexpr int bpmWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
+       constexpr int bpmHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f);
+       constexpr int clockSyncY = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.05f);
+       constexpr int clockSyncHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.01875f);
+       constexpr int tapTempoX = bpmX + bpmWidth + defaultSpacing;
+       constexpr int recordX = tapTempoX + iconButtonSize + defaultSpacing;
+       constexpr int overdubX = recordX + iconButtonSize + defaultSpacing;
+       constexpr int loopX = overdubX + iconButtonSize + defaultSpacing;
+       constexpr int ottoWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0833f);
+       constexpr int ottoX = Defaults::DEFAULT_INTERFACE_WIDTH - ottoWidth - defaultSpacing;
+       constexpr int ottoY = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.00625f);
+       constexpr int ottoHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.0375f);
+       constexpr int versionY = ottoY + ottoHeight;
+       constexpr int versionHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.01875f);
+       
+       // Touch target validation - Note: iconButtonSize is a global constant used throughout the app
+       // If iconButtonSize needs to be larger for accessibility, it should be adjusted globally
+       // Row 1 specific components that need minimum touch targets should use larger values
+       constexpr int minTouchButtonSize = (iconButtonSize < MIN_TOUCH_TARGET_PX) ? MIN_TOUCH_TARGET_PX : iconButtonSize;
+       constexpr int minTouchBpmHeight = (bpmHeight < MIN_TOUCH_TARGET_PX) ? MIN_TOUCH_TARGET_PX : bpmHeight;
    }
 
    namespace Row2 {

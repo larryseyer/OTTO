@@ -31,6 +31,7 @@ public:
 
     void paint(juce::Graphics&) override;
     void resized() override;
+    void lookAndFeelChanged() override;
     
     // juce::Button::Listener
     void buttonClicked(juce::Button* button) override;
@@ -131,6 +132,10 @@ private:
     void updateRow4Layout();
     void updateRow5Layout();
     void updateRow6Layout();
+    
+#ifdef JUCE_DEBUG
+    void performIntegrationValidation(const juce::Rectangle<int>& bounds);
+#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainContentComponent)
 };

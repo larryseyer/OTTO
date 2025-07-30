@@ -105,22 +105,35 @@ void TopBarComponent::setupComponents() {
     };
 
 
+    // Configure labels with FontManager and ColorScheme integration
     ottoLabel.setComponentID("otto_label");
     ottoLabel.setText("OTTO", juce::dontSendNotification);
     ottoLabel.setJustificationType(juce::Justification::centred);
+    ottoLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+                      layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 0.6f)));
+    ottoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 
     versionLabel.setComponentID("version_label");
     versionLabel.setText("Ver. 1.0", juce::dontSendNotification);
     versionLabel.setJustificationType(juce::Justification::centred);
+    versionLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                         layoutManager.scaled(INIConfig::LayoutConstants::Row1::versionHeight * 0.8f)));
+    versionLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
 
     clockSyncLabel.setComponentID("clock_sync_label");
     clockSyncLabel.setText("", juce::dontSendNotification);
     clockSyncLabel.setJustificationType(juce::Justification::centred);
+    clockSyncLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                           layoutManager.scaled(INIConfig::LayoutConstants::Row1::clockSyncHeight * 0.8f)));
+    clockSyncLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
     clockSyncLabel.setVisible(false);
 
     tapTempoLabel.setComponentID("tap_tempo_label");
     tapTempoLabel.setText("TAP", juce::dontSendNotification);
     tapTempoLabel.setJustificationType(juce::Justification::centred);
+    tapTempoLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                          layoutManager.scaled(INIConfig::LayoutConstants::Row1::clockSyncHeight * 0.8f)));
+    tapTempoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     tapTempoLabel.setVisible(false);
 
     presetsMenu.setJustificationType(juce::Justification::centred);
@@ -135,6 +148,23 @@ void TopBarComponent::setupComponents() {
 
 void TopBarComponent::lookAndFeelChanged() {
     repaint();
+
+    // Update fonts and colors when look and feel changes
+    ottoLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+                      layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 0.6f)));
+    ottoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+
+    versionLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                         layoutManager.scaled(INIConfig::LayoutConstants::Row1::versionHeight * 0.8f)));
+    versionLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+
+    clockSyncLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                           layoutManager.scaled(INIConfig::LayoutConstants::Row1::clockSyncHeight * 0.8f)));
+    clockSyncLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
+
+    tapTempoLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                          layoutManager.scaled(INIConfig::LayoutConstants::Row1::clockSyncHeight * 0.8f)));
+    tapTempoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
 
     updateLinkButtonVisuals();
     updateRecordButton();
@@ -1155,46 +1185,57 @@ void TopBarComponent::paint(juce::Graphics& g) {
 void TopBarComponent::resized() {
     auto bounds = getLocalBounds();
 
-    int iconSize = layoutManager.scaled(INIConfig::LayoutConstants::iconButtonSize);
-    int iconY = layoutManager.scaled(INIConfig::LayoutConstants::topBarIconY);
-
-    gearButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarGearX), iconY, iconSize, iconSize);
-    linkButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarLinkX), iconY, iconSize, iconSize);
-    cloudButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarCloudX), iconY, iconSize, iconSize);
-
-    int presetY = layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetY);
-    int chevronSize = layoutManager.scaled(INIConfig::LayoutConstants::topBarChevronSize);
-    leftChevronButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarLeftChevronX), presetY, chevronSize, chevronSize);
-    presetsMenu.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetsMenuX), layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetsMenuY),
-                         layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetsMenuWidth), layoutManager.scaled(INIConfig::LayoutConstants::iconButtonSize));
-    rightChevronButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarRightChevronX), presetY, chevronSize, chevronSize);
-
-    playButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarPlayX), iconY, iconSize, iconSize);
-    pauseButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarPlayX), iconY, iconSize, iconSize);
-
-    bpmLabel.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarBpmX), layoutManager.scaled(INIConfig::LayoutConstants::topBarBpmY),
-                      layoutManager.scaled(INIConfig::LayoutConstants::topBarBpmWidth), layoutManager.scaled(INIConfig::LayoutConstants::topBarBpmHeight));
-
-    clockSyncLabel.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarBpmX), layoutManager.scaled(INIConfig::LayoutConstants::topBarClockSyncY),
-                           layoutManager.scaled(INIConfig::LayoutConstants::topBarBpmWidth), layoutManager.scaled(INIConfig::LayoutConstants::topBarClockSyncHeight));
-
-    tapTempoButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarTapTempoX), iconY, iconSize, iconSize);
-    tapTempoLabel.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarTapTempoX), layoutManager.scaled(INIConfig::LayoutConstants::topBarClockSyncY),
-                          iconSize, layoutManager.scaled(INIConfig::LayoutConstants::topBarClockSyncHeight));
-
-    recordButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarRecordX), iconY, iconSize, iconSize);
-    overdubButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarOverdubX), iconY, iconSize, iconSize);
-    loopButton.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarLoopX), iconY, iconSize, iconSize);
-
-    ottoLabel.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarOttoX), layoutManager.scaled(INIConfig::LayoutConstants::topBarOttoY),
-                       layoutManager.scaled(INIConfig::LayoutConstants::topBarOttoWidth), layoutManager.scaled(INIConfig::LayoutConstants::topBarOttoHeight));
-    versionLabel.setBounds(layoutManager.scaled(INIConfig::LayoutConstants::topBarOttoX), layoutManager.scaled(INIConfig::LayoutConstants::topBarVersionY),
-                          layoutManager.scaled(INIConfig::LayoutConstants::topBarOttoWidth), layoutManager.scaled(INIConfig::LayoutConstants::topBarVersionHeight));
-
-    bottomSeparator.setBounds(0, bounds.getBottom() - layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness),
-                             bounds.getWidth(), layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    // Use Row1 namespace constants for complete INI-driven positioning
+    using namespace INIConfig::LayoutConstants;
     
-    // TEMPORARY: Position Row 1 debug label on right side for visibility
-    row1DebugLabel.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding), 
-                            120, 50);
+    int iconSize = layoutManager.scaled(iconButtonSize);
+    int iconY = layoutManager.scaled(Row1::iconY);
+
+    // Left side controls: Gear, Link, Cloud buttons
+    gearButton.setBounds(layoutManager.scaled(Row1::gearX), iconY, iconSize, iconSize);
+    linkButton.setBounds(layoutManager.scaled(Row1::linkX), iconY, iconSize, iconSize);
+    cloudButton.setBounds(layoutManager.scaled(Row1::cloudX), iconY, iconSize, iconSize);
+
+    // Preset navigation controls
+    int presetY = layoutManager.scaled(Row1::presetY);
+    int chevronSize = layoutManager.scaled(Row1::chevronSize);
+    leftChevronButton.setBounds(layoutManager.scaled(Row1::leftChevronX), presetY, chevronSize, chevronSize);
+    presetsMenu.setBounds(layoutManager.scaled(Row1::presetsMenuX), layoutManager.scaled(Row1::presetsMenuY),
+                         layoutManager.scaled(Row1::presetsMenuWidth), layoutManager.scaled(iconButtonSize));
+    rightChevronButton.setBounds(layoutManager.scaled(Row1::rightChevronX), presetY, chevronSize, chevronSize);
+
+    // Center transport controls
+    playButton.setBounds(layoutManager.scaled(Row1::playX), iconY, iconSize, iconSize);
+    pauseButton.setBounds(layoutManager.scaled(Row1::playX), iconY, iconSize, iconSize);
+
+    // Tempo controls
+    bpmLabel.setBounds(layoutManager.scaled(Row1::bpmX), layoutManager.scaled(Row1::bpmY),
+                      layoutManager.scaled(Row1::bpmWidth), layoutManager.scaled(Row1::bpmHeight));
+
+    clockSyncLabel.setBounds(layoutManager.scaled(Row1::bpmX), layoutManager.scaled(Row1::clockSyncY),
+                           layoutManager.scaled(Row1::bpmWidth), layoutManager.scaled(Row1::clockSyncHeight));
+
+    // Recording and tempo controls
+    tapTempoButton.setBounds(layoutManager.scaled(Row1::tapTempoX), iconY, iconSize, iconSize);
+    tapTempoLabel.setBounds(layoutManager.scaled(Row1::tapTempoX), layoutManager.scaled(Row1::clockSyncY),
+                          iconSize, layoutManager.scaled(Row1::clockSyncHeight));
+
+    recordButton.setBounds(layoutManager.scaled(Row1::recordX), iconY, iconSize, iconSize);
+    overdubButton.setBounds(layoutManager.scaled(Row1::overdubX), iconY, iconSize, iconSize);
+    loopButton.setBounds(layoutManager.scaled(Row1::loopX), iconY, iconSize, iconSize);
+
+    // Right side branding
+    ottoLabel.setBounds(layoutManager.scaled(Row1::ottoX), layoutManager.scaled(Row1::ottoY),
+                       layoutManager.scaled(Row1::ottoWidth), layoutManager.scaled(Row1::ottoHeight));
+    versionLabel.setBounds(layoutManager.scaled(Row1::ottoX), layoutManager.scaled(Row1::versionY),
+                          layoutManager.scaled(Row1::ottoWidth), layoutManager.scaled(Row1::versionHeight));
+
+    // Bottom separator (constrained to Row1 bounds)
+    bottomSeparator.setBounds(0, layoutManager.scaled(Row1::height) - layoutManager.scaled(separatorThickness),
+                             bounds.getWidth(), layoutManager.scaled(separatorThickness));
+    
+    // TEMPORARY: Position Row 1 debug label using Row1 positioning
+    row1DebugLabel.setBounds(bounds.getWidth() - 120 - layoutManager.scaled(defaultMargin), 
+                            layoutManager.scaled(Row1::contentY), 
+                            120, layoutManager.scaled(Row1::contentHeight));
 }

@@ -22,12 +22,20 @@ PlayerTabsComponent::PlayerTabsComponent(MidiEngine& midiEngine,
 }
 
 void PlayerTabsComponent::setupTabs() {
-    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
+    using namespace INIConfig::LayoutConstants;
+    
+    for (int i = 0; i < Row2::tabsCount; ++i) {
         addAndMakeVisible(tabs[i]);
         tabs[i].setButtonText("PLAYER " + juce::String(i + 1));
 
+        // Configure with ColorScheme integration (fonts handled by LookAndFeel)
+        tabs[i].setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        tabs[i].setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
+        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+
         tabs[i].setClickingTogglesState(true);
-        tabs[i].setRadioGroupId(INIConfig::LayoutConstants::playerTabsRadioGroupId);
+        tabs[i].setRadioGroupId(playerTabsRadioGroupId);
 
         tabs[i].onClick = [this, i] {
             setSelectedTab(i);
@@ -38,7 +46,9 @@ void PlayerTabsComponent::setupTabs() {
 }
 
 void PlayerTabsComponent::setSelectedTab(int tab) {
-    if (tab >= 0 && tab < INIConfig::LayoutConstants::Row2::tabsCount && tab != selectedTab) {
+    using namespace INIConfig::LayoutConstants;
+    
+    if (tab >= 0 && tab < Row2::tabsCount && tab != selectedTab) {
         selectedTab = INIConfig::clampPlayerIndex(tab);
         midiEngine.selectPattern(selectedTab, 0);
 
@@ -53,11 +63,19 @@ void PlayerTabsComponent::setSelectedTab(int tab) {
 }
 
 void PlayerTabsComponent::lookAndFeelChanged() {
-    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
+    using namespace INIConfig::LayoutConstants;
+    
+    // Update colors when look and feel changes (fonts handled by LookAndFeel)
+    for (int i = 0; i < Row2::tabsCount; ++i) {
+        tabs[i].setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        tabs[i].setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
+        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        
         tabs[i].repaint();
     }
+    
     repaint();
-
     updateTabVisuals();
 }
 
@@ -68,12 +86,16 @@ void PlayerTabsComponent::parentSizeChanged() {
 }
 
 void PlayerTabsComponent::updateTabVisuals() {
-    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
+    using namespace INIConfig::LayoutConstants;
+    
+    for (int i = 0; i < Row2::tabsCount; ++i) {
         tabs[i].setToggleState(i == selectedTab, juce::dontSendNotification);
 
-        tabs[i].removeColour(juce::TextButton::buttonColourId);
-        tabs[i].removeColour(juce::TextButton::textColourOnId);
-        tabs[i].removeColour(juce::TextButton::textColourOffId);
+        // Update colors using ColorScheme (fonts handled by LookAndFeel)
+        tabs[i].setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        tabs[i].setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
+        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
     }
 }
 
@@ -103,7 +125,9 @@ void PlayerTabsComponent::loadStates(const ComponentState& state) {
 }
 
 void PlayerTabsComponent::updateTabsFromState(const ComponentState& state) {
-    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
+    using namespace INIConfig::LayoutConstants;
+    
+    for (int i = 0; i < Row2::tabsCount; ++i) {
         if (INIConfig::isValidPlayerIndex(i)) {
             updateTabText(i, state.playerSettings[i]);
         }
@@ -114,9 +138,11 @@ void PlayerTabsComponent::updateTabsFromState(const ComponentState& state) {
 }
 
 void PlayerTabsComponent::setClipLaunchMode(bool enabled) {
+    using namespace INIConfig::LayoutConstants;
+    
     clipLaunchMode = enabled;
 
-    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
+    for (int i = 0; i < Row2::tabsCount; ++i) {
         tabs[i].onClick = [this, i] {
             handleTabClick(i);
         };
@@ -134,7 +160,9 @@ void PlayerTabsComponent::handleTabClick(int tabIndex) {
 }
 
 void PlayerTabsComponent::highlightQueuedTab(int tabIndex, bool highlight) {
-    if (tabIndex >= 0 && tabIndex < INIConfig::LayoutConstants::Row2::tabsCount) {
+    using namespace INIConfig::LayoutConstants;
+    
+    if (tabIndex >= 0 && tabIndex < Row2::tabsCount) {
         tabQueuedStates[tabIndex] = highlight;
 
         if (highlight) {
@@ -147,7 +175,9 @@ void PlayerTabsComponent::highlightQueuedTab(int tabIndex, bool highlight) {
 }
 
 void PlayerTabsComponent::showClipState(int tabIndex, bool hasClip, bool isPlaying) {
-    if (tabIndex >= 0 && tabIndex < INIConfig::LayoutConstants::Row2::tabsCount) {
+    using namespace INIConfig::LayoutConstants;
+    
+    if (tabIndex >= 0 && tabIndex < Row2::tabsCount) {
         tabHasClip[tabIndex] = hasClip;
         tabIsPlaying[tabIndex] = isPlaying;
 
@@ -161,21 +191,22 @@ void PlayerTabsComponent::showClipState(int tabIndex, bool hasClip, bool isPlayi
 }
 
 void PlayerTabsComponent::paint(juce::Graphics& g) {
-    g.fillAll(juce::Colours::transparentBlack);
+    // Use ColorScheme for background
+    g.fillAll(colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
 
     auto bounds = getLocalBounds();
     
-    // PHASE 4: Use percentage-based Row 2 constants for highlight positioning
-    // ======================================================================
-    int tabWidth = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabWidth);
-    int leftMargin = layoutManager.scaled(INIConfig::LayoutConstants::Row2::leftMargin);
-    int tabSpacing = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabSpacing);
-    int highlightHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row2::highlightHeight);
-    int highlightMargin = layoutManager.scaled(INIConfig::LayoutConstants::Row2::highlightMargin);
-    int highlightWidthReduction = layoutManager.scaled(INIConfig::LayoutConstants::Row2::highlightWidthReduction);
+    // Use Row2 namespace constants for highlight positioning
+    using namespace INIConfig::LayoutConstants;
+    int tabWidth = layoutManager.scaled(Row2::tabWidth);
+    int leftMargin = layoutManager.scaled(Row2::leftMargin);
+    int tabSpacing = layoutManager.scaled(Row2::tabSpacing);
+    int highlightHeight = layoutManager.scaled(Row2::highlightHeight);
+    int highlightMargin = layoutManager.scaled(Row2::highlightMargin);
+    int highlightWidthReduction = layoutManager.scaled(Row2::highlightWidthReduction);
     
-    // Draw highlight for selected tab
-    g.setColour(colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    // Draw highlight for selected tab using ColorScheme
+    g.setColour(colorScheme.getColor(ColorScheme::ColorRole::Accent));
     
     // Calculate selected button position using percentage-based layout
     int selectedButtonX = leftMargin;
@@ -192,20 +223,20 @@ void PlayerTabsComponent::paint(juce::Graphics& g) {
 void PlayerTabsComponent::resized() {
     auto bounds = getLocalBounds();
     
-    // PHASE 4: Use percentage-based Row 2 constants for positioning
-    // ============================================================
-    int tabWidth = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabWidth);
-    int leftMargin = layoutManager.scaled(INIConfig::LayoutConstants::Row2::leftMargin);
-    int tabSpacing = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabSpacing);
-    int tabTopOffset = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabTopOffset);
-    int tabContentHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row2::tabContentHeight);
+    // Use Row2 namespace constants for positioning  
+    using namespace INIConfig::LayoutConstants;
+    int tabWidth = layoutManager.scaled(Row2::tabWidth);
+    int leftMargin = layoutManager.scaled(Row2::leftMargin);
+    int tabSpacing = layoutManager.scaled(Row2::tabSpacing);
+    int tabTopOffset = layoutManager.scaled(Row2::tabTopOffset);
+    int tabContentHeight = layoutManager.scaled(Row2::tabContentHeight);
 
     // Position each player tab using percentage-based layout:
     // Button 1: [4.5% margin][Button1] (left margin)
     // Buttons 2-7: [2.25% margin][Button] (spacing between tabs)
     // Button 8: [2.25% margin][Button8][4.5% margin] (right margin)
     int currentX = leftMargin;
-    for (int i = 0; i < INIConfig::LayoutConstants::Row2::tabsCount; ++i) {
+    for (int i = 0; i < Row2::tabsCount; ++i) {
         tabs[i].setBounds(currentX, 
                          tabTopOffset, 
                          tabWidth, 
@@ -213,16 +244,16 @@ void PlayerTabsComponent::resized() {
         
         // Move to next button position using percentage-based spacing
         currentX += tabWidth;
-        if (i < INIConfig::LayoutConstants::Row2::tabsCount - 1) {
+        if (i < Row2::tabsCount - 1) {
             currentX += tabSpacing; // Add spacing before next tab
         }
     }
 
-    bottomSeparator.setBounds(0, bounds.getBottom() - layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness),
-                             bounds.getWidth(), layoutManager.scaled(INIConfig::LayoutConstants::separatorThickness));
+    bottomSeparator.setBounds(0, bounds.getBottom() - layoutManager.scaled(separatorThickness),
+                             bounds.getWidth(), layoutManager.scaled(separatorThickness));
     
     // TEMPORARY: Position Row 2 debug label on right side for visibility
-    row2DebugLabel.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding), 
+    row2DebugLabel.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(defaultPadding), 
                             120, 50);
 }
 

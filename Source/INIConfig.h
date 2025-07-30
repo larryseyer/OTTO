@@ -95,6 +95,7 @@ namespace INIConfig {
         static const float DEFAULT_SNARE_VOLUME = 0.8f;
         static const float DEFAULT_HIHAT_VOLUME = 0.7f;
         static const int DEFAULT_PHOSPHOR_WEIGHT = 1;
+        static constexpr float DEFAULT_PHOSPHOR_ICON_BOX_FIT_RATIO = 0.99f; // 99% of box area for perfect icon fit
 
         static const int DEFAULT_TEMPO = 120.0f;
         static const juce::String DEFAULT_TIME_SIGNATURE = "4/4";
@@ -636,9 +637,10 @@ namespace LayoutConstants {
     constexpr int phosphorIconButtonDefaultSize = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0333f);
     constexpr float phosphorIconButtonHoverScale = 0.05f;
     constexpr float phosphorIconButtonCornerRadius = 4.0f;
-    constexpr float phosphorIconButtonFontSizeRatio = 1.0f; // Increased from 0.85f - make icons larger overall
-    constexpr float phosphorIconButtonMinFontSize = 16.0f; // Minimum safety bound for very small GUI scales  
-    constexpr float phosphorIconButtonMaxFontSize = 24.0f; // Maximum safety bound to prevent rendering as dots
+    // EUREKA MOMENT: Icons should be configurable % of their BOX area, not responsive-scaled
+    // The box already handles responsive scaling, so icons just need to fit nicely within that defined area
+    constexpr float phosphorIconButtonBoxFitRatio = Defaults::DEFAULT_PHOSPHOR_ICON_BOX_FIT_RATIO;
+    // No artificial font size limits needed - box dimensions provide natural scaling boundaries
     constexpr float phosphorIconButtonAlphaBase = 0.8f;
     constexpr float phosphorIconButtonAlphaHover = 0.2f;
     constexpr float phosphorIconButtonAnimSpeed = 0.15f;
@@ -1471,6 +1473,8 @@ namespace LayoutConstants {
        static const int MAX_TIME_SIG_NUMERATOR = 99;
        static const int MIN_TIME_SIG_DENOMINATOR = 1;
        static const int MAX_TIME_SIG_DENOMINATOR = 64;
+       static const float MIN_PHOSPHOR_ICON_BOX_FIT_RATIO = 0.5f;  // 50% minimum - still readable
+       static const float MAX_PHOSPHOR_ICON_BOX_FIT_RATIO = 1.0f;  // 100% maximum - fills entire box
    }
 
    namespace UI {
@@ -2051,6 +2055,10 @@ namespace LayoutConstants {
 
   inline int clampPhosphorWeight(int weight) {
       return juce::jlimit(Validation::MIN_PHOSPHOR_WEIGHT, Validation::MAX_PHOSPHOR_WEIGHT, weight);
+  }
+
+  inline float clampPhosphorIconBoxFitRatio(float ratio) {
+      return juce::jlimit(Validation::MIN_PHOSPHOR_ICON_BOX_FIT_RATIO, Validation::MAX_PHOSPHOR_ICON_BOX_FIT_RATIO, ratio);
   }
 
   inline float clampLoopPosition(float position) {

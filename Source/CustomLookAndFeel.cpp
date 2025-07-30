@@ -431,15 +431,15 @@ void CustomLookAndFeel::drawIconButton(juce::Graphics& g, juce::TextButton& butt
 
     juce::String iconChar = fontManager.getIconString(iconName);
 
-    // Intelligent font sizing: Consider both button bounds and row height with min/max clamps
-    float buttonBasedSize = button.getHeight() * INIConfig::LayoutConstants::phosphorIconButtonFontSizeRatio;
-    float widthBasedSize = button.getWidth() * INIConfig::LayoutConstants::phosphorIconButtonFontSizeRatio;
-    float contentBasedSize = juce::jmin(buttonBasedSize, widthBasedSize); // Use smaller dimension
+    // EUREKA IMPLEMENTATION: Icons size to configurable % of their ACTUAL box area
+    // No double-scaling - the box handles responsive scaling, icon just fits the box perfectly
+    float actualBoxHeight = static_cast<float>(button.getHeight());
+    float actualBoxWidth = static_cast<float>(button.getWidth());
+    float boxFitRatio = INIConfig::clampPhosphorIconBoxFitRatio(INIConfig::LayoutConstants::phosphorIconButtonBoxFitRatio);
+    float desiredIconSize = juce::jmin(actualBoxHeight, actualBoxWidth) * boxFitRatio;
     
-    // Apply intelligent bounds: minimum for small GUI, maximum to prevent dots
-    float finalFontSize = juce::jlimit(INIConfig::LayoutConstants::phosphorIconButtonMinFontSize,
-                                      INIConfig::LayoutConstants::phosphorIconButtonMaxFontSize,
-                                      contentBasedSize);
+    // Compensate for FontManager's scaling - divide by scale factor so final result is correct
+    float finalFontSize = desiredIconSize / fontManager.getScaleFactor();
     
     juce::Font iconFont = fontManager.getPhosphorFont(fontManager.getPhosphorWeight(), finalFontSize);
     g.setFont(iconFont);

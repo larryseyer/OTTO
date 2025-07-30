@@ -57,6 +57,9 @@ public:
 
     void lookAndFeelChanged() override;
     void mouseDown(const juce::MouseEvent& event) override;
+    
+    // Method to refresh preset label font
+    void refreshPresetLabelFont();
 
 private:
     MidiEngine& midiEngine;

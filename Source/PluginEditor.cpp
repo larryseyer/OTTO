@@ -361,6 +361,8 @@ void OTTOAudioProcessorEditor::createComponents()
             }
             ErrorHandler::safeExecute([&]() {
                 addAndMakeVisible(topBar.get());
+                // Refresh preset label font after fonts are loaded and component is visible
+                topBar->refreshPresetLabelFont();
             }, "TopBar visibility");
         } else {
             DBG("PluginEditor: Failed to create TopBarComponent");

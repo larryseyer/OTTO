@@ -133,11 +133,11 @@ void TopBarComponent::setupComponents() {
     tapTempoLabel.setVisible(false);
 
     // Configure preset display label with Playfair Display font
-    presetDisplayLabel.setComponentID("preset_display_label");
+    presetDisplayLabel.setComponentID("preset_display_label");  
     presetDisplayLabel.setText(currentPresetName, juce::dontSendNotification);
     presetDisplayLabel.setJustificationType(juce::Justification::centred);
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
-                               layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetsMenuWidth * 0.4f)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::fontSizePresetLabel)));
     presetDisplayLabel.setColour(juce::Label::textColourId, 
                                 colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     
@@ -145,7 +145,9 @@ void TopBarComponent::setupComponents() {
     presetDisplayLabel.setMouseCursor(juce::MouseCursor::PointingHandCursor);
     presetDisplayLabel.addMouseListener(this, false);
 
-    presetsMenu.setJustificationType(juce::Justification::centred);
+    // Configure presets menu with component ID for font styling and left alignment
+    presetsMenu.setComponentID("presets_menu");
+    presetsMenu.setJustificationType(juce::Justification::left);
 
     setupPresets();
     presetsMenu.setTextWhenNothingSelected("Select App Preset...");
@@ -181,7 +183,7 @@ void TopBarComponent::lookAndFeelChanged() {
 
     // Update preset display label font and color
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
-                               layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetsMenuWidth * 0.4f)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::fontSizePresetLabel)));
     presetDisplayLabel.setColour(juce::Label::textColourId, 
                                 colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 
@@ -807,7 +809,7 @@ void TopBarComponent::setMidiClockOutEnabled(bool enabled) {
 void TopBarComponent::setupPresets() {
     presetsMenu.setTextWhenNothingSelected("Select App Preset...");
     presetsMenu.setTextWhenNoChoicesAvailable("No app presets found");
-    presetsMenu.setJustificationType(juce::Justification::centred);
+    presetsMenu.setJustificationType(juce::Justification::left);
 
     presetsMenu.onPopupRequest = [this] {
         buildHierarchicalPresetMenu();
@@ -1415,7 +1417,8 @@ void TopBarComponent::resized() {
     int separatorThickness = juce::jmax(1, static_cast<int>(currentHeight * 0.05f)); // 5% of row height, min 1px
     bottomSeparator.setBounds(0, currentHeight - separatorThickness, bounds.getWidth(), separatorThickness);
     
-
+    // Force ComboBox to refresh its font after resize - fixes font reverting bug
+    presetsMenu.lookAndFeelChanged();
 }
 
 void TopBarComponent::togglePresetDisplay() {
@@ -1454,4 +1457,17 @@ void TopBarComponent::mouseDown(const juce::MouseEvent& event) {
         // User clicked the preset label - show menu
         showPresetMenu();
     }
+}
+
+void TopBarComponent::refreshPresetLabelFont() {
+    // Force refresh the preset label font
+    presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+                               layoutManager.scaled(INIConfig::LayoutConstants::fontSizePresetLabel)));
+    
+    // Also refresh the color to ensure consistency
+    presetDisplayLabel.setColour(juce::Label::textColourId, 
+                                colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    
+    // Force a repaint to show the changes
+    presetDisplayLabel.repaint();
 }

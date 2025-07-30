@@ -56,6 +56,7 @@ public:
     void setLoopRecordingEnabled(bool enabled);
 
     void lookAndFeelChanged() override;
+    void mouseDown(const juce::MouseEvent& event) override;
 
 private:
     MidiEngine& midiEngine;
@@ -79,6 +80,7 @@ private:
     PhosphorIconButton loopButton;
 
     HierarchicalComboBox presetsMenu;
+    juce::Label presetDisplayLabel;  // New preset label for large font display
     EditableNumericLabel bpmLabel;
     juce::Label ottoLabel;
     juce::Label versionLabel;
@@ -91,6 +93,7 @@ private:
     bool midiClockInEnabled = false;
     bool midiClockOutEnabled = false;
     bool isExternalSyncActive = false;
+    bool showingPresetLabel = true;  // Toggle state: true = show label, false = show menu
 
     bool liveRecording = false;
     bool overdubEnabled = false;
@@ -130,6 +133,10 @@ private:
 
     void updateRecordButton();
     void updateTapTempoDisplay();
+    void togglePresetDisplay();
+    void showPresetLabel();
+    void showPresetMenu();
+    void updatePresetDisplayToggle();
 
     void showCloudMenu();
     void updateCloudButtonVisuals();

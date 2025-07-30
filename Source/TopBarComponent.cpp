@@ -32,6 +32,7 @@ void TopBarComponent::setupComponents() {
     addAndMakeVisible(leftChevronButton);
     addAndMakeVisible(rightChevronButton);
     addAndMakeVisible(presetsMenu);
+    addAndMakeVisible(presetDisplayLabel);
     addAndMakeVisible(bpmLabel);
     // Right-side branding elements
     addAndMakeVisible(ottoLabel);
@@ -131,11 +132,28 @@ void TopBarComponent::setupComponents() {
     tapTempoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     tapTempoLabel.setVisible(false);
 
+    // Configure preset display label with Playfair Display font
+    presetDisplayLabel.setComponentID("preset_display_label");
+    presetDisplayLabel.setText(currentPresetName, juce::dontSendNotification);
+    presetDisplayLabel.setJustificationType(juce::Justification::centred);
+    presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+                               layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetsMenuWidth * 0.4f)));
+    presetDisplayLabel.setColour(juce::Label::textColourId, 
+                                colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    
+    // Make preset display label clickable
+    presetDisplayLabel.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    presetDisplayLabel.addMouseListener(this, false);
+
     presetsMenu.setJustificationType(juce::Justification::centred);
 
     setupPresets();
     presetsMenu.setTextWhenNothingSelected("Select App Preset...");
     presetsMenu.setTextWhenNoChoicesAvailable("No app presets found");
+    
+    // Initialize preset display toggle state
+    updatePresetDisplayToggle();
+    
     updateLinkButtonVisuals();
     updateRecordButton();
     updateCloudButtonVisuals();
@@ -160,6 +178,12 @@ void TopBarComponent::lookAndFeelChanged() {
     tapTempoLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
                           layoutManager.scaled(INIConfig::LayoutConstants::Row1::clockSyncHeight * 0.8f)));
     tapTempoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+
+    // Update preset display label font and color
+    presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+                               layoutManager.scaled(INIConfig::LayoutConstants::topBarPresetsMenuWidth * 0.4f)));
+    presetDisplayLabel.setColour(juce::Label::textColourId, 
+                                colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 
     // Set BPM label to use Roboto Condensed (Version role) for compact tempo display  
     bpmLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
@@ -842,12 +866,20 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
 }
 
 void TopBarComponent::handlePresetMenuSelection(int result) {
-    if (result == 0) return;
+    if (result == 0) {
+        // User cancelled - show label again
+        showPresetLabel();
+        return;
+    }
 
     for (const auto& mapping : presetMenuMapping) {
         if (mapping.menuId == result) {
             currentPresetName = mapping.presetName;
             presetsMenu.setText(currentPresetName);
+            presetDisplayLabel.setText(currentPresetName, juce::dontSendNotification);
+
+            // Hide menu and show label with new selection
+            showPresetLabel();
 
             int presetIndex = getPresetIndexFromName(currentPresetName);
             if (onPresetChanged && presetIndex >= 0) {
@@ -1044,6 +1076,10 @@ void TopBarComponent::handlePresetChevrons(bool isRight) {
 
         currentPresetName = allPresets[currentIndex];
         presetsMenu.setText(currentPresetName);
+        presetDisplayLabel.setText(currentPresetName, juce::dontSendNotification);
+
+        // Ensure label is shown when using chevrons
+        showPresetLabel();
 
         if (onPresetChanged) {
             onPresetChanged(currentIndex);
@@ -1063,6 +1099,11 @@ void TopBarComponent::setPresetSelection(int index) {
     if (index >= 0 && index < allPresets.size()) {
         currentPresetName = allPresets[index];
         presetsMenu.setText(currentPresetName);
+        presetDisplayLabel.setText(currentPresetName, juce::dontSendNotification);
+        
+        // Show label by default when preset is programmatically set
+        showPresetLabel();
+        
         notifyStateChanged();
     }
 }
@@ -1311,6 +1352,7 @@ void TopBarComponent::resized() {
     
     leftChevronButton.setBounds(centeredLeftChevronX, iconY, iconSize, iconSize);
     presetsMenu.setBounds(presetsMenuX, iconY, presetMenuWidth, iconSize);
+    presetDisplayLabel.setBounds(presetsMenuX, iconY, presetMenuWidth, iconSize);
     rightChevronButton.setBounds(rightChevronX, iconY, iconSize, iconSize);
     playButton.setBounds(playX, iconY, iconSize, iconSize);
     pauseButton.setBounds(playX, iconY, iconSize, iconSize);
@@ -1374,4 +1416,42 @@ void TopBarComponent::resized() {
     bottomSeparator.setBounds(0, currentHeight - separatorThickness, bounds.getWidth(), separatorThickness);
     
 
+}
+
+void TopBarComponent::togglePresetDisplay() {
+    showingPresetLabel = !showingPresetLabel;
+    updatePresetDisplayToggle();
+}
+
+void TopBarComponent::showPresetLabel() {
+    showingPresetLabel = true;
+    updatePresetDisplayToggle();
+}
+
+void TopBarComponent::showPresetMenu() {
+    showingPresetLabel = false;
+    updatePresetDisplayToggle();
+    
+    // Show the preset menu dropdown
+    buildHierarchicalPresetMenu();
+}
+
+void TopBarComponent::updatePresetDisplayToggle() {
+    if (showingPresetLabel) {
+        // Show large preset label, hide dropdown menu
+        presetDisplayLabel.setVisible(true);
+        presetsMenu.setVisible(false);
+    } else {
+        // Show dropdown menu, hide large preset label
+        presetDisplayLabel.setVisible(false);
+        presetsMenu.setVisible(true);
+    }
+}
+
+void TopBarComponent::mouseDown(const juce::MouseEvent& event) {
+    // Check if click was on the preset display label
+    if (event.eventComponent == &presetDisplayLabel && showingPresetLabel) {
+        // User clicked the preset label - show menu
+        showPresetMenu();
+    }
 }

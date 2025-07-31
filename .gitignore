@@ -79,13 +79,14 @@ cmake_install.cmake
 Makefile
 CTestTestfile.cmake
 
-# Setup and development files
+# Setup and development files (generated/temporary)
 .clang-tidy
 Makefile.linux
-lint.sh
-run_local.sh
 simple_standalone.cpp
 Source/Main.cpp
+
+# Build scripts should be tracked for open source distribution
+# DO NOT ignore *.sh files - they are essential for building the project
 
 # JUCE Framework (untracked)
 JUCE/
@@ -137,3 +138,4 @@ HISE_CPP_Source
 
 #logs
 build_test.log
+output.txt

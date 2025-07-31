@@ -58,6 +58,31 @@ Each player is a complete audio production unit featuring:
 
 **See [docs/BUILDRULES.md](docs/BUILDRULES.md) for complete build instructions**
 
+## 🎵 **JUCE 8 Setup (Required)**
+
+OTTO requires **JUCE 8** framework, which is not included in this repository for licensing and size reasons.
+
+### **Automatic Setup (Recommended)**
+```bash
+# Downloads and configures JUCE 8 automatically
+./scripts/setup/setup_juce8.sh
+```
+
+### **Manual Setup**
+```bash
+# Clone JUCE 8 from official repository
+git clone --branch master https://github.com/juce-framework/JUCE.git
+```
+
+### **Verification**
+```bash
+# Verify JUCE installation
+ls JUCE/CMakeLists.txt  # Should exist
+./scripts/build/build_macos.sh  # Test build (macOS example)
+```
+
+**📄 See [docs/JUCE_SETUP_REQUIREMENTS.md](docs/JUCE_SETUP_REQUIREMENTS.md) for detailed platform-specific setup instructions**
+
 ## 🏗️ Technical Architecture
 
 ### Core Components

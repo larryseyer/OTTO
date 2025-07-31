@@ -56,7 +56,7 @@ Each player is a complete audio production unit featuring:
 ./build_all.sh --all       # All platforms → Organized Builds/ structure
 ```
 
-**See [BUILDRULES.md](BUILDRULES.md) for complete build instructions**
+**See [docs/BUILDRULES.md](docs/BUILDRULES.md) for complete build instructions**
 
 ## 🏗️ Technical Architecture
 
@@ -103,7 +103,7 @@ OTTO_Data/
 └── System/           # System configuration files
 ```
 
-**See [INIRULES.md](INIRULES.md) for complete data management details**
+**See [docs/INIRULES.md](docs/INIRULES.md) for complete data management details**
 
 ## 🎨 User Interface
 
@@ -122,7 +122,7 @@ OTTO_Data/
 - **Percentage-based responsive design** automatically maintains accessibility across all platforms
 - **Real-time parameter feedback** with visual indicators
 
-**See [DESIGNRULES.md](DESIGNRULES.md) for complete UI guidelines**
+**See [docs/DESIGNRULES.md](docs/DESIGNRULES.md) for complete UI guidelines**
 
 ## 🔧 Player Engine Details
 
@@ -203,11 +203,29 @@ Each of OTTO's 8 players provides comprehensive control:
 
 ## 📚 Documentation
 
-- **[REPO.md](REPO.md)** - GitHub repository guidelines and contribution rules
-- **[DESIGNRULES.md](DESIGNRULES.md)** - UI design guidelines and component standards
-- **[BUILDRULES.md](BUILDRULES.md)** - Complete cross-platform build instructions  
-- **[INIRULES.md](INIRULES.md)** - Data storage and INI configuration system
+- **[docs/REPO.md](docs/REPO.md)** - GitHub repository guidelines and contribution rules
+- **[docs/DESIGNRULES.md](docs/DESIGNRULES.md)** - UI design guidelines and component standards
+- **[docs/BUILDRULES.md](docs/BUILDRULES.md)** - Complete cross-platform build instructions  
+- **[docs/INIRULES.md](docs/INIRULES.md)** - Data storage and INI configuration system
 - **[docs/INI_LAYOUT_SYSTEM_COMPLETION.md](docs/INI_LAYOUT_SYSTEM_COMPLETION.md)** - Complete INI-driven layout system implementation details
+
+## 🤖 For AI Assistants & Developers
+
+**⚠️ IMPORTANT**: Before working on this project, AI assistants and developers must:
+
+1. **Check [docs/ZENCODER_RULES.md](docs/ZENCODER_RULES.md)** - Critical system constraints and development guidelines
+2. **Review [docs/DESIGNRULES.md](docs/DESIGNRULES.md)** - INI-driven layout requirements (no hardcoded values allowed)
+3. **Understand [docs/BUILDRULES.md](docs/BUILDRULES.md)** - Build system is configured and must not be modified
+4. **Follow [docs/INIRULES.md](docs/INIRULES.md)** - All settings and positioning use INI configuration system
+
+### 🎯 Key Development Constraints:
+- ✅ **JUCE 8 + CMake**: Modern C++20 patterns, unified build system for all platforms
+- ✅ **INI-Driven Layout Priority**: All positioning uses `INIConfig::LayoutConstants` namespaces
+- ✅ **FontManager/ColorScheme**: All UI styling through proper JUCE 8 systems
+- ❌ **No CMake Modifications**: Work within existing build configuration
+- ❌ **No Hardcoded Values**: Everything must be configurable via INI system
+
+**See [docs/](docs/) directory for complete technical documentation and AI assistant guidelines.**
 
 ## 🏆 Key Achievements
 

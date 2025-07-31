@@ -26,11 +26,20 @@ OTTO/
 ```
 
 ### Documentation Files
-- `README.md` - Main project overview and quick start
-- `REPO.md` - This file (repository guidelines)
-- `DESIGNRULES.md` - UI design guidelines and standards
-- `BUILDRULES.md` - Cross-platform build instructions
-- `INIRULES.md` - Data storage and configuration system
+- `README.md` - Main project overview and quick start (in root directory)
+- `docs/REPO.md` - This file (repository guidelines)
+- `docs/DESIGNRULES.md` - UI design guidelines and standards
+- `docs/BUILDRULES.md` - Cross-platform build instructions
+- `docs/INIRULES.md` - Data storage and configuration system
+
+### Documentation Naming Convention
+**All documentation files in `/docs/` directory use UPPERCASE format:**
+- ✅ `BUILDRULES.md` - Correct format
+- ✅ `CURRENT_SYSTEM_ANALYSIS.md` - Correct format  
+- ❌ `build_rules.md` - Incorrect (lowercase with underscores)
+- ❌ `Current_System_Analysis.md` - Incorrect (mixed case)
+
+**Exception:** `README.md` uses standard case as it's the GitHub-recognized documentation index.
 
 ## 🔄 Git Workflow
 

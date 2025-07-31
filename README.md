@@ -81,7 +81,7 @@ ls JUCE/CMakeLists.txt  # Should exist
 ./scripts/build/build_macos.sh  # Test build (macOS example)
 ```
 
-**📄 See [docs/JUCE_SETUP_REQUIREMENTS.md](docs/JUCE_SETUP_REQUIREMENTS.md) for detailed platform-specific setup instructions**
+**📄 See [docs/JUCE_SETUP_INSTRUCTIONS.md](docs/JUCE_SETUP_INSTRUCTIONS.md) for detailed setup instructions and license compliance information**
 
 ## 🏗️ Technical Architecture
 

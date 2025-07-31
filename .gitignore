@@ -47,6 +47,8 @@ build-macos/
 build-ios-sim/
 cmake-build-*/
 Builds/Linux*/
+build_test/
+vscode-build-debug/
 
 # CMake build directories (keep ProJucer projects)
 Builds/*/CMake*
@@ -88,8 +90,9 @@ Source/Main.cpp
 # Build scripts should be tracked for open source distribution
 # DO NOT ignore *.sh files - they are essential for building the project
 
-# JUCE Framework (untracked)
+# JUCE Framework (untracked - users must download separately)
 JUCE/
+JuceLibraryCode/
 
 # Track cmake toolchain files but ignore generated cache files in cmake directory
 cmake/CMakeCache.txt

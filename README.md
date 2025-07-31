@@ -44,16 +44,16 @@ Each player is a complete audio production unit featuring:
 
 ### Single Platform Builds
 ```bash
-./build_macos.sh           # macOS Universal → Builds/MacOSX/Release/
-./build_ios.sh --simulator # iOS Simulator → Builds/iOS/Release/
-./build_linux.sh           # Linux → Builds/LinuxMakefile/Release/
-./build_android.sh         # Android → Builds/Android/Release/
-./build_windows.bat        # Windows → Builds/VisualStudio2022/Release/
+./scripts/build/build_macos.sh           # macOS Universal → Builds/MacOSX/Release/
+./scripts/build/build_ios.sh --simulator # iOS Simulator → Builds/iOS/Release/
+./scripts/build/build_linux.sh           # Linux → Builds/LinuxMakefile/Release/
+./scripts/build/build_android.sh         # Android → Builds/Android/Release/
+./scripts/build/build_windows.bat        # Windows → Builds/VisualStudio2022/Release/
 ```
 
 ### Multi-Platform Build
 ```bash
-./build_all.sh --all       # All platforms → Organized Builds/ structure
+./scripts/build/build_all.sh --all       # All platforms → Organized Builds/ structure
 ```
 
 **See [docs/BUILDRULES.md](docs/BUILDRULES.md) for complete build instructions**

@@ -57,7 +57,7 @@ OTTO uses a **unified CMake build system** that ensures identical results across
 
 #### macOS (Universal Binary)
 ```bash
-./build_macos.sh
+./scripts/build/build_macos.sh
 ```
 **Output**: `Builds/MacOSX/Release/`
 - `VST3/OTTO.vst3` - VST3 plugin
@@ -67,17 +67,17 @@ OTTO uses a **unified CMake build system** that ensures identical results across
 #### iOS (Device & Simulator)
 ```bash
 # iOS Simulator (auto-detects Mac architecture)
-./build_ios.sh --simulator --team-id YOUR_TEAM_ID
+./scripts/build/build_ios.sh --simulator --team-id YOUR_TEAM_ID
 
 # iOS Device
-./build_ios.sh --device --team-id YOUR_TEAM_ID
+./scripts/build/build_ios.sh --device --team-id YOUR_TEAM_ID
 ```
 **Output**: `Builds/iOS/Release/`
 - `Standalone/OTTO.app` - iOS application
 
 #### Linux (Native)
 ```bash
-./build_linux.sh
+./scripts/build/build_linux.sh
 ```
 **Output**: `Builds/LinuxMakefile/Release/`
 - `VST3/OTTO.vst3` - VST3 plugin
@@ -85,7 +85,7 @@ OTTO uses a **unified CMake build system** that ensures identical results across
 
 #### Windows (x64)
 ```batch
-build_windows.bat
+scripts/build/build_windows.bat
 ```
 **Output**: `Builds/VisualStudio2022/Release/`
 - `VST3/OTTO.vst3` - VST3 plugin
@@ -98,10 +98,10 @@ export ANDROID_NDK_ROOT=/path/to/ndk
 export ANDROID_HOME=/path/to/sdk
 
 # Build default (arm64-v8a, API 23)
-./build_android.sh
+./scripts/build/build_android.sh
 
 # Custom architecture and API level
-./build_android.sh --abi armeabi-v7a --api 28
+./scripts/build/build_android.sh --abi armeabi-v7a --api 28
 ```
 **Output**: `Builds/Android/Release/`
 - `libOTTO.so` - Shared library
@@ -109,11 +109,11 @@ export ANDROID_HOME=/path/to/sdk
 ### Multi-Platform Build
 ```bash
 # Build all platforms
-./build_all.sh --all
+./scripts/build/build_all.sh --all
 
 # Build specific platforms
-./build_all.sh --macos --ios --linux
-./build_all.sh --windows --android --debug
+./scripts/build/build_all.sh --macos --ios --linux
+./scripts/build/build_all.sh --windows --android --debug
 ```
 
 ## 🔧 Detailed Build Instructions
@@ -136,16 +136,16 @@ cd OTTO
 #### Build Commands
 ```bash
 # Release build (recommended)
-./build_macos.sh --release
+./scripts/build/build_macos.sh --release
 
 # Debug build
-./build_macos.sh --debug
+./scripts/build/build_macos.sh --debug
 
 # With testing
-./build_macos.sh --release --test
+./scripts/build/build_macos.sh --release --test
 
 # Clean build
-./build_macos.sh --clean --release
+./scripts/build/build_macos.sh --clean --release
 ```
 
 #### Manual CMake Build
@@ -165,7 +165,7 @@ cmake --build build-macos-release --target install
 #### Prerequisites Setup
 ```bash
 # Get your Team ID
-./get_team_id.sh
+./scripts/setup/get_team_id.sh
 
 # Or manually find it in Xcode:
 # Xcode → Preferences → Accounts → Your Apple ID → Team ID
@@ -174,13 +174,13 @@ cmake --build build-macos-release --target install
 #### Build Commands
 ```bash
 # iOS Device build
-./build_ios.sh --device --team-id XXXXXXXXXX
+./scripts/build/build_ios.sh --device --team-id XXXXXXXXXX
 
 # iOS Simulator build  
-./build_ios.sh --simulator --team-id XXXXXXXXXX
+./scripts/build/build_ios.sh --simulator --team-id XXXXXXXXXX
 
 # Archive build for App Store
-./build_ios.sh --device --archive --team-id XXXXXXXXXX
+./scripts/build/build_ios.sh --device --archive --team-id XXXXXXXXXX
 ```
 
 #### Code Signing
@@ -250,22 +250,22 @@ cd OTTO
 #### Build Commands
 ```bash
 # The script auto-installs dependencies
-./build_linux.sh --release
+./scripts/build/build_linux.sh --release
 
 # Debug build
-./build_linux.sh --debug
+./scripts/build/build_linux.sh --debug
 
 # Skip dependency installation
-./build_linux.sh --release --skip-deps
+./scripts/build/build_linux.sh --release --skip-deps
 
 # Specific generator
-./build_linux.sh --release --generator "Unix Makefiles"
+./scripts/build/build_linux.sh --release --generator "Unix Makefiles"
 ```
 
 #### Docker Build (Alternative)
 ```bash
 # Build using Docker container
-./build_linux_docker.sh --release
+./scripts/build/build_linux_docker.sh --release
 
 # Development container with shell access
 docker-compose -f docker/docker-compose.yml run otto-linux-dev bash
@@ -289,21 +289,21 @@ $ANDROID_NDK_ROOT/ndk-build --version
 #### Build Commands
 ```bash
 # Default build (arm64-v8a, API 23)
-./build_android.sh
+./scripts/build/build_android.sh
 
 # Specific architecture
-./build_android.sh --abi arm64-v8a
-./build_android.sh --abi armeabi-v7a
-./build_android.sh --abi x86_64
+./scripts/build/build_android.sh --abi arm64-v8a
+./scripts/build/build_android.sh --abi armeabi-v7a
+./scripts/build/build_android.sh --abi x86_64
 
 # Specific API level
-./build_android.sh --api 28
+./scripts/build/build_android.sh --api 28
 
 # Debug build
-./build_android.sh --debug --abi arm64-v8a
+./scripts/build/build_android.sh --debug --abi arm64-v8a
 
 # Clean build
-./build_android.sh --clean --abi arm64-v8a
+./scripts/build/build_android.sh --clean --abi arm64-v8a
 ```
 
 ## 🎯 CMake Presets

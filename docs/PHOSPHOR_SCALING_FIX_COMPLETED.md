@@ -79,7 +79,7 @@ The FontManager's `scaled()` function applies `size * scaleFactor`. Our solution
 ## ✅ **BUILD SUCCESS**
 Project built successfully using proper build system:
 ```bash
-./build_macos.sh
+./scripts/build/build_macos.sh
 ** BUILD SUCCEEDED **
 ```
 
@@ -93,7 +93,7 @@ Project built successfully using proper build system:
 - ✅ JUCE 8 FontManager integration - Proper use of `fontManager.getPhosphorFont()`
 - ✅ No hardcoded values - All sizing uses configurable ratios
 - ✅ Responsive system maintained - Box scaling + icon percentage + FontManager compensation
-- ✅ Build system unchanged - Used existing `./build_macos.sh` 
+- ✅ Build system unchanged - Used existing `./scripts/build/build_macos.sh` 
 
 ## 🎉 **MISSION ACCOMPLISHED**
 The Phosphor icon triple scaling issue has been completely resolved across the entire OTTO application. Icons will now render at the correct size on all screen sizes and scale factors, maintaining perfect visual fidelity without appearing as dots.

@@ -150,13 +150,13 @@ mkdir -p cmake
 
 print_status "JUCE 8 setup complete!"
 print_status "You can now build OTTO using the platform-specific build scripts:"
-print_status "  - ./build_macos.sh    (macOS)"
-print_status "  - ./build_ios.sh      (iOS)"
-print_status "  - ./build_linux.sh    (Linux)"
-print_status "  - ./build_android.sh  (Android - requires Android NDK/SDK)"
-print_status "  - ./build_all.sh --all (All supported platforms)"
+print_status "  - ./scripts/build/build_macos.sh    (macOS)"
+print_status "  - ./scripts/build/build_ios.sh      (iOS)"
+print_status "  - ./scripts/build/build_linux.sh    (Linux)"
+print_status "  - ./scripts/build/build_android.sh  (Android - requires Android NDK/SDK)"
+print_status "  - ./scripts/build/build_all.sh --all (All supported platforms)"
 
 # Make build scripts executable
-chmod +x build_*.sh
+chmod +x scripts/build/*.sh
 
 print_status "All build scripts are now executable."

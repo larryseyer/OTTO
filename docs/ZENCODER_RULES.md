@@ -21,6 +21,7 @@ ISYSTEM DIRECTIVES - CRITICAL TO REMEMBER:
 3. **Never suggest CMake modifications**
 4. **Use FontManager/ColorScheme** for all UI styling
 5. **Reference the percentage-based responsive system**
+6. **NEVER use 'Magic Numbers' ALWAYS use our INI system
 
 ### Development Constraints:
 - **Use INIConfig::LayoutConstants** for all positioning

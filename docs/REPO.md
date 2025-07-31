@@ -242,10 +242,10 @@ cd OTTO
 git submodule update --init --recursive
 
 # Set up development environment
-./setup_development.sh
+./scripts/setup/setup_juce8.sh
 
 # Test build on current platform
-./build_$(uname -s | tr '[:upper:]' '[:lower:]').sh
+./scripts/build/build_$(uname -s | tr '[:upper:]' '[:lower:]').sh
 ```
 
 ### Issue Reporting

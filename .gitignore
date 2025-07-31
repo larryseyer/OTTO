@@ -139,3 +139,6 @@ HISE_CPP_Source
 #logs
 build_test.log
 output.txt
+
+#Docker
+.docker-cache/juce-x86_64

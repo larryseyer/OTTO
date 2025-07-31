@@ -124,8 +124,7 @@ cmake-build-*/
 #Safety Stuff
 OTTO copy.jucer
 
-#zencoder directives
-ZENCODER_RULES.md
+#zencoder directives - REMOVED: ZENCODER_RULES.md is now essential project documentation
 
 #images for Zencoder
 HISE_Image.png

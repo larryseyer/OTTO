@@ -1,3 +1,54 @@
+/**
+ * @file MainContentComponent.cpp
+ * @brief Implementation of OTTO's main interface layout using responsive row-based design
+ * 
+ * This file implements the MainContentComponent class, which serves as the primary
+ * container for OTTO's user interface. It implements a sophisticated 6-row layout
+ * system based on percentage calculations from INIConfig, ensuring consistent
+ * scaling across all screen sizes and DPI settings.
+ * 
+ * ROW-BASED LAYOUT ARCHITECTURE:
+ * ===============================
+ * Row 1 (10%): TopBarComponent - Settings, presets, transport controls
+ * Row 2 (8%):  PlayerTabsComponent - Player selection tabs  
+ * Row 3 (16%): DrumKit controls - Edit, navigation, kit selection
+ * Row 4 (14%): Pattern management - Groups, labels, status
+ * Row 5 (44%): Main content area - Drum grid, sliders, controls
+ * Row 6 (8%):  Loop/transport section - Scene launcher, performance controls
+ * 
+ * RESPONSIVE DESIGN FEATURES:
+ * ===========================
+ * - INI-Driven Layout: All positioning via INIConfig::LayoutConstants
+ * - Percentage-Based Scaling: Maintains proportions at any resolution
+ * - Minimum Size Enforcement: Ensures 44px touch targets for accessibility
+ * - Real-time Resizing: Components adjust immediately to window changes
+ * - Cross-Platform Consistency: Identical layout on all supported platforms
+ * 
+ * COMPONENT INTEGRATION:
+ * ======================
+ * - ResponsiveLayoutManager.cpp: Provides scaling calculations and updates
+ * - FontManager.cpp: Ensures consistent typography across all child components
+ * - ColorScheme.cpp: Provides theme-consistent colors for all visual elements
+ * - INIConfig.h: Sources all layout constants and default values
+ * - MidiEngine.cpp: Integrates MIDI processing with UI controls
+ * - Mixer.cpp: Connects audio processing with visual feedback
+ * 
+ * CHILD COMPONENT STRUCTURE:
+ * ==========================
+ * - MainContentComponentLeftSection: Drum pattern grid and sequence controls
+ * - MainContentComponentRightSection: Parameter sliders and mix controls
+ * - LoopSectionComponent: Transport and scene launching controls
+ * - Various PhosphorIconButtons: Edit, navigation, and action controls
+ * - SeparatorComponents: Visual row divisions using theme colors
+ * 
+ * @author OTTO Development Team
+ * @version 2.0 
+ * @date 2024
+ * @see ResponsiveLayoutManager.cpp for scaling implementation
+ * @see INIConfig.h for layout constants and row definitions
+ * @see ColorScheme.cpp for theming integration
+ */
+
 #include "MainContentComponent.h"
 #include "MainContentComponentLeftSection.h"
 #include "MainContentComponentRightSection.h"
@@ -8,6 +59,41 @@
 #include "ErrorHandling.h"
 #include "PerformanceOptimizations.h"
 
+/**
+ * @brief MainContentComponent constructor - initialize row-based layout with all subsystems
+ * 
+ * Sets up the complete main interface using JUCE 8 modern initialization patterns.
+ * Creates all child components, establishes parent-child relationships, and configures
+ * the responsive layout system for immediate scaling and theming support.
+ * 
+ * INITIALIZATION SEQUENCE:
+ * 1. Store references to all required subsystems (MIDI, Mixer, etc.)
+ * 2. Initialize Phosphor icon buttons with proper font weights
+ * 3. Create child section components with shared system references
+ * 4. Add all components to visibility and layout management
+ * 5. Configure separators for visual row division
+ * 6. Set up responsive layout integration
+ * 
+ * PHOSPHOR ICON INTEGRATION:
+ * - All buttons use FontManager::PhosphorWeight::Regular for consistency
+ * - Icon names correspond to official Phosphor icon library
+ * - Buttons automatically scale with ResponsiveLayoutManager
+ * 
+ * CHILD COMPONENT CREATION:
+ * - Unique pointers ensure proper memory management
+ * - All child components receive shared system references
+ * - Components are immediately added to layout management
+ * 
+ * @param midiEngine Reference to MIDI processing system
+ * @param mixer Reference to audio mixing system  
+ * @param valueTreeState JUCE parameter automation system
+ * @param layoutManager Responsive layout calculation system
+ * @param fontManager Typography and icon font management
+ * @param colorScheme Theme and color management system
+ * 
+ * Called by: PluginEditor.cpp during interface construction
+ * References: All child component constructors, INIConfig.h for constants
+ */
 MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
                                           Mixer& mixer,
                                           juce::AudioProcessorValueTreeState& valueTreeState,
@@ -16,37 +102,63 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
                                           ColorScheme& colorScheme)
     : midiEngine(midiEngine), mixer(mixer), valueTreeState(valueTreeState),
       layoutManager(layoutManager), fontManager(fontManager), colorScheme(colorScheme),
-      // JUCE 8 - Initialize Row 3 components in initializer list
-      drumKitEditButton("pencil", FontManager::PhosphorWeight::Regular),
-      drumKitLeftChevron("caret-left", FontManager::PhosphorWeight::Regular),
-      drumKitRightChevron("caret-right", FontManager::PhosphorWeight::Regular),
-      drumKitMuteButton("speaker-slash", FontManager::PhosphorWeight::Regular),
-      drumKitMixerButton("mixer", FontManager::PhosphorWeight::Regular),
-      // JUCE 8 - Initialize Row 4 components in initializer list
-      patternAddButton("plus", FontManager::PhosphorWeight::Regular),
-      patternDeleteButton("trash", FontManager::PhosphorWeight::Regular),
-      // Initialize row separators (one between each row)
+      
+      // ROW 3 COMPONENTS: DrumKit control buttons using Phosphor icon system
+      // These buttons provide core drum kit navigation and editing functionality
+      // All use Regular weight for consistent visual hierarchy
+      drumKitEditButton("pencil", FontManager::PhosphorWeight::Regular),        // Toggle edit mode for pattern editing
+      drumKitLeftChevron("caret-left", FontManager::PhosphorWeight::Regular),   // Navigate to previous drum kit
+      drumKitRightChevron("caret-right", FontManager::PhosphorWeight::Regular), // Navigate to next drum kit
+      drumKitMuteButton("speaker-slash", FontManager::PhosphorWeight::Regular), // Mute/unmute current player
+      drumKitMixerButton("mixer", FontManager::PhosphorWeight::Regular),        // Open mixer window
+      
+      // ROW 4 COMPONENTS: Pattern management buttons for add/remove operations
+      // Provide quick access to pattern creation and deletion functions
+      patternAddButton("plus", FontManager::PhosphorWeight::Regular),          // Create new pattern
+      patternDeleteButton("trash", FontManager::PhosphorWeight::Regular),      // Delete selected pattern
+      
+      // ROW SEPARATORS: Visual dividers between each interface row
+      // Use ColorScheme for theme-consistent styling, positioned between rows 1-6
       row1Separator(colorScheme), row2Separator(colorScheme), row3Separator(colorScheme), 
       row4Separator(colorScheme), row5Separator(colorScheme) {
 
+    // CHILD COMPONENT CREATION: Initialize major layout sections
+    // Each section receives references to required subsystems for full functionality
+    
+    // LEFT SECTION: Houses drum pattern grid and sequence controls
+    // Manages 4x4 drum button matrix and pattern sequencing interface
     leftSection = std::make_unique<MainContentComponentLeftSection>(
         midiEngine, layoutManager, fontManager, colorScheme);
+    
+    // RIGHT SECTION: Contains parameter sliders and mixing controls  
+    // Provides swing, energy, volume controls and effects processing
     rightSection = std::make_unique<MainContentComponentRightSection>(
         midiEngine, mixer, valueTreeState, layoutManager, fontManager, colorScheme);
+    
+    // LOOP SECTION: Transport controls and scene launching functionality
+    // Handles loop position, scene management, and performance controls
     loopSection = std::make_unique<LoopSectionComponent>(
         layoutManager, fontManager, colorScheme);
 
-    addAndMakeVisible(rhythmLabel);
-    addAndMakeVisible(playerNumber);
-    addAndMakeVisible(*leftSection);
-    addAndMakeVisible(*rightSection);
-    addAndMakeVisible(*loopSection);
-    // Add the 5 row separators (between each row)
-    addAndMakeVisible(row1Separator);
-    addAndMakeVisible(row2Separator);
-    addAndMakeVisible(row3Separator);
-    addAndMakeVisible(row4Separator);
-    addAndMakeVisible(row5Separator);
+    // COMPONENT VISIBILITY SETUP: Add all components to JUCE's component hierarchy
+    // This establishes parent-child relationships and enables automatic rendering
+    
+    // Row 3 labels and player number display
+    addAndMakeVisible(rhythmLabel);     // "Rhythm" label for pattern identification
+    addAndMakeVisible(playerNumber);    // Large player number display (1-8)
+    
+    // Major layout sections - these contain most of the interface
+    addAndMakeVisible(*leftSection);    // Drum grid and pattern controls
+    addAndMakeVisible(*rightSection);   // Parameter sliders and mix controls  
+    addAndMakeVisible(*loopSection);    // Transport and scene launcher
+    
+    // ROW SEPARATORS: Visual dividers for clear section definition
+    // Positioned between rows using INIConfig::LayoutConstants positioning
+    addAndMakeVisible(row1Separator);   // Between TopBar and PlayerTabs
+    addAndMakeVisible(row2Separator);   // Between PlayerTabs and DrumKit controls
+    addAndMakeVisible(row3Separator);   // Between DrumKit and Pattern controls
+    addAndMakeVisible(row4Separator);   // Between Pattern and Main content
+    addAndMakeVisible(row5Separator);   // Between Main content and Loop section
     
     // TEMPORARY: Add row identification labels for debugging
     addAndMakeVisible(rowLabel1);

@@ -1,91 +1,258 @@
+/**
+ * @file ColorScheme.cpp
+ * @brief Implementation of OTTO's comprehensive color theme management system
+ * 
+ * This file implements the ColorScheme class which manages all visual theming
+ * for the OTTO application. It provides centralized color management with
+ * support for multiple themes, real-time theme switching, and INI-based
+ * persistence through the INIConfig system.
+ * 
+ * DESIGN ARCHITECTURE:
+ * ====================
+ * - Theme Management: Loads/saves themes via INIConfig::THEMES_FILE
+ * - Color Consistency: Ensures all UI elements use consistent color schemes
+ * - Real-time Updates: Notifies components when themes change for immediate refresh
+ * - Default Fallbacks: Provides robust fallback to default theme if corruption occurs
+ * 
+ * INTEGRATION POINTS:
+ * ===================
+ * - INIConfig.h: Uses default theme constants and file paths
+ * - ComponentState.h: Integrates with state management system
+ * - CustomLookAndFeel.cpp: Provides colors for JUCE component rendering
+ * - All UI components: Reference this class for consistent color application
+ * 
+ * THEME SYSTEM FLOW:
+ * ==================
+ * 1. Constructor initializes with default "Dark" theme
+ * 2. loadStates() restores user's saved theme preference
+ * 3. Components query colors via getter methods
+ * 4. setTheme() allows runtime theme switching with immediate updates
+ * 5. saveStates() persists theme choice via ComponentState system
+ * 
+ * @author OTTO Development Team
+ * @version 2.0
+ * @date 2024
+ */
+
 #include "ColorScheme.h"
 #include "INIConfig.h"
+
+/**
+ * @brief ColorScheme constructor - initializes default "Dark" theme
+ * 
+ * Sets up the default dark theme configuration with carefully chosen colors
+ * that provide good contrast, readability, and visual hierarchy. All color
+ * values are stored as hex strings for easy editing and theme customization.
+ * 
+ * DEFAULT THEME COLORS:
+ * - Background: Dark gray (#2a2a2a) for reduced eye strain
+ * - Foreground: Medium gray (#3a3a3a) for component backgrounds  
+ * - Buttons: Progressive gray scale for hover/active states
+ * - Text: Light gray (#d0d0d0) for high contrast readability
+ * - Accents: Neutral gray (#808080) for secondary elements
+ * - Meters: Traffic light colors (green/yellow/red) for audio levels
+ * 
+ * Called by: Application startup, theme reset operations
+ * References: INIConfig::Defaults::DEFAULT_THEME_ID for theme selection
+ */
 ColorScheme::ColorScheme() : currentThemeName("Dark")
 {
+    // Initialize theme settings with default values
+    // Referenced by: CustomLookAndFeel.cpp for component styling
     currentThemeSettings.setDefaults();
-    currentThemeSettings.backgroundColor = "#2a2a2a";  
-    currentThemeSettings.foregroundColor = "#3a3a3a";  
-    currentThemeSettings.buttonColor = "#5a5a5a";      
-    currentThemeSettings.buttonHoverColor = "#6a6a6a"; 
-    currentThemeSettings.buttonActiveColor = "#7a7a7a"; 
-    currentThemeSettings.textColor = "#d0d0d0";        
-    currentThemeSettings.accentColor = "#808080";      
-    currentThemeSettings.sliderTrackColor = "#4a4a4a"; 
-    currentThemeSettings.sliderThumbColor = "#808080"; 
-    currentThemeSettings.borderColor = "#1a1a1a";      
-    currentThemeSettings.meterColorLow = "#44ff44";    
-    currentThemeSettings.meterColorMid = "#ffaa44";    
-    currentThemeSettings.meterColorHigh = "#ff4444";   
-    currentThemeSettings.gridLineColor = "#3a3a3a";
-    currentThemeSettings.patternActiveColor = "#5a5a5a";
-    currentThemeSettings.patternInactiveColor = "#3a3a3a";
+    
+    // BACKGROUND COLORS: Progressive darkness for visual hierarchy
+    currentThemeSettings.backgroundColor = "#2a2a2a";     // Main window background - darkest for minimal eye strain
+    currentThemeSettings.foregroundColor = "#3a3a3a";    // Component panel backgrounds - slightly lighter for definition
+    
+    // INTERACTIVE ELEMENT COLORS: Button state progression for clear user feedback
+    currentThemeSettings.buttonColor = "#5a5a5a";        // Default button state - mid-gray for neutral appearance
+    currentThemeSettings.buttonHoverColor = "#6a6a6a";   // Hover state - lighter for feedback (used by CustomLookAndFeel.cpp)
+    currentThemeSettings.buttonActiveColor = "#7a7a7a";  // Active/pressed state - lightest for strong feedback
+    
+    // TEXT AND ACCENT COLORS: High contrast for accessibility compliance
+    currentThemeSettings.textColor = "#d0d0d0";          // Primary text - light gray for readability on dark backgrounds
+    currentThemeSettings.accentColor = "#808080";        // Secondary elements, icons, borders
+    
+    // SLIDER AND CONTROL COLORS: Consistent with button color scheme
+    currentThemeSettings.sliderTrackColor = "#4a4a4a";   // Slider background tracks - darker than buttons
+    currentThemeSettings.sliderThumbColor = "#808080";   // Slider handles - accent color for visibility
+    
+    // STRUCTURAL COLORS: Borders and separation elements
+    currentThemeSettings.borderColor = "#1a1a1a";        // Component borders - very dark for subtle separation
+    
+    // AUDIO METER COLORS: Traffic light system for intuitive level monitoring
+    currentThemeSettings.meterColorLow = "#44ff44";      // Green for safe levels (used by Mixer.cpp, meter components)
+    currentThemeSettings.meterColorMid = "#ffaa44";      // Orange for moderate levels - warning zone
+    currentThemeSettings.meterColorHigh = "#ff4444";     // Red for high levels - danger zone
+    
+    // PATTERN GRID COLORS: Visual distinction for pattern matrix (used by MainContentComponent.cpp)
+    currentThemeSettings.gridLineColor = "#3a3a3a";         // Grid line separation - matches foreground
+    currentThemeSettings.patternActiveColor = "#5a5a5a";    // Active pattern cells - button color consistency
+    currentThemeSettings.patternInactiveColor = "#3a3a3a";  // Inactive pattern cells - foreground color consistency
+    
+    // Validate all color assignments and ensure theme integrity
     ensureValidTheme();
 }
+/**
+ * @brief ColorScheme destructor - cleanup resources
+ * 
+ * Currently no special cleanup required as all resources are managed
+ * by JUCE's automatic memory management and ComponentState system.
+ */
 ColorScheme::~ColorScheme()
 {
 }
+
+/**
+ * @brief Save current theme settings to application state
+ * 
+ * Persists the current theme configuration and theme name to the ComponentState
+ * system, which handles serialization to INI files via INIDataManager.cpp.
+ * This ensures user theme preferences survive application restarts.
+ * 
+ * PERSISTENCE FLOW:
+ * 1. Current theme settings copied to ComponentState
+ * 2. Theme name stored in global settings
+ * 3. ComponentState automatically serializes via INIDataManager.cpp
+ * 4. Data written to INIConfig::THEMES_FILE
+ * 
+ * @param state ComponentState reference to store theme data
+ * 
+ * Called by: StateManager.cpp during application shutdown or settings changes
+ * References: ComponentState.h for data structure, INIDataManager.cpp for persistence
+ */
 void ColorScheme::saveStates(ComponentState& state) const
 {
+    // Copy complete theme settings structure for persistence
     state.themeSettings = currentThemeSettings;
+    
+    // Store theme name in global settings for quick theme identification
     state.globalSettings.currentThemeName = currentThemeName;
 }
+/**
+ * @brief Load theme settings from saved application state
+ * 
+ * Restores previously saved theme configuration from ComponentState, with robust
+ * error handling and fallback mechanisms. This method is called during application
+ * startup to restore user's theme preferences.
+ * 
+ * LOADING STRATEGY:
+ * 1. Attempt to load complete theme settings if available
+ * 2. Fallback to theme name if settings corrupted
+ * 3. Final fallback to default "Dark" theme
+ * 4. Always validate theme integrity and notify UI components
+ * 
+ * ERROR HANDLING:
+ * - Invalid theme names revert to "Dark" theme
+ * - Corrupted theme settings trigger default reconstruction
+ * - All failures are gracefully handled with safe defaults
+ * 
+ * @param state ComponentState containing saved theme data
+ * 
+ * Called by: StateManager.cpp during application startup
+ * References: INIConfig::isValidThemeName() for theme validation
+ */
 void ColorScheme::loadStates(const ComponentState& state)
 {
+    // PRIMARY LOADING PATH: Complete theme settings available
     if (state.themeSettings.isValid())
     {
+        // Restore complete theme configuration
         currentThemeSettings = state.themeSettings;
         currentThemeName = state.themeSettings.themeName;
+        
+        // Validate theme name against known themes (INIConfig.h validation)
         if (!INIConfig::isValidThemeName(currentThemeName))
         {
+            // Invalid theme - revert to safe default
             currentThemeName = "Dark";
             currentThemeSettings.setDefaults();
         }
+        
+        // Ensure all color values are valid and notify UI of changes
         ensureValidTheme();
-        notifyThemeChanged();
+        notifyThemeChanged();  // Triggers UI refresh in all components
     }
+    // FALLBACK PATH: Only theme name available, settings corrupted/missing
     else
     {
         if (state.globalSettings.currentThemeName.isNotEmpty())
         {
+            // Attempt to reconstruct theme from name
             setTheme(state.globalSettings.currentThemeName);
         }
         else
         {
+            // Final fallback - complete default initialization
             currentThemeSettings.setDefaults();
             currentThemeName = "Dark";
             ensureValidTheme();
         }
     }
 }
+/**
+ * @brief Set active theme by name with immediate UI updates
+ * 
+ * Changes the current theme to the specified theme name, loading appropriate
+ * color configurations and notifying all UI components of the change. This
+ * method provides real-time theme switching capability for user preferences.
+ * 
+ * SUPPORTED THEMES:
+ * - "Dark": Default dark theme (constructor defaults)
+ * - "Light": Light theme variant for bright environments
+ * - "Classic": Retro/vintage inspired color scheme
+ * - Custom themes: Must be loaded via ComponentState system
+ * 
+ * THEME SWITCHING FLOW:
+ * 1. Validate theme name against INIConfig::isValidThemeName()
+ * 2. Load appropriate theme color configuration
+ * 3. Validate all color values for integrity
+ * 4. Notify all UI components via notifyThemeChanged()
+ * 5. Components automatically refresh with new colors
+ * 
+ * @param themeName Name of theme to activate ("Dark", "Light", "Classic")
+ * 
+ * Called by: SettingsPanel.cpp theme selection, loadStates() restoration
+ * References: INIConfig::isValidThemeName() for validation
+ */
 void ColorScheme::setTheme(const juce::String& themeName)
 {
+    // Validate theme name against known theme list (from INIConfig.h)
     if (!INIConfig::isValidThemeName(themeName))
     {
         setError("Invalid theme name: " + themeName);
         return;
     }
+    
+    // DARK THEME: Default theme configuration (matches constructor)
     if (themeName == "Dark")
     {
         currentThemeSettings.setDefaults();
         currentThemeName = "Dark";
     }
+    // LIGHT THEME: High-contrast light variant for bright environments
     else if (themeName == "Light")
     {
         currentThemeSettings.setLightThemeDefaults();
         currentThemeName = "Light";
     }
+    // CLASSIC THEME: Retro/vintage color scheme for nostalgic feel
     else if (themeName == "Classic")
     {
         currentThemeSettings.setClassicThemeDefaults();
         currentThemeName = "Classic";
     }
+    // CUSTOM THEMES: Require full theme data via ComponentState loading
     else
     {
         setError("Custom theme loading requires theme to be in ComponentState");
         return;
     }
+    
+    // Validate theme integrity and trigger UI updates
     ensureValidTheme();
-    notifyThemeChanged();
+    notifyThemeChanged();  // Causes all UI components to repaint with new colors
 }
 void ColorScheme::ensureValidTheme()
 {

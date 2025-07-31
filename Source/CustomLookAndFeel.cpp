@@ -1,31 +1,146 @@
+/**
+ * @file CustomLookAndFeel.cpp
+ * @brief Implementation of OTTO's custom JUCE 8 Look and Feel system
+ * 
+ * This file implements the CustomLookAndFeel class which provides comprehensive
+ * visual styling for all JUCE components in the OTTO application. It integrates
+ * tightly with the ColorScheme and FontManager systems to ensure consistent
+ * visual appearance across all interface elements.
+ * 
+ * DESIGN PHILOSOPHY:
+ * ==================
+ * - INI-Driven Consistency: All dimensions use INIConfig::LayoutConstants
+ * - ColorScheme Integration: All colors sourced from ColorScheme.cpp
+ * - FontManager Integration: All fonts sourced from FontManager.cpp  
+ * - Responsive Design: Supports scaling and theme changes at runtime
+ * - Modern JUCE 8: Uses latest JUCE rendering techniques and patterns
+ * 
+ * COMPONENT COVERAGE:
+ * ===================
+ * - Buttons: Custom styling with embedded images and hover effects
+ * - Sliders: Rotary and linear sliders with custom thumbs and tracks
+ * - PopupMenus: Themed menus with consistent colors and spacing
+ * - Tooltips: Styled tooltips with gradients, shadows, and proper typography
+ * - ComboBoxes: Custom dropdown styling matching overall theme
+ * - Labels: Consistent text rendering with theme-appropriate colors
+ * 
+ * INTEGRATION POINTS:
+ * ===================
+ * - ColorScheme.cpp: Provides all color values via ColorRole enumeration
+ * - FontManager.cpp: Provides all fonts via FontRole enumeration
+ * - INIConfig.h: Provides all spacing, sizing, and layout constants
+ * - BinaryData.h: Embedded images for buttons, sliders, and splash screen
+ * - All UI Components: Apply this LookAndFeel for consistent appearance
+ * 
+ * @author OTTO Development Team
+ * @version 2.0
+ * @date 2024
+ * @see ColorScheme.cpp for color management
+ * @see FontManager.cpp for font management
+ * @see INIConfig.h for layout constants
+ */
+
 #include "CustomLookAndFeel.h"
 #include "INIConfig.h"
 #include "UtilityComponents.h"
 #include "BinaryData.h"
 
+/**
+ * @brief CustomLookAndFeel constructor - initialize styling with integrated systems
+ * 
+ * Sets up the custom look and feel by integrating with ColorScheme and FontManager
+ * systems, loading embedded images, and configuring all JUCE component color IDs
+ * for consistent theming throughout the application.
+ * 
+ * INITIALIZATION PROCESS:
+ * 1. Store references to FontManager and ColorScheme systems
+ * 2. Apply current color scheme to all JUCE component color IDs
+ * 3. Configure popup menu styling with theme colors
+ * 4. Set up tooltip styling with gradients and shadows
+ * 5. Load embedded images from BinaryData for custom components
+ * 
+ * COLOR ROLE MAPPING:
+ * - WindowBackground: Main background areas, popup backgrounds
+ * - PrimaryText: Main text, tooltip text, menu text
+ * - SecondaryText: Menu items, secondary labels
+ * - ButtonBackgroundHover: Menu highlights, button hover states
+ * - Separator: Borders, outlines, dividers
+ * 
+ * @param fontMgr Reference to FontManager for consistent typography
+ * @param colorScheme Reference to ColorScheme for consistent colors
+ * 
+ * Called by: PluginEditor.cpp, MainContentComponent.cpp during component setup
+ * References: ColorScheme.cpp color roles, INIConfig.h layout constants
+ */
 CustomLookAndFeel::CustomLookAndFeel(FontManager& fontMgr, ColorScheme& colorScheme)
     : fontManager(fontMgr), colorScheme(colorScheme) {
 
+    // STEP 1: Apply complete color scheme to all standard JUCE component color IDs
+    // This ensures buttons, labels, text editors, etc. all use consistent theming
     colorScheme.applyToLookAndFeel(*this);
 
+    // STEP 2: Configure PopupMenu styling for dropdown menus and context menus
+    // Used by: ComboBox dropdowns, right-click context menus, preset selection
     setColour(juce::PopupMenu::backgroundColourId, colorScheme.getColor(ColorScheme::ColorRole::WindowBackground));
     setColour(juce::PopupMenu::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     setColour(juce::PopupMenu::highlightedBackgroundColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundHover));
     setColour(juce::PopupMenu::highlightedTextColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     setColour(juce::PopupMenu::headerTextColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 
-    setColour(juce::TooltipWindow::backgroundColourId, colorScheme.getColor(ColorScheme::ColorRole::WindowBackground).darker(INIConfig::LayoutConstants::customLookFeelDarkerAmount));
+    // STEP 3: Configure TooltipWindow styling for help text and parameter displays
+    // Uses darker background for contrast and subtle shadow effects
+    // Applied to: All component tooltips, parameter value displays
+    setColour(juce::TooltipWindow::backgroundColourId, 
+              colorScheme.getColor(ColorScheme::ColorRole::WindowBackground)
+                         .darker(INIConfig::LayoutConstants::customLookFeelDarkerAmount));
     setColour(juce::TooltipWindow::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     setColour(juce::TooltipWindow::outlineColourId, colorScheme.getColor(ColorScheme::ColorRole::Separator));
 
-    // Load images from embedded BinaryData instead of files
+    // STEP 4: Load embedded images from BinaryData for custom component rendering
+    // These images provide professional visual elements without external file dependencies
+    // Used by: Custom button rendering, slider thumb graphics, application branding
     buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button080_png, BinaryData::Button080_pngSize);
     sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
     splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
 }
 
+/**
+ * @brief CustomLookAndFeel destructor - cleanup resources
+ * 
+ * Default destructor as all resources are managed by JUCE's automatic
+ * memory management system (ImageCache, ColorScheme references, etc.).
+ */
 CustomLookAndFeel::~CustomLookAndFeel() = default;
 
+/**
+ * @brief Draw custom styled tooltips with gradients, shadows, and proper typography
+ * 
+ * Renders tooltips with a professional appearance including gradient backgrounds,
+ * drop shadows, rounded corners, and theme-appropriate colors. All styling
+ * parameters are sourced from INIConfig constants for consistency.
+ * 
+ * VISUAL ELEMENTS:
+ * - Gradient background: WindowBackground (darker to lighter)
+ * - Rounded corners: customLookFeelCornerRadius from INIConfig
+ * - Border: Separator color with customLookFeelBorderThickness
+ * - Drop shadow: Black with alpha, configurable offset and radius
+ * - Typography: FontManager body font, size based on largeTextMode
+ * 
+ * STYLING CONSTANTS USED:
+ * - INIConfig::LayoutConstants::customLookFeelCornerRadius: Corner rounding
+ * - INIConfig::LayoutConstants::customLookFeelShadowAlpha: Shadow transparency
+ * - INIConfig::LayoutConstants::customLookFeelShadowRadius: Shadow blur radius
+ * - INIConfig::LayoutConstants::customLookFeelShadowOffset[X/Y]: Shadow position
+ * - INIConfig::LayoutConstants::fontSizeBody[Large]: Text size selection
+ * 
+ * @param g Graphics context for rendering
+ * @param text Tooltip text content to display
+ * @param width Tooltip width in pixels
+ * @param height Tooltip height in pixels
+ * 
+ * Called by: JUCE framework when tooltips need rendering
+ * References: ColorScheme.cpp for colors, FontManager.cpp for fonts, INIConfig.h for dimensions
+ */
 void CustomLookAndFeel::drawTooltip(juce::Graphics& g, const juce::String& text, int width, int height) {
     juce::Rectangle<float> bounds(0, 0, static_cast<float>(width), static_cast<float>(height));
 

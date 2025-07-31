@@ -1,101 +1,403 @@
+/**
+ * @file INIConfig.h
+ * @brief Central INI-driven configuration system for OTTO JUCE 8 application
+ * 
+ * This file contains all constants and configuration values used throughout the OTTO application.
+ * It implements a percentage-based responsive layout system that scales components proportionally
+ * across different screen sizes while maintaining minimum touch target accessibility requirements.
+ * 
+ * DESIGN PHILOSOPHY:
+ * ==================
+ * - INI-Driven Layout Priority: All positioning uses constants from this file, no hardcoded values
+ * - Responsive Design: Uses percentage-based calculations relative to DEFAULT_INTERFACE_WIDTH/HEIGHT
+ * - Accessibility First: Enforces minimum 44px touch targets for mobile/tablet compatibility
+ * - Future-Proof: Centralized configuration allows easy theme and layout modifications
+ * 
+ * USAGE PATTERNS:
+ * ===============
+ * - Layout constants: INIConfig::LayoutConstants::Row3::buttonSize
+ * - Default values: INIConfig::Defaults::DEFAULT_TEMPO
+ * - File paths: INIConfig::THEMES_FILE
+ * - Responsive sizing: All dimensions calculated as percentages of base resolution (1024x768)
+ * 
+ * INTEGRATION WITH OTHER FILES:
+ * =============================
+ * - ResponsiveLayoutManager.cpp: Uses LayoutConstants for component positioning
+ * - ColorScheme.cpp: References theme defaults and alpha values
+ * - CustomLookAndFeel.cpp: Uses font sizes, corner radii, and spacing constants
+ * - MainContentComponent.cpp: Applies row-based layout system from LayoutConstants
+ * - TopBarComponent.cpp: Uses Row1 constants for header positioning
+ * - PlayerTabsComponent.cpp: Uses Row2 constants for tab dimensions
+ * 
+ * @author OTTO Development Team
+ * @version 2.0
+ * @date 2024
+ */
+
 #pragma once
 
 #include <JuceHeader.h>
 
+/**
+ * @namespace INIConfig
+ * @brief Root namespace containing all INI-driven configuration constants for OTTO
+ * 
+ * This namespace encapsulates the entire configuration system, organizing constants
+ * into logical sub-namespaces for easier maintenance and discovery.
+ */
 namespace INIConfig {
+    
+    // ============================================================================
+    // FOLDER STRUCTURE CONSTANTS
+    // ============================================================================
+    // These constants define the hierarchical folder structure for OTTO's data storage.
+    // Used by: INIDataManager.cpp, StateManager.cpp, PresetManager.cpp
+    
+    /** @brief Root folder name for all OTTO application data */
     static const juce::String OTTO_DATA_FOLDER = "OTTO_Data";
+    
+    /** @brief Subfolder for user interface and application settings */
     static const juce::String SETTINGS_FOLDER = "Settings";
+    
+    /** @brief Subfolder for performance monitoring and optimization data */
     static const juce::String PERFORMANCE_FOLDER = "Performance";
+    
+    /** @brief Subfolder for drum patterns and sequences */
     static const juce::String PATTERNS_FOLDER = "Patterns";
+    
+    /** @brief Subfolder for drum kit samples and configurations */
     static const juce::String KITS_FOLDER = "Kits";
+    
+    /** @brief Subfolder for mixer settings and channel configurations */
     static const juce::String MIXING_FOLDER = "Mix";
+    
+    /** @brief Subfolder for system-level configuration files */
     static const juce::String SYSTEM_FOLDER = "System";
+    
+    /** @brief Subfolder for user and factory presets */
     static const juce::String PRESETS_FOLDER = "Presets";
 
+    // ============================================================================
+    // INI FILE NAME CONSTANTS  
+    // ============================================================================
+    // These constants define the specific .ini filenames for different data categories.
+    // Used by: INIDataManager.cpp for file I/O operations across the application
+    
+    /** @brief Main application settings file (interface, window position, etc.) */
     static const juce::String GLOBAL_SETTINGS_FILE = "Global.ini";
+    
+    /** @brief Color schemes and visual theme configurations */
     static const juce::String THEMES_FILE = "Themes.ini";
+    
+    /** @brief Audio device settings, sample rates, buffer sizes, etc. */
     static const juce::String AUDIO_SETTINGS_FILE = "AudioSettings.ini";
+    
+    /** @brief User-created and factory preset configurations */
     static const juce::String PRESETS_FILE = "Presets.ini";
+    
+    /** @brief Individual player/track configurations and states */
     static const juce::String PLAYERS_FILE = "Players.ini";
+    
+    /** @brief Pattern chain sequences and arrangements */
     static const juce::String PATTERN_CHAINS_FILE = "PatternChains.ini";
+    
+    /** @brief Pattern group organization and categorization */
     static const juce::String PATTERN_GROUPS_FILE = "PatternGroups.ini";
+    
+    /** @brief Drum kit definitions, sample mappings, and configurations */
     static const juce::String DRUM_KITS_FILE = "DrumKits.ini";
+    
+    /** @brief MIDI input device layout and channel assignments */
     static const juce::String MIDI_IN_LAYOUT_FILE = "MidiInLayout.ini";
+    
+    /** @brief MIDI output device layout and channel assignments */
     static const juce::String MIDI_OUT_LAYOUT_FILE = "MidiOutLayout.ini";
+    
+    /** @brief Mixer channel preset group organization */
     static const juce::String CHANNEL_PRESET_GROUPS_FILE = "ChannelPresetGroups.ini";
+    
+    /** @brief Individual mixer channel preset configurations */
     static const juce::String CHANNEL_PRESETS_FILE = "ChannelPresets.ini";
+    
+    /** @brief EQ preset configurations for mixer channels */
     static const juce::String EQ_PRESETS_FILE = "EQPresets.ini";
+    
+    /** @brief Master channel preset configurations and settings */
     static const juce::String MASTER_CHANNEL_PRESETS_FILE = "MasterChannelPresets.ini";
+    
+    /** @brief MIDI device detection and configuration cache */
     static const juce::String MIDI_DEVICES_FILE = "MidiDevices.ini";
+    
+    /** @brief File system index for quick asset location */
     static const juce::String FILE_INDEX_FILE = "FileIndex.ini";
+    
+    /** @brief Cached MIDI file analysis data for performance optimization */
     static const juce::String MIDI_ANALYSIS_CACHE_FILE = "MidiAnalysisCache.ini";
+    
+    /** @brief Hardware controller preset configurations */
     static const juce::String CONTROLLER_PRESETS_FILE  = "ControllerPresets.ini";
+    
+    /** @brief MIDI control change mappings to application parameters */
     static const juce::String MIDI_MAPPINGS_FILE       = "MidiMappings.ini";
+    
+    /** @brief Groove template definitions for swing and timing variations */
     static const juce::String GROOVE_TEMPLATES_FILE    = "GrooveTemplates.ini";
 
+    // ============================================================================
+    // VERSION CONTROL
+    // ============================================================================
+    
+    /** @brief Current INI file format version for backward compatibility checking */
     static const juce::String FILE_FORMAT_VERSION = "2.0";
 
+    /**
+     * @namespace Defaults
+     * @brief Default values for all application settings and parameters
+     * 
+     * This namespace contains default values used throughout the application when
+     * no user preferences have been set or when resetting to factory defaults.
+     * These values are carefully chosen to provide optimal user experience while
+     * maintaining compatibility across different platforms and screen sizes.
+     * 
+     * ORGANIZATION:
+     * - Interface dimensions and scaling
+     * - Audio engine parameters
+     * - MIDI settings and timing
+     * - Visual and UI preferences
+     * - Performance optimization settings
+     */
     namespace Defaults {
-        // MINIMUM SYSTEM REQUIREMENT: 1024x768 display resolution
-        // This is the smallest supported screen size that maintains:
-        // - 44px minimum touch targets (accessibility compliance)
-        // - 300px minimum pattern matrix height (core functionality)
-        // - Proper component spacing and text readability
-        // See: MINIMUM_SYSTEM_REQUIREMENTS.md for full details
+        // ========================================================================
+        // INTERFACE DIMENSIONS AND POSITIONING
+        // ========================================================================
+        // These values define the base resolution for responsive scaling calculations.
+        // All percentage-based layout constants are calculated relative to these dimensions.
+        // Used by: ResponsiveLayoutManager.cpp, all component classes for positioning
+        
+        /** 
+         * @brief Base interface width for responsive scaling calculations
+         * 
+         * MINIMUM SYSTEM REQUIREMENT: 1024px width display resolution
+         * This is the smallest supported screen width that maintains:
+         * - Proper component spacing and alignment
+         * - Readable text at all zoom levels  
+         * - Sufficient space for 8-player layout
+         * - Touch target accessibility compliance
+         * 
+         * Referenced by: All LayoutConstants calculations, ResponsiveLayoutManager.cpp
+         */
         static const int DEFAULT_INTERFACE_WIDTH = 1024;
+        
+        /** 
+         * @brief Base interface height for responsive scaling calculations
+         * 
+         * MINIMUM SYSTEM REQUIREMENT: 768px height display resolution
+         * This is the smallest supported screen height that maintains:
+         * - 44px minimum touch targets (accessibility compliance)
+         * - 300px minimum pattern matrix height (core functionality)
+         * - Proper row-based layout with 6 distinct sections
+         * - Adequate vertical spacing between components
+         * 
+         * Referenced by: All LayoutConstants calculations, MainContentComponent.cpp
+         */
         static const int DEFAULT_INTERFACE_HEIGHT = 768;
+        
+        /** @brief Default window X position on screen (used by PluginEditor.cpp) */
         static const int DEFAULT_INTERFACE_X = 100;
+        
+        /** @brief Default window Y position on screen (used by PluginEditor.cpp) */
         static const int DEFAULT_INTERFACE_Y = 100;
+        
+        /** @brief Legacy window X position constant (backward compatibility) */
         static const int DEFAULT_WINDOW_X = 100;
+        
+        /** @brief Legacy window Y position constant (backward compatibility) */
         static const int DEFAULT_WINDOW_Y = 100;
+        
+        /** @brief Base UI scale factor for interface elements (used by CustomLookAndFeel.cpp) */
         static const float DEFAULT_INTERFACE_SCALE = 1.0f;
+        
+        /** @brief Alternative scale factor for component sizing (used by ResponsiveLayoutManager.cpp) */
         static const float DEFAULT_SCALE_FACTOR = 1.0f;
 
+        // ========================================================================
+        // THEME AND VISUAL SETTINGS
+        // ========================================================================
+        
+        /** @brief Default color theme ID (used by ColorScheme.cpp, CustomLookAndFeel.cpp) */
         static const int DEFAULT_THEME_ID = 1;
 
+        // ========================================================================
+        // SYNCHRONIZATION AND COLLABORATION SETTINGS
+        // ========================================================================
+        // These settings control external sync, collaboration, and timing features.
+        // Used by: CloudServiceManager.cpp, CollaborationPanel.cpp, MidiEngine.cpp
+        
+        /** @brief Default Link sync mode setting ("Off", "Enabled", "StartStop") */
         static const juce::String DEFAULT_LINK_SYNC_MODE = "Off";
+        
+        /** @brief Default Link sync value (0=Off, 1=Enabled, 2=StartStop only) */
         static const int DEFAULT_LINK_SYNC_VALUE = 0;
+        
+        /** @brief Default cloud service connection ("None", "Ableton", "Custom") */
         static const juce::String DEFAULT_CLOUD_CONNECTION = "None";
+        
+        // ========================================================================
+        // METRONOME AND TIMING SETTINGS
+        // ========================================================================
+        // Used by: MidiEngine.cpp, TopBarComponent.cpp for tempo and timing
+        
+        /** @brief Default metronome enabled state */
         static const bool DEFAULT_METRONOME_ENABLED = false;
+        
+        /** @brief Default metronome volume level (0.0 to 1.0) */
         static const float DEFAULT_METRONOME_VOLUME = 0.5f;
+        
+        /** @brief Default metronome sound type ("Click", "Beep", "Wood") */
         static const juce::String DEFAULT_METRONOME_SOUND = "Click";
+        
+        /** @brief Default quantization grid value (16th notes) */
         static const int DEFAULT_QUANTIZE_VALUE = 16;
+        
+        /** @brief Default count-in duration in bars */
         static const int DEFAULT_COUNT_IN_BARS = 1;
+        
+        // ========================================================================
+        // AUDIO ENGINE SETTINGS
+        // ========================================================================
+        // These settings control the core audio processing configuration.
+        // Used by: PluginProcessor.cpp, SFZEngine.cpp, MidiEngine.cpp, SettingsPanel.cpp
+        
+        /** @brief Default audio settings profile ID */
         static const int DEFAULT_AUDIO_SETTINGS_ID = 1;
+        
+        /** @brief Default MIDI clock output enabled state */
         static const bool DEFAULT_MIDI_CLOCK_OUT = false;
+        
+        /** @brief Default MIDI clock input enabled state */ 
         static const bool DEFAULT_MIDI_CLOCK_IN = false;
+        
+        /** @brief Default auto-save interval in seconds (5 minutes) */
         static const int DEFAULT_AUTO_SAVE_INTERVAL = 300;
+        
+        /** @brief Default audio sample rate in Hz (48kHz for professional quality) */
         static const int DEFAULT_SAMPLE_RATE = 48000;
+        
+        /** @brief Default audio buffer size in samples (balanced latency/performance) */
         static const int DEFAULT_BUFFER_SIZE = 256;
+        
+        /** @brief Default audio device name selection */
         static const juce::String DEFAULT_AUDIO_DEVICE = "Default";
+        
+        /** @brief Default number of audio input channels */
         static const int DEFAULT_INPUT_CHANNELS = 2;
+        
+        /** @brief Default number of audio output channels */
         static const int DEFAULT_OUTPUT_CHANNELS = 2;
+        
+        /** @brief Default latency compensation enabled state */
         static const bool DEFAULT_LATENCY_COMPENSATION = false;
+        
+        /** @brief Default audio bit depth (24-bit for quality) */
         static const int DEFAULT_BIT_DEPTH = 24;
+        
+        /** @brief Default ASIO driver enabled state (Windows-specific) */
         static const bool DEFAULT_ENABLE_ASIO = false;
+        
+        /** @brief Default multicore processing enabled state */
         static const bool DEFAULT_ENABLE_MULTICORE = true;
+        
+        // ========================================================================
+        // PLAYER AND MUSICAL SETTINGS
+        // ========================================================================
+        // These settings control the musical behavior and player state management.
+        // Used by: PlayerTabsComponent.cpp, MainContentComponent.cpp, PatternManager.cpp
+        
+        /** @brief Default drum kit selection ("Acoustic", "Electronic", "Vintage") */
         static const juce::String DEFAULT_DRUMKIT = "Acoustic";
+        
+        /** @brief Default player enabled state (each of 8 players) */
         static const bool DEFAULT_PLAYER_ENABLED = true;
+        
+        /** @brief Default edit mode state (false = performance, true = edit) */
         static const bool DEFAULT_EDIT_MODE = false;
+        
+        /** @brief Default swing percentage (0-100, affects timing groove) */
         static const float SWING = 10.0f;
+        
+        /** @brief Default energy level (0-100, affects pattern intensity) */
         static const float ENERGY = 75.0f;
+        
+        /** @brief Default player volume level (0.0 to 1.0) */
         static const float VOLUME = 0.8f;
+        
+        /** @brief Default playback state (false = stopped, true = playing) */
         static const bool DEFAULT_PLAY_STATE = false;
+        
+        /** @brief Default active player index (0-7) */
         static const int DEFAULT_CURRENT_PLAYER = 0;
+        
+        /** @brief Default drum kit index selection */
         static const int DEFAULT_KIT_INDEX = 0;
+        
+        /** @brief Default preset index selection */
         static const int DEFAULT_CURRENT_PRESET = 0;
+        
+        /** @brief Default prefix for pattern group names */
         static const juce::String DEFAULT_GROUP_PREFIX = "Group ";
+        
+        /** @brief Default selected drum button index (0-15 for 4x4 grid) */
         static const int DEFAULT_SELECTED_BUTTON = 0;
+        
+        /** @brief Default favorite state for patterns/presets */
         static const bool DEFAULT_FAVORITE_STATE = false;
+        
+        /** @brief Default loop position percentage (0-100) */
         static const float DEFAULT_LOOP_POSITION = 50.0f;
+        
+        // ========================================================================
+        // MIXING AND EFFECTS SETTINGS
+        // ========================================================================
+        // These settings control the default mixing levels and effects processing.
+        // Used by: Mixer.cpp, PopupWindowsMixer.cpp, channel processing classes
+        
+        /** @brief Default master output volume level (0.0 to 1.0) */
         static const float DEFAULT_MASTER_VOLUME = 0.8f;
+        
+        /** @brief Default reverb send mix level (0.0 to 1.0) */
         static const float DEFAULT_REVERB_MIX = 0.2f;
+        
+        /** @brief Default delay send mix level (0.0 to 1.0) */
         static const float DEFAULT_DELAY_MIX = 0.1f;
+        
+        /** @brief Default kick drum volume level (0.0 to 1.0) */
         static const float DEFAULT_KICK_VOLUME = 0.9f;
+        
+        /** @brief Default snare drum volume level (0.0 to 1.0) */
         static const float DEFAULT_SNARE_VOLUME = 0.8f;
+        
+        /** @brief Default hi-hat volume level (0.0 to 1.0) */
         static const float DEFAULT_HIHAT_VOLUME = 0.7f;
+        
+        // ========================================================================
+        // PHOSPHOR ICON SYSTEM SETTINGS
+        // ========================================================================
+        // These settings control the Phosphor icon rendering system behavior.
+        // Used by: CustomLookAndFeel.cpp, PhosphorIconButton components
+        
+        /** @brief Default Phosphor icon font weight (1=thin, 2=light, 3=regular, 4=bold) */
         static const int DEFAULT_PHOSPHOR_WEIGHT = 1;
-        static constexpr float DEFAULT_PHOSPHOR_ICON_BOX_FIT_RATIO = 0.99f; // 99% of box area for perfect icon fit
+        
+        /** 
+         * @brief Default icon box fit ratio for responsive icon scaling
+         * 
+         * This value (0.99 = 99%) ensures icons scale to fit 99% of their container
+         * area, leaving a small margin for visual breathing room. This ratio is
+         * applied after the ResponsiveLayoutManager calculates the box dimensions.
+         * 
+         * Referenced by: CustomLookAndFeel.cpp phosphor icon rendering methods
+         */
+        static constexpr float DEFAULT_PHOSPHOR_ICON_BOX_FIT_RATIO = 0.99f;
 
         static const int DEFAULT_TEMPO = 120.0f;
         static const juce::String DEFAULT_TIME_SIGNATURE = "4/4";
@@ -328,14 +630,80 @@ namespace INIConfig {
         static const float DEFAULT_TALKBOX_RESONANCE = 0.9f;
         static const float DEFAULT_TALKBOX_DAMPING = 0.1f;
         static const int DEFAULT_TALKBOX_CARRIERS = 64;
-    }
+    } // end namespace Defaults
 
+/**
+ * @namespace LayoutConstants
+ * @brief Percentage-based responsive layout system for OTTO's interface components
+ * 
+ * This namespace implements a comprehensive responsive layout system that scales all
+ * interface elements proportionally based on the base resolution (1024x768). Every
+ * dimension is calculated as a percentage of the default interface size, ensuring
+ * consistent appearance across different screen sizes and DPI settings.
+ * 
+ * DESIGN PRINCIPLES:
+ * ==================
+ * - Percentage-based scaling: All dimensions calculated from DEFAULT_INTERFACE_WIDTH/HEIGHT
+ * - Accessibility compliance: Enforces minimum 44px touch targets (MIN_TOUCH_TARGET_PX)
+ * - Row-based organization: Interface divided into 6 logical rows with specific purposes
+ * - Responsive breakpoints: Automatic scaling with fallback compact modes
+ * - Cross-reference integration: Used by ResponsiveLayoutManager.cpp for live scaling
+ * 
+ * ROW ORGANIZATION:
+ * =================
+ * - Row 1 (10%): TopBarComponent - Settings, presets, transport controls
+ * - Row 2 (8%):  PlayerTabsComponent - Player selection tabs
+ * - Row 3 (16%): DrumKit controls - Edit, navigation, kit selection
+ * - Row 4 (14%): Pattern management - Groups, labels, status
+ * - Row 5 (44%): Main content area - Drum grid, sliders, controls  
+ * - Row 6 (8%):  Loop/transport section - Scene launcher, performance controls
+ * 
+ * USAGE IN COMPONENTS:
+ * ====================
+ * - MainContentComponent.cpp: Uses row heights and positioning
+ * - TopBarComponent.cpp: References Row1 namespace constants
+ * - PlayerTabsComponent.cpp: Uses Row2 namespace for tab dimensions
+ * - ResponsiveLayoutManager.cpp: Applies scaling factors to all constants
+ * - CustomLookAndFeel.cpp: Uses spacing and sizing constants for consistency
+ * 
+ * @see ResponsiveLayoutManager.cpp for dynamic scaling implementation
+ * @see MainContentComponent.cpp for row-based layout application
+ */
 namespace LayoutConstants {
+    
+    // ============================================================================
+    // FUNDAMENTAL SPACING CONSTANTS
+    // ============================================================================
+    // These base spacing values are used throughout the interface for consistency.
+    // All values are calculated as percentages of the default interface width.
+    
+    /** 
+     * @brief Standard margin for component edges (1.67% of interface width = ~17px at 1024w)
+     * Used by: All major layout components for outer boundaries
+     */
     constexpr int defaultMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0167f);
+    
+    /** 
+     * @brief Internal padding for component content (0.83% of interface width = ~8px at 1024w)
+     * Used by: Component interiors, text padding, small element spacing
+     */
     constexpr int defaultPadding = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0083f);
     
-    // GENERAL SPACING: Updated from 0.01% to 1.25% for better visual separation
+    /** 
+     * @brief General spacing between related elements (1.25% of interface width = ~13px at 1024w)
+     * 
+     * DESIGN NOTE: Updated from 0.01% to 1.25% for better visual separation while
+     * maintaining compact layout. This spacing provides clear element boundaries
+     * without wasting precious screen real estate.
+     * 
+     * Used by: Button groups, slider arrangements, component separation
+     */
     constexpr int defaultSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.0125f);
+    
+    /** 
+     * @brief Standard thickness for separator lines and borders (3px fixed)
+     * Used by: Row separators, component borders, visual dividers
+     */
     constexpr int separatorThickness = 3;
 
     constexpr int mainHeaderHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.075f);

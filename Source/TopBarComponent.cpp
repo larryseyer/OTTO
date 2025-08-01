@@ -947,7 +947,8 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
 
     juce::PopupMenu mainMenu;
 
-    mainMenu.setLookAndFeel(&getLookAndFeel());
+    // Don't set custom LookAndFeel to avoid font issues with Unicode characters
+    // mainMenu.setLookAndFeel(&getLookAndFeel());
 
     presetMenuMapping.clear();
     int currentMenuId = 1;
@@ -957,16 +958,27 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
 
     for (const auto& categoryName : categories) {
         juce::PopupMenu subMenu;
-        subMenu.setLookAndFeel(&getLookAndFeel());
+        // Don't set custom LookAndFeel to avoid font issues with Unicode characters
+        // subMenu.setLookAndFeel(&getLookAndFeel());
 
         // Get presets in this category
         auto presetsInCategory = getPresetsInCategory(categoryName);
 
         for (const auto& preset : presetsInCategory) {
             bool isCurrentSelection = (preset == currentPresetName);
-            subMenu.addItem(currentMenuId, preset, true, isCurrentSelection);
+            // Create a clean copy of the preset name
+            juce::String presetCopy = preset;
+            juce::String categoryCopy = categoryName;
+            
+            // Use INI-defined selection indicator to avoid JUCE's Unicode issues
+            juce::String displayName = isCurrentSelection ? 
+                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + presetCopy : 
+                INIConfig::UI::MENU_NON_SELECTION_PADDING + presetCopy;
+            
+            // Add item without JUCE's built-in selection to avoid corruption
+            subMenu.addItem(currentMenuId, displayName, true, false);
 
-            presetMenuMapping.add({preset, categoryName, currentMenuId});
+            presetMenuMapping.add({presetCopy, categoryCopy, currentMenuId});
             currentMenuId++;
         }
 

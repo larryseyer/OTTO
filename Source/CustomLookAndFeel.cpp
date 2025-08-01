@@ -276,8 +276,8 @@ juce::Font CustomLookAndFeel::getLabelFont(juce::Label& label) {
     }
 
     if (componentID == "preset_display_label") {
-        // Make preset label prominent - about 4x bigger than previous calculation
-        float fontSize = INIConfig::LayoutConstants::Row1::ottoHeight * 2.4f;
+        // Reduced preset label font size by 40% for better alignment with chevrons
+        float fontSize = INIConfig::LayoutConstants::Row1::ottoHeight * INIConfig::LayoutConstants::fontSizePresetLabelReduced;
         return fontManager.getFont(FontManager::FontRole::Header, fontSize * sizeMult);
     }
 

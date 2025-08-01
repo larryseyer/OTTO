@@ -252,7 +252,7 @@ void TopBarComponent::setupComponents() {
     presetDisplayLabel.setText(currentPresetName, juce::dontSendNotification);
     presetDisplayLabel.setJustificationType(juce::Justification::centred);
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header,
-                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 2.0f)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * INIConfig::LayoutConstants::fontSizePresetLabelReduced)));
     presetDisplayLabel.setColour(juce::Label::textColourId,
                                 colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 
@@ -298,7 +298,7 @@ void TopBarComponent::lookAndFeelChanged() {
 
     // Update preset display label font and color - make it prominent
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header,
-                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 2.4f)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * INIConfig::LayoutConstants::fontSizePresetLabelReduced)));
     presetDisplayLabel.setColour(juce::Label::textColourId,
                                 colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 
@@ -963,7 +963,7 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
 
         // Get presets in this category
         auto presetsInCategory = getPresetsInCategory(categoryName);
-        
+
         // Check if this category contains the currently selected preset
         bool categoryContainsCurrentPreset = false;
 
@@ -972,16 +972,16 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
             if (isCurrentSelection) {
                 categoryContainsCurrentPreset = true;
             }
-            
+
             // Create a clean copy of the preset name
             juce::String presetCopy = preset;
             juce::String categoryCopy = categoryName;
-            
+
             // Use INI-defined selection indicator to avoid JUCE's Unicode issues
-            juce::String displayName = isCurrentSelection ? 
-                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + presetCopy : 
+            juce::String displayName = isCurrentSelection ?
+                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + presetCopy :
                 INIConfig::UI::MENU_NON_SELECTION_PADDING + presetCopy;
-            
+
             // Add item without JUCE's built-in selection to avoid corruption
             subMenu.addItem(currentMenuId, displayName, true, false);
 
@@ -992,10 +992,10 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
         // Only add submenu if it has presets
         if (presetsInCategory.size() > 0) {
             // Add arrow indicator to category name if it contains the current preset
-            juce::String categoryDisplayName = categoryContainsCurrentPreset ? 
-                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + categoryName : 
+            juce::String categoryDisplayName = categoryContainsCurrentPreset ?
+                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + categoryName :
                 INIConfig::UI::MENU_NON_SELECTION_PADDING + categoryName;
-                
+
             mainMenu.addSubMenu(categoryDisplayName, subMenu);
         }
     }
@@ -1601,7 +1601,7 @@ void TopBarComponent::mouseDown(const juce::MouseEvent& event) {
 void TopBarComponent::refreshPresetLabelFont() {
     // Force refresh the preset label font - make it prominent and readable
     presetDisplayLabel.setFont(fontManager.getFont(FontManager::FontRole::Header,
-                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 2.4f)));
+                               layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * INIConfig::LayoutConstants::fontSizePresetLabelReduced)));
 
     // Also refresh the color to ensure consistency
     presetDisplayLabel.setColour(juce::Label::textColourId,

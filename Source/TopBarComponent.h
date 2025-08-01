@@ -57,7 +57,7 @@ public:
 
     void lookAndFeelChanged() override;
     void mouseDown(const juce::MouseEvent& event) override;
-    
+
     // Method to refresh preset label font
     void refreshPresetLabelFont();
 
@@ -83,7 +83,7 @@ private:
     PhosphorIconButton loopButton;
 
     HierarchicalComboBox presetsMenu;
-    juce::Label presetDisplayLabel;  // New preset label for large font display
+    juce::Label presetDisplayLabel;
     EditableNumericLabel bpmLabel;
     juce::Label ottoLabel;
     juce::Label versionLabel;

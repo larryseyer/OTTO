@@ -1917,6 +1917,10 @@ namespace LayoutConstants {
        static const juce::String TOGGLE_BUTTON_NAMES[MAX_TOGGLE_STATES] = {"Auto", "Manual", "Stick", "Ride", "Lock"};
        static const juce::String FILL_BUTTON_NAMES[MAX_FILL_STATES] = {"4", "8", "16", "32", "Solo"};
 
+       // Menu selection indicators
+       static const juce::String MENU_SELECTION_INDICATOR = "->";
+       static const juce::String MENU_NON_SELECTION_PADDING = "  ";
+
        static const double SWING_ENERGY_SLIDER_STEP = 1.0;
        static const double VOLUME_SLIDER_STEP = 0.01;
 

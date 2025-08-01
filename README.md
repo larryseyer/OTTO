@@ -233,6 +233,8 @@ Each of OTTO's 8 players provides comprehensive control:
 - **[docs/BUILDRULES.md](docs/BUILDRULES.md)** - Complete cross-platform build instructions  
 - **[docs/INIRULES.md](docs/INIRULES.md)** - Data storage and INI configuration system
 - **[docs/INI_LAYOUT_SYSTEM_COMPLETION.md](docs/INI_LAYOUT_SYSTEM_COMPLETION.md)** - Complete INI-driven layout system implementation details
+- **[docs/MENU_SELECTION_FIX.md](docs/MENU_SELECTION_FIX.md)** - Menu selection character corruption fix and font compatibility solution
+- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** - Complete project changelog with recent fixes and improvements
 
 ## 🤖 For AI Assistants & Developers
 

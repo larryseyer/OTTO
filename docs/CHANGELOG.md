@@ -4,6 +4,61 @@ All notable changes to the OTTO project will be documented in this file.
 
 ## [Unreleased] - 2025-01-XX
 
+### ✅ **FIXED: Menu Selection Character Corruption Issue**
+
+#### **🎯 Problem Solved**
+
+**Issue:**
+- Character corruption in preset menu selection indicators showing garbled characters (àC, ¢, etc.)
+- JUCE's built-in menu selection mechanism using Unicode characters not supported by Playfair Display font
+- Inconsistent display of selected menu items across different font configurations
+
+**Root Cause:**
+- JUCE's `PopupMenu::addItem()` with `isCurrentSelection=true` uses Unicode checkmark characters
+- Playfair Display font (used in custom LookAndFeel) lacks support for these Unicode selection characters
+- Font fallback mechanism causing character corruption and display artifacts
+
+#### **📝 Solution Implemented**
+
+**Technical Approach:**
+- Implemented manual selection indicators using ASCII-only characters
+- Added INI-driven configuration for menu selection indicators
+- Bypassed JUCE's problematic Unicode selection mechanism entirely
+
+**Code Changes:**
+```cpp
+// Added to INIConfig::UI namespace
+static const juce::String MENU_SELECTION_INDICATOR = "->";
+static const juce::String MENU_NON_SELECTION_PADDING = "  ";
+
+// Updated TopBarComponent menu building
+juce::String displayName = isCurrentSelection ? 
+    INIConfig::UI::MENU_SELECTION_INDICATOR + " " + presetCopy : 
+    INIConfig::UI::MENU_NON_SELECTION_PADDING + presetCopy;
+
+subMenu.addItem(currentMenuId, displayName, true, false); // No built-in selection
+```
+
+#### **🏆 Results Achieved**
+
+**Visual Improvements:**
+- ✅ Clean ASCII arrow indicator (`-> Claps`) for selected items
+- ✅ Proper alignment with padding (`  Funk`, `  Rock`) for non-selected items
+- ✅ No character corruption across all font configurations
+- ✅ Consistent display on all platforms and screen densities
+
+**Architecture Benefits:**
+- ✅ INI-driven configuration following project standards
+- ✅ Easy customization via `INIConfig::UI::MENU_SELECTION_INDICATOR`
+- ✅ Cross-platform ASCII compatibility
+- ✅ Future-proof solution independent of font selection
+
+**Files Modified:**
+- `Source/INIConfig.h`: Added menu selection constants
+- `Source/TopBarComponent.cpp`: Implemented manual selection indicators
+
+---
+
 ### ✅ **MAJOR: Complete INI-Driven Layout System Implementation**
 
 #### **🎯 System Architecture Transformation**

@@ -293,6 +293,12 @@ juce::Font CustomLookAndFeel::getLabelFont(juce::Label& label) {
         return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizeBody * sizeMult);
     }
 
+    if (componentID == "player_number_display") {
+        // Use large player number font - 2.5x the numeric size for visibility, with responsive scaling
+        float playerNumberSize = INIConfig::LayoutConstants::fontSizeNumeric * 2.5f;  // 25% larger than double
+        return fontManager.getFont(FontManager::FontRole::Numeric, playerNumberSize * sizeMult);
+    }
+
     return fontManager.getFont(FontManager::FontRole::Body, INIConfig::LayoutConstants::fontSizeBody * sizeMult);
 }
 

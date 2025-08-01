@@ -106,12 +106,15 @@ PlayerTabsComponent::PlayerTabsComponent(MidiEngine& midiEngine,
     setupTabs();
     addAndMakeVisible(bottomSeparator);
     
-    // Setup player number display
+    // Setup player number display with ColorScheme integration
     addAndMakeVisible(playerNumber);
     playerNumber.setText("1", juce::dontSendNotification);
     playerNumber.setJustificationType(juce::Justification::centred);
-    playerNumber.setColour(juce::Label::backgroundColourId, juce::Colours::magenta);
-    playerNumber.setColour(juce::Label::textColourId, juce::Colours::white);
+    playerNumber.setComponentID("player_number_display");  // Set ID for CustomLookAndFeel
+    playerNumber.setColour(juce::Label::backgroundColourId, 
+                          colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
+    playerNumber.setColour(juce::Label::textColourId, 
+                          colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
     
 }
 
@@ -406,17 +409,12 @@ void PlayerTabsComponent::resized() {
     // Use the available space from left edge to where the first tab starts (leftMargin)
     int availableLeftSpace = leftMargin;  // Space from 0 to first tab
     int playerNumWidth = static_cast<int>(availableLeftSpace * 0.8f);  // Use 80% of available space
-    int playerNumHeight = layoutManager.scaled(Row2::tabContentHeight);  // Same height as tabs
+    int playerNumHeight = layoutManager.scaled(Row2::height);  // Use FULL Row2 height, not tiny tabContentHeight
     int playerNumX = (availableLeftSpace - playerNumWidth) / 2;  // Center in available space
-    int playerNumY = layoutManager.scaled(Row2::tabTopOffset);  // Same Y as tabs
+    int playerNumY = 0;  // Start at top of Row2
     
-    // Use MUCH larger font size - 4-6 times bigger as requested
-    float fontSizeScale = 4.0f;  // 400% of height - much larger than before
-    float scaledFontSize = layoutManager.scaled(static_cast<float>(Row2::tabContentHeight) * fontSizeScale);
-    
+    // Position the player number - font will be handled by CustomLookAndFeel
     playerNumber.setBounds(playerNumX, playerNumY, playerNumWidth, playerNumHeight);
-    // Use FontManager like TopBar does
-    playerNumber.setFont(fontManager.getFont(FontManager::FontRole::Header, scaledFontSize));
     
     // TEMPORARY: Position Row 2 debug label on right side for visibility
     // ROW 2 DEBUG REMOVED.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(defaultPadding), 

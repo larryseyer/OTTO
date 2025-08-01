@@ -4,6 +4,38 @@ All notable changes to the OTTO project will be documented in this file.
 
 ## [Unreleased] - 2025-01-XX
 
+### ✅ **IMPROVED: Preset Menu Font Size Reduction**
+
+#### **🎯 Visual Balance Enhancement**
+
+**Objective:**
+- Reduced preset dropdown menu font size by 20% to improve visual consistency and balance in the top bar layout
+- Enhanced visual hierarchy between preset display label and dropdown menu
+- Maintained responsive design principles and cross-platform compatibility
+
+**Implementation:**
+- Added `fontSizePresetMenuReduced = 25.6f` constant to INIConfig::LayoutConstants (80% of original 32.0f)
+- Updated CustomLookAndFeel::getComboBoxFont() to use reduced font size for preset menu
+- Updated CustomLookAndFeel::getPopupMenuFont() to maintain consistency between ComboBox and popup
+- Follows same INI-driven pattern as previous preset label font reduction
+
+**Technical Details:**
+```cpp
+// INIConfig.h - New constant added
+constexpr float fontSizePresetMenuReduced = 25.6f;  // 80% of fontSizePresetMenu for 20% reduction
+
+// CustomLookAndFeel.cpp - Updated font methods
+return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenuReduced);
+```
+
+**Results:**
+- ✅ 20% font size reduction achieved (32.0f → 25.6f)
+- ✅ Better visual balance with reduced preset display label
+- ✅ Improved top bar visual harmony
+- ✅ Maintained readability and functionality
+- ✅ Preserved responsive design and cross-platform compatibility
+- ✅ Successfully builds on macOS (Standalone, VST3, AU, CLAP)
+
 ### ✅ **FIXED: Menu Selection Character Corruption Issue**
 
 #### **🎯 Problem Solved**

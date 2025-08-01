@@ -1157,6 +1157,7 @@ namespace LayoutConstants {
    constexpr float fontSizePresetLabel = 18.0f;  // Same as header/tempo/logo size
    constexpr float fontSizePresetLabelReduced = 1.44f;  // 60% of ottoHeight * 2.4f for 40% reduction
    constexpr float fontSizePresetMenu = 32.0f;   // Twice the current ComboBox size (16.0f * 2)
+   constexpr float fontSizePresetMenuReduced = 25.6f;  // 80% of fontSizePresetMenu for 20% reduction
 
    constexpr float alphaDisabled = 0.5f;
    constexpr float alphaHover = 0.8f;

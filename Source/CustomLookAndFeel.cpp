@@ -336,14 +336,14 @@ juce::Font CustomLookAndFeel::getTextButtonFont(juce::TextButton& button, int bu
 juce::Font CustomLookAndFeel::getComboBoxFont(juce::ComboBox& comboBox) {
     // Check if this is the preset menu by component ID
     if (comboBox.getComponentID() == "presets_menu") {
-        return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenu);
+        return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenuReduced);
     }
     return fontManager.getFont(FontManager::FontRole::Body, INIConfig::LayoutConstants::fontSizeBody);
 }
 
 juce::Font CustomLookAndFeel::getPopupMenuFont() {
     // Use Header font (Playfair Display) for popup menus to match preset ComboBox
-    return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenu);
+    return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenuReduced);
 }
 
 juce::Font CustomLookAndFeel::getAlertWindowMessageFont() {

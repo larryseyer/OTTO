@@ -106,13 +106,13 @@ PlayerTabsComponent::PlayerTabsComponent(MidiEngine& midiEngine,
     setupTabs();
     addAndMakeVisible(bottomSeparator);
     
-    // TEMPORARY: Add debug label for Row 2 identification
-    addAndMakeVisible(row2DebugLabel);
-    row2DebugLabel.setText("ROW 2", juce::dontSendNotification);
-    row2DebugLabel.setColour(juce::Label::textColourId, juce::Colours::red);
-    row2DebugLabel.setColour(juce::Label::backgroundColourId, juce::Colours::yellow);
-    row2DebugLabel.setJustificationType(juce::Justification::centred);
-    row2DebugLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 32.0f));
+    // Setup player number display
+    addAndMakeVisible(playerNumber);
+    playerNumber.setText("1", juce::dontSendNotification);
+    playerNumber.setJustificationType(juce::Justification::centred);
+    playerNumber.setColour(juce::Label::backgroundColourId, juce::Colours::magenta);
+    playerNumber.setColour(juce::Label::textColourId, juce::Colours::white);
+    
 }
 
 /**
@@ -196,6 +196,9 @@ void PlayerTabsComponent::setSelectedTab(int tab) {
         midiEngine.selectPattern(selectedTab, 0);
 
         updateTabVisuals();
+        
+        // Update player number display
+        playerNumber.setText(juce::String(selectedTab + 1), juce::dontSendNotification);
 
         if (onTabChanged) {
             onTabChanged(selectedTab);
@@ -399,9 +402,25 @@ void PlayerTabsComponent::resized() {
     bottomSeparator.setBounds(0, bounds.getBottom() - layoutManager.scaled(separatorThickness),
                              bounds.getWidth(), layoutManager.scaled(separatorThickness));
     
+    // Position player number display in the center of the area to the left of the first tab
+    // Use the available space from left edge to where the first tab starts (leftMargin)
+    int availableLeftSpace = leftMargin;  // Space from 0 to first tab
+    int playerNumWidth = static_cast<int>(availableLeftSpace * 0.8f);  // Use 80% of available space
+    int playerNumHeight = layoutManager.scaled(Row2::tabContentHeight);  // Same height as tabs
+    int playerNumX = (availableLeftSpace - playerNumWidth) / 2;  // Center in available space
+    int playerNumY = layoutManager.scaled(Row2::tabTopOffset);  // Same Y as tabs
+    
+    // Use MUCH larger font size - 4-6 times bigger as requested
+    float fontSizeScale = 4.0f;  // 400% of height - much larger than before
+    float scaledFontSize = layoutManager.scaled(static_cast<float>(Row2::tabContentHeight) * fontSizeScale);
+    
+    playerNumber.setBounds(playerNumX, playerNumY, playerNumWidth, playerNumHeight);
+    // Use FontManager like TopBar does
+    playerNumber.setFont(fontManager.getFont(FontManager::FontRole::Header, scaledFontSize));
+    
     // TEMPORARY: Position Row 2 debug label on right side for visibility
-    row2DebugLabel.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(defaultPadding), 
-                            120, 50);
+    // ROW 2 DEBUG REMOVED.setBounds(bounds.getWidth() - 120 - 20, layoutManager.scaled(defaultPadding), 
+    // ROW 2 DEBUG REMOVED: 120, 50);
 }
 
 // PHASE 4: Removed calculatePlayerButtonLayout method

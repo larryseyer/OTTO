@@ -48,8 +48,12 @@ private:
     juce::TextButton tabs[INIConfig::Defaults::MAX_PLAYERS];
     SeparatorComponent bottomSeparator;
     
-    // TEMPORARY: Debug label to identify Row 2
-    juce::Label row2DebugLabel;
+    // Player Number Display Component
+    juce::Label playerNumber;
+    
+    // ROW 2 IDENTIFICATION: Comments preserved for Row 2 identification
+    // This component represents Row 2 of the OTTO interface (Player Tabs)
+
 
     int selectedTab = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     bool clipLaunchMode = false;

@@ -963,9 +963,16 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
 
         // Get presets in this category
         auto presetsInCategory = getPresetsInCategory(categoryName);
+        
+        // Check if this category contains the currently selected preset
+        bool categoryContainsCurrentPreset = false;
 
         for (const auto& preset : presetsInCategory) {
             bool isCurrentSelection = (preset == currentPresetName);
+            if (isCurrentSelection) {
+                categoryContainsCurrentPreset = true;
+            }
+            
             // Create a clean copy of the preset name
             juce::String presetCopy = preset;
             juce::String categoryCopy = categoryName;
@@ -984,7 +991,12 @@ void TopBarComponent::buildHierarchicalPresetMenu() {
 
         // Only add submenu if it has presets
         if (presetsInCategory.size() > 0) {
-            mainMenu.addSubMenu(categoryName, subMenu);
+            // Add arrow indicator to category name if it contains the current preset
+            juce::String categoryDisplayName = categoryContainsCurrentPreset ? 
+                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + categoryName : 
+                INIConfig::UI::MENU_NON_SELECTION_PADDING + categoryName;
+                
+            mainMenu.addSubMenu(categoryDisplayName, subMenu);
         }
     }
 

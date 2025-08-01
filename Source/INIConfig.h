@@ -1423,21 +1423,30 @@ namespace LayoutConstants {
 
        // Tab configuration percentages
        constexpr int tabsCount = 8;
-       constexpr float tabTopOffsetPercent = 0.25f;      // 0.25% of interface height
-       constexpr float tabBottomMarginPercent = 0.625f;  // 0.625% of interface height
+       // UPDATED: Reduced button height by 5% and centered vertically
+       constexpr float tabHeightReductionPercent = 5.0f;  // 5% reduction in button height
+
 
        // Responsive tab width and spacing percentages (based on interface width)
        constexpr float tabWidthPercent = 9.0f;          // Each tab: 9% of interface width
-       constexpr float leftMarginPercent = 4.5f;        // Left margin: 4.5% of interface width
        constexpr float tabSpacingPercent = 2.25f;       // Between tabs: 2.25% of interface width
-       constexpr float rightMarginPercent = 4.5f;       // Right margin: 4.5% of interface width
+       
+       // UPDATED: Calculate centered horizontal positioning
+       constexpr float totalTabsWidthPercent = (tabsCount * tabWidthPercent) + ((tabsCount - 1) * tabSpacingPercent);
+       constexpr float horizontalCenteringOffsetPercent = (100.0f - totalTabsWidthPercent) / 2.0f;
+
+
 
        // Calculated dimensions using percentages
-       constexpr int tabTopOffset = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (tabTopOffsetPercent / 100.0f));
-       constexpr int tabBottomMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (tabBottomMarginPercent / 100.0f));
-       constexpr int tabContentHeight = height - tabTopOffset - tabBottomMargin;
+       // UPDATED: 10% reduced height, vertically centered
+       constexpr int originalTabContentHeight = height - (defaultPadding * 2);
+       constexpr int tabContentHeight = static_cast<int>(originalTabContentHeight * (100.0f - tabHeightReductionPercent) / 100.0f);
+       constexpr int tabTopOffset = (height - tabContentHeight) / 2;  // Center vertically in row
+
+
        constexpr int tabWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (tabWidthPercent / 100.0f));
-       constexpr int leftMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (leftMarginPercent / 100.0f));
+       // UPDATED: Horizontally centered positioning
+       constexpr int leftMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (horizontalCenteringOffsetPercent / 100.0f));
        constexpr int tabSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (tabSpacingPercent / 100.0f));
 
        // Highlight bar dimensions (percentage-based)
@@ -1451,7 +1460,7 @@ namespace LayoutConstants {
                      "Row 2 tabs below minimum touch target size (44px)");
 
        // Layout validation - ensure all tabs fit within interface width
-       constexpr int totalTabsWidth = (tabsCount * tabWidth) + ((tabsCount - 1) * tabSpacing) + leftMargin + rightMarginPercent;
+       constexpr int totalTabsWidth = (tabsCount * tabWidth) + ((tabsCount - 1) * tabSpacing) + (2 * leftMargin);
        static_assert(totalTabsWidth <= Defaults::DEFAULT_INTERFACE_WIDTH * 1.05f, // Allow 5% tolerance
                      "Row 2 PlayerTabs exceed interface width - reduce tab percentages");
 

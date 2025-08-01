@@ -342,7 +342,9 @@ void PlayerTabsComponent::paint(juce::Graphics& g) {
     // Use Row2 namespace constants for highlight positioning
     using namespace INIConfig::LayoutConstants;
     int tabWidth = layoutManager.scaled(Row2::tabWidth);
-    int leftMargin = layoutManager.scaled(Row2::leftMargin);
+    // UPDATED: Calculate dynamic horizontal centering based on actual component width
+    int totalTabsWidth = (Row2::tabsCount * layoutManager.scaled(Row2::tabWidth)) + ((Row2::tabsCount - 1) * layoutManager.scaled(Row2::tabSpacing));
+    int leftMargin = (bounds.getWidth() - totalTabsWidth) / 2;
     int tabSpacing = layoutManager.scaled(Row2::tabSpacing);
     int highlightHeight = layoutManager.scaled(Row2::highlightHeight);
     int highlightMargin = layoutManager.scaled(Row2::highlightMargin);
@@ -369,7 +371,9 @@ void PlayerTabsComponent::resized() {
     // Use Row2 namespace constants for positioning  
     using namespace INIConfig::LayoutConstants;
     int tabWidth = layoutManager.scaled(Row2::tabWidth);
-    int leftMargin = layoutManager.scaled(Row2::leftMargin);
+    // UPDATED: Calculate dynamic horizontal centering based on actual component width
+    int totalTabsWidth = (Row2::tabsCount * layoutManager.scaled(Row2::tabWidth)) + ((Row2::tabsCount - 1) * layoutManager.scaled(Row2::tabSpacing));
+    int leftMargin = (bounds.getWidth() - totalTabsWidth) / 2;
     int tabSpacing = layoutManager.scaled(Row2::tabSpacing);
     int tabTopOffset = layoutManager.scaled(Row2::tabTopOffset);
     int tabContentHeight = layoutManager.scaled(Row2::tabContentHeight);

@@ -87,7 +87,7 @@ private:
     ColorScheme& colorScheme;
 
     juce::Label rhythmLabel;
-    juce::Label playerNumber;
+
     
     // TEMPORARY: Row identification labels for debugging layout
     juce::Label rowLabel1, rowLabel2, rowLabel3, rowLabel4, rowLabel5, rowLabel6;
@@ -123,11 +123,12 @@ private:
     bool livePerformanceMode = false;
 
     void validatePlayerIndex(int playerIndex) const;
-    void updatePlayerNumberDisplay();
+
     void notifyStateChanged(ComponentState& state);
     void updateLayoutForPerformanceMode();
     void setupRow3Components();
     void setupRow4Components();
+    void updateRow2Layout();
     void updateRow3Layout();
     void updateRow4Layout();
     void updateRow5Layout();

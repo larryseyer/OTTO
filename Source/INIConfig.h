@@ -2018,6 +2018,7 @@ namespace LayoutConstants {
        static const float PHOSPHOR_ICON_SIZE_LARGE = 32.0f;
        static const float PAD_EDITOR_TEXT_SIZE = 16.0f;
        static const float PAD_EDITOR_SMALL_TEXT_SIZE = 12.0f;
+       static const float PLAYER_NUMBER_DEFAULT_SIZE = 144.0f;
    }
 
    namespace MIDI {

@@ -58,6 +58,7 @@
 #include "INIDataManager.h"
 #include "ErrorHandling.h"
 #include "PerformanceOptimizations.h"
+#include <iostream>
 
 /**
  * @brief MainContentComponent constructor - initialize row-based layout with all subsystems
@@ -145,7 +146,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     
     // Row 3 labels and player number display
     addAndMakeVisible(rhythmLabel);     // "Rhythm" label for pattern identification
-    addAndMakeVisible(playerNumber);    // Large player number display (1-8)
+
     
     // Major layout sections - these contain most of the interface
     addAndMakeVisible(*leftSection);    // Drum grid and pattern controls
@@ -180,10 +181,10 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     rhythmLabel.setJustificationType(juce::Justification::centredRight);
 
     // PHASE 3: Player number now positioned and styled in Row 3
-    playerNumber.setComponentID("player_number");
-    playerNumber.setText("1", juce::dontSendNotification); // Large number only - formatting changed
-    playerNumber.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
-    playerNumber.setJustificationType(juce::Justification::centred); // Centered for large display
+
+
+
+
     
     // TEMPORARY: Setup row identification labels with red text using FontManager
     auto setupRowLabel = [&](juce::Label& label, const juce::String& text) {
@@ -223,7 +224,7 @@ MainContentComponent::~MainContentComponent() {
 
 void MainContentComponent::updatePlayerDisplay(int playerIndex) {
     currentPlayerIndex = INIConfig::clampPlayerIndex(playerIndex);
-    updatePlayerNumberDisplay();
+
 }
 
 float MainContentComponent::getSwingValue() const {
@@ -372,7 +373,7 @@ void MainContentComponent::loadStates(const ComponentState& state) {
 
         if (savedPlayerIndex != currentPlayerIndex) {
             currentPlayerIndex = savedPlayerIndex;
-            updatePlayerNumberDisplay();
+        
         }
 
         validatePlayerIndex(currentPlayerIndex);
@@ -491,6 +492,7 @@ void MainContentComponent::resized() {
     // Note: PlayerTabs positioning handled by parent for proper component layering
     
     // Row 3: Player & DrumKit Controls - ENHANCED INI Integration ✅
+
     updateRow3Layout();
     
     // Row 4: Pattern Group Controls - ENHANCED INI Integration ✅  
@@ -526,7 +528,7 @@ void MainContentComponent::switchToPlayer(int playerIndex, const ComponentState&
 
         if (playerIndex != currentPlayerIndex) {
             currentPlayerIndex = playerIndex;
-            updatePlayerNumberDisplay();
+        
         }
 
         const auto& playerState = state.playerSettings[playerIndex];
@@ -557,10 +559,6 @@ void MainContentComponent::validatePlayerIndex(int playerIndex) const {
     }
 }
 
-void MainContentComponent::updatePlayerNumberDisplay() {
-    // PHASE 3: Large player number display - just the number for prominent display
-    playerNumber.setText(juce::String(currentPlayerIndex + 1), juce::dontSendNotification);
-}
 
 void MainContentComponent::notifyStateChanged(ComponentState& state) {
     if (onStateChanged) {
@@ -769,15 +767,15 @@ void MainContentComponent::updateRow3Layout() {
     // This consolidates what was previously separate player number and drumkit rows
     
     // Large Player Number - positioned first in Row 3
-    playerNumber.setBounds(layoutManager.scaled(Row3::playerNumberX),
-                          layoutManager.scaled(Row3::playerNumberY),
-                          layoutManager.scaled(Row3::playerNumberWidth),
-                          layoutManager.scaled(Row3::playerNumberHeight));
-    
-    // Set large font size for player number (using Brand role for prominent display)
-    juce::Font playerFont = fontManager.getFont(FontManager::FontRole::Brand, 
-                                               layoutManager.scaled(Row3::largePlayerFontSize));
-    playerNumber.setFont(playerFont);
+// MOVED TO ROW 2:     playerNumber.setBounds(layoutManager.scaled(Row3::playerNumberX),
+// MOVED TO ROW 2:                           layoutManager.scaled(Row3::playerNumberY),
+// MOVED TO ROW 2:                           layoutManager.scaled(Row3::playerNumberWidth),
+// MOVED TO ROW 2:                           layoutManager.scaled(Row3::playerNumberHeight));
+// MOVED TO ROW 2:     
+// MOVED TO ROW 2:     // Set large font size for player number (using Brand role for prominent display)
+// MOVED TO ROW 2:     juce::Font playerFont = fontManager.getFont(FontManager::FontRole::Brand, 
+// MOVED TO ROW 2:                                                layoutManager.scaled(Row3::largePlayerFontSize));
+// MOVED TO ROW 2:     playerNumber.setFont(playerFont);
     
     // Edit button - positioned using INI constants
     drumKitEditButton.setBounds(layoutManager.scaled(Row3::editButtonX),
@@ -1017,11 +1015,7 @@ void MainContentComponent::lookAndFeelChanged() {
     drumKitDropdown.setColour(juce::ComboBox::outlineColourId, 
                              colorScheme.getColor(ColorScheme::ColorRole::Separator));
     
-    // Player number label ColorScheme (consolidated in Row3)
-    playerNumber.setColour(juce::Label::textColourId, 
-                          colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
-    playerNumber.setColour(juce::Label::backgroundColourId, 
-                          colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
+
     
     // ========================================================================
     // ROW 4: Pattern Group Controls - ENHANCED ColorScheme Integration
@@ -1159,3 +1153,6 @@ void MainContentComponent::performIntegrationValidation(const juce::Rectangle<in
     DBG("✅ OTTO INTEGRATION VALIDATION PASSED: Complete 6-row INI-driven layout system operational");
 }
 #endif
+
+
+

@@ -1542,7 +1542,7 @@ namespace LayoutConstants {
        constexpr int selectedLabelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (selectedLabelWidthPercent / 100.0f));
        constexpr int selectedLabelHeight = static_cast<int>(contentHeight * (selectedLabelHeightPercent / 100.0f));
        constexpr int selectedLabelX = dropdownX + ((dropdownWidth - selectedLabelWidth) / 2); // Center under dropdown
-       constexpr int selectedLabelY = contentY + contentHeight - selectedLabelHeight - (buttonSpacing / 2); // Bottom of Row 3 with small gap
+       constexpr int selectedLabelY = contentY + ((contentHeight - selectedLabelHeight) / 2); // Center in Row 3
 
        // Total width calculation for validation
        constexpr int totalUsedWidth = mixerButtonX + mixerButtonSize + defaultMargin - startX;

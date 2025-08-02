@@ -629,7 +629,8 @@ void MainContentComponent::setupRow3Components() {
     drumKitSelectedLabel.setComponentID("drumkit_selected_label");
     drumKitSelectedLabel.setText("808 Classic", juce::dontSendNotification); // Default to match dropdown
     drumKitSelectedLabel.setJustificationType(juce::Justification::centred);
-    // Font will be set automatically by CustomLookAndFeel::getLabelFont via component ID
+    // Use same font as preset menu via FontManager
+    drumKitSelectedLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenuReduced));
     drumKitSelectedLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     drumKitSelectedLabel.setColour(juce::Label::backgroundColourId, colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
     
@@ -789,8 +790,7 @@ void MainContentComponent::comboBoxChanged(juce::ComboBox* comboBoxThatHasChange
         DBG("DrumKit selected: " << selectedText << " (ID: " << selectedId << ")");
         
         // Hide menu after selection (following preset pattern)
-        showingDrumKitLabel = true;
-        updateDrumKitDisplayToggle();
+        showDrumKitLabel();
         
         // Notify parent component of drumkit change
         if (onDrumKitChanged) {

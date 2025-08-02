@@ -625,6 +625,11 @@ void MainContentComponent::setupRow3Components() {
     
     addAndMakeVisible(drumKitDropdown);
     
+    // Set onPopupRequest callback to enable HierarchicalComboBox popup functionality
+    drumKitDropdown.onPopupRequest = [this]() {
+        juce::ComboBox::showPopup();
+    };
+    
     // DrumKit selected label - shows current selection with Playfair Display (following preset pattern)
     drumKitSelectedLabel.setComponentID("drumkit_selected_label");
     drumKitSelectedLabel.setText("808 Classic", juce::dontSendNotification); // Default to match dropdown

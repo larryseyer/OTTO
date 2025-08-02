@@ -876,9 +876,9 @@ void MainContentComponent::updateRow3Layout() {
                                 layoutManager.scaled(Row3::mixerButtonSize),
                                 layoutManager.scaled(Row3::mixerButtonSize));
     
-    // DrumKit selected label - positioned using INI constants with Playfair Display font
+    // DrumKit selected label - positioned using same relative logic as dropdown for consistency
     drumKitSelectedLabel.setBounds(startX + chevronSize + spacing + ((dropdownWidth - layoutManager.scaled(Row3::selectedLabelWidth)) / 2),
-                                  layoutManager.scaled(Row3::selectedLabelY),
+                                  layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::selectedLabelHeight) / 2)),
                                   layoutManager.scaled(Row3::selectedLabelWidth),
                                   layoutManager.scaled(Row3::selectedLabelHeight));
     

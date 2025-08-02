@@ -435,7 +435,7 @@ void MainContentComponent::resized() {
     // ========================================================================
     // Position rhythm label in Row 1 using proper Row1 constants with consistent namespace
     rhythmLabel.setBounds(layoutManager.scaled(rhythmLabelX),
-                         layoutManager.scaled(Row1::yPosition + defaultPadding),
+                         layoutManager.scaled(Row1::contentY),
                          layoutManager.scaled(rhythmLabelWidth),
                          layoutManager.scaled(rhythmLabelHeight));
 
@@ -453,12 +453,11 @@ void MainContentComponent::resized() {
     row2Separator.setVisible(false);  // PlayerTabs/MainContent separator (PluginEditor scope)
     
     // Calculate relative positions within MainContentComponent coordinate system
-    int mainContentOffset = layoutManager.scaled(ROW_3_Y);
     
     // Row bottom positions using consistent namespace constants
-    int row3Bottom = (layoutManager.scaled(ROW_3_Y + ROW_3_HEIGHT)) - mainContentOffset;
-    int row4Bottom = (layoutManager.scaled(ROW_4_Y + ROW_4_HEIGHT)) - mainContentOffset;
-    int row5Bottom = (layoutManager.scaled(ROW_5_Y + ROW_5_HEIGHT)) - mainContentOffset;
+    int row3Bottom = layoutManager.scaled(ROW_3_Y + ROW_3_HEIGHT);
+    int row4Bottom = layoutManager.scaled(ROW_4_Y + ROW_4_HEIGHT);
+    int row5Bottom = layoutManager.scaled(ROW_5_Y + ROW_5_HEIGHT);
     
     // Position MainContentComponent's 3 separators with enhanced documentation
     row3Separator.setBounds(0, row3Bottom, bounds.getWidth(), scaledSeparatorThickness);  // Row3/Row4 boundary
@@ -481,13 +480,13 @@ void MainContentComponent::resized() {
     rowLabel2.setVisible(false);  // PlayerTabs row (PluginEditor scope)
     
     // Position Row 3-6 debug labels using consistent namespace constants
-    rowLabel3.setBounds(rowLabelX, layoutManager.scaled(ROW_3_Y) - mainContentOffset, 
+    rowLabel3.setBounds(rowLabelX, layoutManager.scaled(ROW_3_Y), 
                        rowLabelWidth, rowLabelHeight);
-    rowLabel4.setBounds(rowLabelX, layoutManager.scaled(ROW_4_Y) - mainContentOffset, 
+    rowLabel4.setBounds(rowLabelX, layoutManager.scaled(ROW_4_Y), 
                        rowLabelWidth, rowLabelHeight);
-    rowLabel5.setBounds(rowLabelX, layoutManager.scaled(ROW_5_Y) - mainContentOffset, 
+    rowLabel5.setBounds(rowLabelX, layoutManager.scaled(ROW_5_Y), 
                        rowLabelWidth, rowLabelHeight);
-    rowLabel6.setBounds(rowLabelX, layoutManager.scaled(ROW_6_Y) - mainContentOffset, 
+    rowLabel6.setBounds(rowLabelX, layoutManager.scaled(ROW_6_Y), 
                        rowLabelWidth, rowLabelHeight);
     
     // ========================================================================
@@ -849,13 +848,13 @@ void MainContentComponent::updateRow3Layout() {
     
     // Edit button - positioned using INI constants
     drumKitEditButton.setBounds(layoutManager.scaled(defaultMargin),
-                               layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::buttonSize) / 2)),
+                               layoutManager.scaled(Row3::contentY + ((Row3::contentHeight - Row3::buttonSize) / 2)),
                                layoutManager.scaled(Row3::editButtonSize),
                                layoutManager.scaled(Row3::editButtonSize));
     
     // Left chevron - positioned using INI constants
     // CENTER THE CHEVRON-DROPDOWN-CHEVRON TRIO
-    const int buttonY = layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::buttonSize) / 2));
+    const int buttonY = layoutManager.scaled(Row3::contentY + ((Row3::contentHeight - Row3::buttonSize) / 2));
     const int chevronSize = layoutManager.scaled(Row3::leftChevronSize);
     const int dropdownWidth = layoutManager.scaled(300); // Fixed width for dropdown
     const int dropdownHeight = layoutManager.scaled(Row3::dropdownHeight);
@@ -873,7 +872,7 @@ void MainContentComponent::updateRow3Layout() {
     
     // DrumKit dropdown - centered trio positioning
     drumKitDropdown.setBounds(startX + chevronSize + spacing,
-                             layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::dropdownHeight) / 2)),
+                             layoutManager.scaled(Row3::contentY + ((Row3::contentHeight - Row3::dropdownHeight) / 2)),
                              dropdownWidth,
                              dropdownHeight);
     
@@ -897,7 +896,7 @@ void MainContentComponent::updateRow3Layout() {
     
     // DrumKit selected label - positioned using IDENTICAL bounds as dropdown (following preset pattern)
     drumKitSelectedLabel.setBounds(startX + chevronSize + spacing,
-                                  layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::dropdownHeight) / 2)),
+                                  layoutManager.scaled(Row3::contentY + ((Row3::contentHeight - Row3::dropdownHeight) / 2)),
                                   dropdownWidth,
                                   dropdownHeight);
     
@@ -922,7 +921,7 @@ void MainContentComponent::updateRow4Layout() {
     
     // Group Label positioning - left aligned with standard margin and FontManager
     patternGroupLabel.setBounds(layoutManager.scaled(Row4::groupLabelX),
-                               layoutManager.scaled(Row4::yPosition + Row4::groupLabelY),
+                               layoutManager.scaled(Row4::contentY + Row4::groupLabelY),
                                layoutManager.scaled(Row4::groupLabelWidth),
                                layoutManager.scaled(Row4::labelHeight));
     
@@ -932,13 +931,13 @@ void MainContentComponent::updateRow4Layout() {
     
     // Pattern Group Dropdown positioning - percentage-based responsive width
     patternGroupDropdown.setBounds(layoutManager.scaled(Row4::dropdownX),
-                                  layoutManager.scaled(Row4::yPosition + Row4::dropdownY),
+                                  layoutManager.scaled(Row4::contentY + Row4::dropdownY),
                                   layoutManager.scaled(Row4::dropdownWidth),
                                   layoutManager.scaled(Row4::dropdownHeight));
     
     // Status display positioning - shows pattern count information with FontManager
     patternStatusLabel.setBounds(layoutManager.scaled(Row4::statusX),
-                                layoutManager.scaled(Row4::yPosition + Row4::statusY),
+                                layoutManager.scaled(Row4::contentY + Row4::statusY),
                                 layoutManager.scaled(Row4::statusWidth),
                                 layoutManager.scaled(Row4::labelHeight));
     
@@ -948,13 +947,13 @@ void MainContentComponent::updateRow4Layout() {
     
     // Add button positioning - first action button with percentage-based sizing
     patternAddButton.setBounds(layoutManager.scaled(Row4::firstActionButtonX),
-                              layoutManager.scaled(Row4::yPosition + Row4::actionButtonY),
+                              layoutManager.scaled(Row4::contentY + Row4::actionButtonY),
                               layoutManager.scaled(Row4::actionButtonWidth),
                               layoutManager.scaled(Row4::buttonHeight));
     
     // Delete button positioning - second action button with percentage-based sizing
     patternDeleteButton.setBounds(layoutManager.scaled(Row4::secondActionButtonX),
-                                 layoutManager.scaled(Row4::yPosition + Row4::actionButtonY),
+                                 layoutManager.scaled(Row4::contentY + Row4::actionButtonY),
                                  layoutManager.scaled(Row4::actionButtonWidth),
                                  layoutManager.scaled(Row4::buttonHeight));
     
@@ -989,7 +988,7 @@ void MainContentComponent::updateRow5Layout() {
     }
     
     // Row5 main positioning - 45% of interface height (largest content area)
-    int row5Y = layoutManager.scaled(defaultPadding + ROW_3_HEIGHT + ROW_4_HEIGHT);
+    int row5Y = layoutManager.scaled(ROW_5_Y);
     int row5Height = layoutManager.scaled(Row5::height);
     
     // Left Section: 4x4 Pattern Matrix (63.5% width) - optimized for matrix display
@@ -1045,7 +1044,7 @@ void MainContentComponent::updateRow6Layout() {
     auto bounds = getLocalBounds();
     
     // Row6 positioning - 12% of interface height (compact loop controls)
-    int row6Y = layoutManager.scaled(defaultPadding + ROW_3_HEIGHT + ROW_4_HEIGHT + ROW_5_HEIGHT);
+    int row6Y = layoutManager.scaled(ROW_6_Y);
     int row6Height = layoutManager.scaled(Row6::height);
     
     // Position LoopSectionComponent across full interface width
@@ -1179,7 +1178,6 @@ void MainContentComponent::performIntegrationValidation(const juce::Rectangle<in
     // Interface completeness validation
     int expectedTotalHeight = layoutManager.scaled(ROW_6_Y + ROW_6_HEIGHT);
     int mainContentHeight = bounds.getHeight();
-    int mainContentOffset = layoutManager.scaled(ROW_3_Y);
     
     // Primary system validation
     jassert(mainContentHeight > 0); // Valid component size

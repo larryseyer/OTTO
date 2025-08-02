@@ -1519,7 +1519,7 @@ namespace LayoutConstants {
 
        // DrumKit dropdown positioning (centered between chevrons)
        constexpr int dropdownX = leftChevronX + leftChevronSize + buttonSpacing;
-       constexpr int dropdownY = contentY + ((contentHeight - dropdownHeight) / 2);
+       constexpr int dropdownY = defaultPadding + ((contentHeight - dropdownHeight) / 2);
 
        // Right chevron button positioning
        constexpr int rightChevronX = dropdownX + dropdownWidth + buttonSpacing;
@@ -1538,7 +1538,7 @@ namespace LayoutConstants {
 
        // DrumKit selected label positioning - centered below dropdown
        constexpr float selectedLabelWidthPercent = 15.0f;        // 15% of interface width
-       constexpr float selectedLabelHeightPercent = 25.0f;       // 25% of content height
+       constexpr float selectedLabelHeightPercent = 80.0f;       // 80% of content height (full Row 3 space)
        constexpr int selectedLabelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (selectedLabelWidthPercent / 100.0f));
        constexpr int selectedLabelHeight = static_cast<int>(contentHeight * (selectedLabelHeightPercent / 100.0f));
        constexpr int selectedLabelX = dropdownX + ((dropdownWidth - selectedLabelWidth) / 2); // Center under dropdown
@@ -1610,19 +1610,19 @@ namespace LayoutConstants {
 
        // Group label positioning
        constexpr int groupLabelX = startX;
-       constexpr int groupLabelY = contentY + ((contentHeight - labelHeight) / 2);
+       constexpr int groupLabelY = defaultPadding + ((contentHeight - labelHeight) / 2);
 
        // Pattern group dropdown positioning
        constexpr int dropdownX = groupLabelX + groupLabelWidth + componentSpacing;
-       constexpr int dropdownY = contentY + ((contentHeight - dropdownHeight) / 2);
+       constexpr int dropdownY = defaultPadding + ((contentHeight - dropdownHeight) / 2);
 
        // Status display positioning
        constexpr int statusX = dropdownX + dropdownWidth + componentSpacing;
-       constexpr int statusY = contentY + ((contentHeight - labelHeight) / 2);
+       constexpr int statusY = defaultPadding + ((contentHeight - labelHeight) / 2);
 
        // Action buttons positioning (add, delete, etc.)
        constexpr int firstActionButtonX = statusX + statusWidth + componentSpacing;
-       constexpr int actionButtonY = contentY + ((contentHeight - buttonHeight) / 2);
+       constexpr int actionButtonY = defaultPadding + ((contentHeight - buttonHeight) / 2);
        constexpr int secondActionButtonX = firstActionButtonX + actionButtonWidth + componentSpacing;
 
        // Total width calculation for validation

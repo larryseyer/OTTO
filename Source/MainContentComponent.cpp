@@ -627,7 +627,7 @@ void MainContentComponent::setupRow3Components() {
     
     // Set onPopupRequest callback to enable HierarchicalComboBox popup functionality
     drumKitDropdown.onPopupRequest = [this]() {
-        juce::ComboBox::showPopup();
+        drumKitDropdown.juce::ComboBox::showPopup();
     };
     
     // DrumKit selected label - shows current selection with Playfair Display (following preset pattern)

@@ -903,7 +903,7 @@ void MainContentComponent::updateRow4Layout() {
     
     // Group Label positioning - left aligned with standard margin and FontManager
     patternGroupLabel.setBounds(layoutManager.scaled(Row4::groupLabelX),
-                               layoutManager.scaled(Row4::groupLabelY),
+                               layoutManager.scaled(Row4::yPosition + Row4::groupLabelY),
                                layoutManager.scaled(Row4::groupLabelWidth),
                                layoutManager.scaled(Row4::labelHeight));
     
@@ -913,13 +913,13 @@ void MainContentComponent::updateRow4Layout() {
     
     // Pattern Group Dropdown positioning - percentage-based responsive width
     patternGroupDropdown.setBounds(layoutManager.scaled(Row4::dropdownX),
-                                  layoutManager.scaled(Row4::dropdownY),
+                                  layoutManager.scaled(Row4::yPosition + Row4::dropdownY),
                                   layoutManager.scaled(Row4::dropdownWidth),
                                   layoutManager.scaled(Row4::dropdownHeight));
     
     // Status display positioning - shows pattern count information with FontManager
     patternStatusLabel.setBounds(layoutManager.scaled(Row4::statusX),
-                                layoutManager.scaled(Row4::statusY),
+                                layoutManager.scaled(Row4::yPosition + Row4::statusY),
                                 layoutManager.scaled(Row4::statusWidth),
                                 layoutManager.scaled(Row4::labelHeight));
     
@@ -929,13 +929,13 @@ void MainContentComponent::updateRow4Layout() {
     
     // Add button positioning - first action button with percentage-based sizing
     patternAddButton.setBounds(layoutManager.scaled(Row4::firstActionButtonX),
-                              layoutManager.scaled(Row4::actionButtonY),
+                              layoutManager.scaled(Row4::yPosition + Row4::actionButtonY),
                               layoutManager.scaled(Row4::actionButtonWidth),
                               layoutManager.scaled(Row4::buttonHeight));
     
     // Delete button positioning - second action button with percentage-based sizing
     patternDeleteButton.setBounds(layoutManager.scaled(Row4::secondActionButtonX),
-                                 layoutManager.scaled(Row4::actionButtonY),
+                                 layoutManager.scaled(Row4::yPosition + Row4::actionButtonY),
                                  layoutManager.scaled(Row4::actionButtonWidth),
                                  layoutManager.scaled(Row4::buttonHeight));
     

@@ -970,7 +970,7 @@ void MainContentComponent::updateRow5Layout() {
     }
     
     // Row5 main positioning - 45% of interface height (largest content area)
-    int row5Y = layoutManager.scaled(Row5::yPosition);
+    int row5Y = layoutManager.scaled(defaultPadding + ROW_3_HEIGHT + ROW_4_HEIGHT);
     int row5Height = layoutManager.scaled(Row5::height);
     
     // Left Section: 4x4 Pattern Matrix (63.5% width) - optimized for matrix display
@@ -1026,7 +1026,7 @@ void MainContentComponent::updateRow6Layout() {
     auto bounds = getLocalBounds();
     
     // Row6 positioning - 12% of interface height (compact loop controls)
-    int row6Y = layoutManager.scaled(Row6::yPosition);
+    int row6Y = layoutManager.scaled(defaultPadding + ROW_3_HEIGHT + ROW_4_HEIGHT + ROW_5_HEIGHT);
     int row6Height = layoutManager.scaled(Row6::height);
     
     // Position LoopSectionComponent across full interface width

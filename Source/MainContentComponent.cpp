@@ -597,7 +597,7 @@ void MainContentComponent::updateLayoutForPerformanceMode() {
 
 void MainContentComponent::setupRow3Components() {
     // Row 3: Player & DrumKit Controls according to GUI_REORGANIZATION_TRACKER.md
-    // [LARGE PLAYER #] [Edit] [<] [DrumKit ▼] [>] [Mute] [Mixer]
+    // [LARGE PLAYER #] [Edit] [<] [DrumKit ▼] [>] [Mixer] [Mute]
     // JUCE 8 - Configure already constructed components
     
     // Edit button for drumkit editing
@@ -828,7 +828,7 @@ void MainContentComponent::updateRow3Layout() {
     // ========================================================================
     // PHASE 3: ROW 3 CONSOLIDATION - INI-DRIVEN LAYOUT
     // ========================================================================
-    // Layout: [LARGE PLAYER #] [Edit] [<] [DrumKit ▼] [>] [Mute] [Mixer]
+    // Layout: [LARGE PLAYER #] [Edit] [<] [DrumKit ▼] [>] [Mixer] [Mute]
     // All positioning uses INIConfig::LayoutConstants::Row3::* constants
     
     using namespace INIConfig::LayoutConstants;

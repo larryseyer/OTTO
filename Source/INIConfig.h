@@ -1479,7 +1479,7 @@ namespace LayoutConstants {
 
        // CORRECTED LAYOUT: DrumKit Menu Row
        // =====================================
-       // Layout: [Edit] [<] [DrumKit ▼] [>] [Mute] [Mixer]
+       // Layout: [Edit] [<] [DrumKit ▼] [>] [Mixer] [Mute]
 
        // Large player number font size and dimensions - PERCENTAGE-BASED
        constexpr float largePlayerFontSizePercent = 70.0f;  // 70% of content height
@@ -1527,15 +1527,20 @@ namespace LayoutConstants {
        constexpr int rightChevronSize = buttonSize;
 
 
-       // Mixer button positioning (rightmost)
-       constexpr int mixerButtonX = Defaults::DEFAULT_INTERFACE_WIDTH - defaultMargin - buttonSize;
-       constexpr int mixerButtonY = editButtonY;
-       constexpr int mixerButtonSize = buttonSize;
+       // Mixer button positioning (second from right) - SWAPPED WITH MUTE
 
-       // Mute button positioning (just to the left of mixer button) - MOVED AFTER MIXER DECLARATION
-       constexpr int muteButtonX = mixerButtonX - buttonSize - buttonSpacing;
+
+
+
+       // Mute button positioning (rightmost) - SWAPPED WITH MIXER
+       constexpr int muteButtonX = Defaults::DEFAULT_INTERFACE_WIDTH - defaultMargin - buttonSize;
        constexpr int muteButtonY = editButtonY;
        constexpr int muteButtonSize = buttonSize;
+
+       // Mixer button positioning (second from right) - SWAPPED WITH MUTE
+       constexpr int mixerButtonX = muteButtonX - buttonSize - buttonSpacing;
+       constexpr int mixerButtonY = editButtonY;
+       constexpr int mixerButtonSize = buttonSize;
 
        // DrumKit selected label positioning - centered below dropdown
        constexpr float selectedLabelWidthPercent = 15.0f;        // 15% of interface width
@@ -1546,7 +1551,7 @@ namespace LayoutConstants {
        constexpr int selectedLabelY = contentY + ((contentHeight - selectedLabelHeight) / 2); // Center in Row 3
 
        // Total width calculation for validation
-       constexpr int totalUsedWidth = mixerButtonX + mixerButtonSize + defaultMargin - startX;
+       constexpr int totalUsedWidth = muteButtonX + muteButtonSize + defaultMargin - startX;
 
        // Ensure all components fit within interface width
        static_assert(totalUsedWidth <= Defaults::DEFAULT_INTERFACE_WIDTH,

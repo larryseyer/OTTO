@@ -299,6 +299,12 @@ juce::Font CustomLookAndFeel::getLabelFont(juce::Label& label) {
         return fontManager.getFont(FontManager::FontRole::Numeric, playerNumberSize * sizeMult);
     }
 
+    if (componentID == "drumkit_selected_label") {
+        // DrumKit label uses same font pattern as preset label for consistency
+        float fontSize = INIConfig::LayoutConstants::Row1::ottoHeight * INIConfig::LayoutConstants::fontSizePresetLabelReduced;
+        return fontManager.getFont(FontManager::FontRole::Header, fontSize * sizeMult);
+    }
+
     return fontManager.getFont(FontManager::FontRole::Body, INIConfig::LayoutConstants::fontSizeBody * sizeMult);
 }
 
@@ -344,6 +350,12 @@ juce::Font CustomLookAndFeel::getComboBoxFont(juce::ComboBox& comboBox) {
     if (comboBox.getComponentID() == "presets_menu") {
         return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenuReduced);
     }
+    
+    // Check if this is the drumkit dropdown - use same styling as preset menu
+    if (comboBox.getComponentID() == "drumkit_dropdown") {
+        return fontManager.getFont(FontManager::FontRole::Header, INIConfig::LayoutConstants::fontSizePresetMenuReduced);
+    }
+    
     return fontManager.getFont(FontManager::FontRole::Body, INIConfig::LayoutConstants::fontSizeBody);
 }
 

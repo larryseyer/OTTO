@@ -64,6 +64,9 @@ DrumKitSelectionWindow::DrumKitSelectionWindow(PresetManager& pm,
     // Apply JUCE 8 window styling
     setUsingNativeTitleBar(true);
     
+    // Ensure window is always on top when shown and has proper decorations
+    setAlwaysOnTop(true);
+    
     // Start invisible - will be shown when requested
     setVisible(false);
 }

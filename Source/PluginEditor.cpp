@@ -406,12 +406,14 @@ void OTTOAudioProcessorEditor::createComponents()
                 "DrumKitSelectionWindow"
             );
             
-            if (!drumKitPopup) {
+            if (drumKitPopup) {
+                // Don't add DocumentWindow as child - it manages itself
+                drumKitPopup->setVisible(false); // Initially hidden
+            } else {
                 DBG("PluginEditor: Failed to create DrumKitSelectionWindow");
             }
         } else {
-            DBG("PluginEditor: Cannot create DrumKitPopup - dataManager is null");
-        }
+            DBG("PluginEditor: Cannot create DrumKitPopup - dataManager is null");        }
 
         // Null-pointer safety: Create MainContentComponent with error handling
         mainContent = ErrorHandler::safeCreate<MainContentComponent>(
@@ -517,7 +519,11 @@ void OTTOAudioProcessorEditor::setupCallbacks()
         mainContent->onDrumKitPopupRequested = [this]() {
             showDrumKitPopup();
         };
-    }
+        
+        // Connect Mixer popup trigger
+        mainContent->onMixerPopupRequested = [this]() {
+            showMixerPopup();
+        };    }
 }
 
 void OTTOAudioProcessorEditor::paint(juce::Graphics& g)
@@ -889,8 +895,20 @@ void OTTOAudioProcessorEditor::showDrumKitPopup()
         // Load current state
         drumKitPopup->loadStates(componentState);
         
+        
+        // Center the popup relative to the main window
+        auto mainBounds = getBounds();
+        drumKitPopup->centreAroundComponent(this, drumKitPopup->getWidth(), drumKitPopup->getHeight());
+        
         // Show and bring to front
         drumKitPopup->setVisible(true);
         drumKitPopup->toFront(true);
     }
+}
+
+void OTTOAudioProcessorEditor::showMixerPopup()
+{
+    // TODO: Implement mixer popup window
+    // For now, show a debug message
+    DBG("Mixer popup requested - implementation needed");
 }

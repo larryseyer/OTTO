@@ -1536,6 +1536,14 @@ namespace LayoutConstants {
        constexpr int mixerButtonY = editButtonY;
        constexpr int mixerButtonSize = buttonSize;
 
+       // DrumKit selected label positioning - centered below dropdown
+       constexpr float selectedLabelWidthPercent = 15.0f;        // 15% of interface width
+       constexpr float selectedLabelHeightPercent = 25.0f;       // 25% of content height
+       constexpr int selectedLabelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (selectedLabelWidthPercent / 100.0f));
+       constexpr int selectedLabelHeight = static_cast<int>(contentHeight * (selectedLabelHeightPercent / 100.0f));
+       constexpr int selectedLabelX = dropdownX + ((dropdownWidth - selectedLabelWidth) / 2); // Center under dropdown
+       constexpr int selectedLabelY = contentY + contentHeight - selectedLabelHeight - (buttonSpacing / 2); // Bottom of Row 3 with small gap
+
        // Total width calculation for validation
        constexpr int totalUsedWidth = mixerButtonX + mixerButtonSize + defaultMargin - startX;
 

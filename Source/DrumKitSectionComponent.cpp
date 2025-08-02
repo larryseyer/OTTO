@@ -23,7 +23,8 @@ DrumKitSectionComponent::DrumKitSectionComponent(PresetManager& pm,
 
     drumkitLabel = std::make_unique<juce::Label>("", "Drumkit:");
     drumkitLabel->setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(*drumkitLabel);
+    // Hide drumkit label - now handled in MainContentComponent Row 3
+    // addAndMakeVisible(*drumkitLabel);
 
     sfzFileLabel = std::make_unique<juce::Label>("", "SFZ File:");
     sfzFileLabel->setJustificationType(juce::Justification::centredLeft);
@@ -132,7 +133,8 @@ void DrumKitSectionComponent::resized()
    powerButton->setBounds(powerBounds.removeFromRight(layoutManager.scaled(INIConfig::LayoutConstants::drumKitPowerButtonWidth)));
    bounds.removeFromTop(spacing);
 
-   drumkitLabel->setBounds(bounds.removeFromTop(labelHeight));
+   // Hide drumkit label - now handled in MainContentComponent Row 3
+   // drumkitLabel->setBounds(bounds.removeFromTop(labelHeight));
    bounds.removeFromTop(spacing);
    drumkitComboBox->setBounds(bounds.removeFromTop(comboHeight));
    bounds.removeFromTop(spacing * 2);

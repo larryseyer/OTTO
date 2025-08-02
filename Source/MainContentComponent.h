@@ -70,6 +70,14 @@ public:
     void setLivePerformanceMode(bool enabled);
     bool isLivePerformanceMode() const { return livePerformanceMode; }
     void showSceneLauncher(bool show);
+    
+    void updateDrumKitList(const juce::StringArray& drumkitNames);
+    void setSelectedDrumKit(const juce::String& drumkitName);
+    void updateDrumKitDisplayToggle();
+    void showDrumKitLabel();
+    void showDrumKitMenu();
+    
+    void mouseDown(const juce::MouseEvent& event) override;
 
     std::function<void(bool)> onEditModeChanged;
     std::function<void(int, const juce::String&)> onMidiFileChanged;
@@ -77,6 +85,8 @@ public:
     std::function<void()> onGrooveAndFillsRequested;
     std::function<void(ComponentState&)> onStateChanged;
     std::function<void()> onDrumKitPopupRequested;
+    std::function<void()> onMixerPopupRequested;
+    std::function<void(const juce::String&)> onDrumKitChanged;
 
 private:
     MidiEngine& midiEngine;
@@ -99,6 +109,9 @@ private:
     PhosphorIconButton drumKitRightChevron;
     PhosphorIconButton drumKitMuteButton;
     PhosphorIconButton drumKitMixerButton;
+    juce::Label drumKitSelectedLabel;  // Shows currently selected drumkit name
+    
+    bool showingDrumKitLabel = true;  // Toggle state: true = show label, false = show menu
     
     // Row 4: Pattern Group Controls
     juce::Label patternGroupLabel;
@@ -133,6 +146,7 @@ private:
     void updateRow4Layout();
     void updateRow5Layout();
     void updateRow6Layout();
+    void handleDrumKitChevrons(bool isRight);
     
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);

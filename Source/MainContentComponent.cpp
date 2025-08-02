@@ -164,7 +164,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     // TEMPORARY: Add row identification labels for debugging
     addAndMakeVisible(rowLabel1);
     addAndMakeVisible(rowLabel2);
-    addAndMakeVisible(rowLabel3);
+    // addAndMakeVisible(rowLabel3); // Removed debug label
     addAndMakeVisible(rowLabel4);
     addAndMakeVisible(rowLabel5);
     addAndMakeVisible(rowLabel6);
@@ -179,6 +179,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     rhythmLabel.setText("PLAYER", juce::dontSendNotification);
     rhythmLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     rhythmLabel.setJustificationType(juce::Justification::centredRight);
+    rhythmLabel.setVisible(false); // Hide the PLAYER label - not needed in Row 3
 
     // PHASE 3: Player number now positioned and styled in Row 3
 
@@ -197,7 +198,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     
     setupRowLabel(rowLabel1, "ROW 1");
     setupRowLabel(rowLabel2, "ROW 2");
-    setupRowLabel(rowLabel3, "ROW 3");
+    // setupRowLabel(rowLabel3, "ROW 3"); // Removed debug label
     setupRowLabel(rowLabel4, "ROW 4");
     setupRowLabel(rowLabel5, "ROW 5");
     setupRowLabel(rowLabel6, "ROW 6");
@@ -609,7 +610,37 @@ void MainContentComponent::setupRow3Components() {
     drumKitDropdown.setComponentID("drumkit_dropdown");
     drumKitDropdown.addListener(this);
     drumKitDropdown.setTextWhenNothingSelected("Select DrumKit");
+    // Add sample drumkits for testing
+    drumKitDropdown.addItem("808 Classic", 1);
+    drumKitDropdown.addItem("Trap Kit", 2);
+    drumKitDropdown.addItem("House Kit", 3);
+    drumKitDropdown.addItem("Techno Kit", 4);
+    drumKitDropdown.addItem("Hip Hop Kit", 5);
+    drumKitDropdown.setSelectedId(1, juce::dontSendNotification); // Default selection
+    
+    // Apply Playfair Display font to dropdown using JUCE 8 patterns and CustomLookAndFeel
+    drumKitDropdown.setLookAndFeel(&getLookAndFeel()); // Ensures CustomLookAndFeel::getComboBoxFont is used
+    drumKitDropdown.setColour(juce::ComboBox::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    drumKitDropdown.setColour(juce::ComboBox::backgroundColourId, colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
+    
     addAndMakeVisible(drumKitDropdown);
+    
+    // DrumKit selected label - shows current selection with Playfair Display (following preset pattern)
+    drumKitSelectedLabel.setComponentID("drumkit_selected_label");
+    drumKitSelectedLabel.setText("808 Classic", juce::dontSendNotification); // Default to match dropdown
+    drumKitSelectedLabel.setJustificationType(juce::Justification::centred);
+    // Font will be set automatically by CustomLookAndFeel::getLabelFont via component ID
+    drumKitSelectedLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    drumKitSelectedLabel.setColour(juce::Label::backgroundColourId, colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
+    
+    // Make drumkit label clickable (following preset pattern)
+    drumKitSelectedLabel.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    drumKitSelectedLabel.addMouseListener(this, false);
+    
+    addAndMakeVisible(drumKitSelectedLabel);
+    
+    // Initialize drumkit display toggle state (following preset pattern)
+    updateDrumKitDisplayToggle();
     
     // Right chevron for next drumkit  
     drumKitRightChevron.setComponentID("drumkit_right_chevron");
@@ -711,20 +742,28 @@ void MainContentComponent::buttonClicked(juce::Button* button) {
     }
     else if (button == &drumKitLeftChevron) {
         // Handle previous drumkit
-        // TODO: Implement drumkit navigation
+        handleDrumKitChevrons(false);
     }
     else if (button == &drumKitRightChevron) {
         // Handle next drumkit
-        // TODO: Implement drumkit navigation
+        handleDrumKitChevrons(true);
     }
     else if (button == &drumKitMuteButton) {
         // Handle drumkit mute
-        // TODO: Implement drumkit mute
+        // Handle drumkit mute toggle
+        static bool isMuted = false;
+        isMuted = !isMuted;
+        
+        // Update button visual state
+        drumKitMuteButton.setToggleState(isMuted, juce::dontSendNotification);
+        
+        // TODO: Connect to actual mute functionality when audio engine is ready
+        DBG("DrumKit mute toggled: " << (isMuted ? "MUTED" : "UNMUTED"));
     }
     else if (button == &drumKitMixerButton) {
         // Handle drumkit mixer popup
-        if (onDrumKitPopupRequested) {
-            onDrumKitPopupRequested();
+        if (onMixerPopupRequested) {
+            onMixerPopupRequested();
         }
     }
     // Row 4: Pattern Group Controls button handling
@@ -740,9 +779,22 @@ void MainContentComponent::buttonClicked(juce::Button* button) {
 
 void MainContentComponent::comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) {
     if (comboBoxThatHasChanged == &drumKitDropdown) {
-        // DrumKit dropdown changed - trigger popup for selection
-        if (onDrumKitPopupRequested) {
-            onDrumKitPopupRequested();
+        // Handle normal dropdown selection
+        int selectedId = drumKitDropdown.getSelectedId();
+        juce::String selectedText = drumKitDropdown.getText();
+        // Update the selected label with Playfair Display font
+        drumKitSelectedLabel.setText(selectedText, juce::dontSendNotification);
+        drumKitSelectedLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 16.0f)); // Ensure Playfair Display
+        
+        DBG("DrumKit selected: " << selectedText << " (ID: " << selectedId << ")");
+        
+        // Hide menu after selection (following preset pattern)
+        showingDrumKitLabel = true;
+        updateDrumKitDisplayToggle();
+        
+        // Notify parent component of drumkit change
+        if (onDrumKitChanged) {
+            onDrumKitChanged(selectedText);
         }
     }
     else if (comboBoxThatHasChanged == &patternGroupDropdown) {
@@ -778,40 +830,57 @@ void MainContentComponent::updateRow3Layout() {
 // MOVED TO ROW 2:     playerNumber.setFont(playerFont);
     
     // Edit button - positioned using INI constants
-    drumKitEditButton.setBounds(layoutManager.scaled(Row3::editButtonX),
-                               layoutManager.scaled(Row3::editButtonY),
+    drumKitEditButton.setBounds(layoutManager.scaled(defaultMargin),
+                               layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::buttonSize) / 2)),
                                layoutManager.scaled(Row3::editButtonSize),
                                layoutManager.scaled(Row3::editButtonSize));
     
     // Left chevron - positioned using INI constants
-    drumKitLeftChevron.setBounds(layoutManager.scaled(Row3::leftChevronX),
-                                layoutManager.scaled(Row3::leftChevronY),
-                                layoutManager.scaled(Row3::leftChevronSize),
-                                layoutManager.scaled(Row3::leftChevronSize));
+    // CENTER THE CHEVRON-DROPDOWN-CHEVRON TRIO
+    const int buttonY = layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::buttonSize) / 2));
+    const int chevronSize = layoutManager.scaled(Row3::leftChevronSize);
+    const int dropdownWidth = layoutManager.scaled(300); // Fixed width for dropdown
+    const int dropdownHeight = layoutManager.scaled(Row3::dropdownHeight);
+    const int spacing = layoutManager.scaled(8); // Spacing between elements
     
-    // DrumKit dropdown - positioned using INI constants with responsive width
-    drumKitDropdown.setBounds(layoutManager.scaled(Row3::dropdownX),
-                             layoutManager.scaled(Row3::dropdownY),
-                             layoutManager.scaled(Row3::dropdownWidth),
-                             layoutManager.scaled(Row3::dropdownHeight));
+    // Calculate total width of the trio
+    const int trioWidth = chevronSize + spacing + dropdownWidth + spacing + chevronSize;
+    const int startX = (getWidth() - trioWidth) / 2; // Center horizontally
     
-    // Right chevron - positioned using INI constants
-    drumKitRightChevron.setBounds(layoutManager.scaled(Row3::rightChevronX),
-                                 layoutManager.scaled(Row3::rightChevronY),
-                                 layoutManager.scaled(Row3::rightChevronSize),
-                                 layoutManager.scaled(Row3::rightChevronSize));
+    // Left chevron - centered trio positioning
+    drumKitLeftChevron.setBounds(startX,
+                                buttonY,
+                                chevronSize,
+                                chevronSize);
+    
+    // DrumKit dropdown - centered trio positioning
+    drumKitDropdown.setBounds(startX + chevronSize + spacing,
+                             layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::dropdownHeight) / 2)),
+                             dropdownWidth,
+                             dropdownHeight);
+    
+    // Right chevron - centered trio positioning
+    drumKitRightChevron.setBounds(startX + chevronSize + spacing + dropdownWidth + spacing,
+                                 buttonY,
+                                 chevronSize,
+                                 chevronSize);
     
     // Mute button - positioned using INI constants
-    drumKitMuteButton.setBounds(layoutManager.scaled(Row3::muteButtonX),
-                               layoutManager.scaled(Row3::muteButtonY),
+    drumKitMuteButton.setBounds(startX + chevronSize + spacing + dropdownWidth + spacing + chevronSize + spacing,
+                               buttonY,
                                layoutManager.scaled(Row3::muteButtonSize),
                                layoutManager.scaled(Row3::muteButtonSize));
-    
-    // Mixer button - positioned using INI constants
-    drumKitMixerButton.setBounds(layoutManager.scaled(Row3::mixerButtonX),
-                                layoutManager.scaled(Row3::mixerButtonY),
+        // Mixer button - positioned using INI constants
+    drumKitMixerButton.setBounds(getWidth() - layoutManager.scaled(defaultMargin + Row3::mixerButtonSize),
+                                layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::mixerButtonSize) / 2)),
                                 layoutManager.scaled(Row3::mixerButtonSize),
                                 layoutManager.scaled(Row3::mixerButtonSize));
+    
+    // DrumKit selected label - positioned using INI constants with Playfair Display font
+    drumKitSelectedLabel.setBounds(startX + chevronSize + spacing + ((dropdownWidth - layoutManager.scaled(Row3::selectedLabelWidth)) / 2),
+                                  layoutManager.scaled(Row3::selectedLabelY),
+                                  layoutManager.scaled(Row3::selectedLabelWidth),
+                                  layoutManager.scaled(Row3::selectedLabelHeight));
     
     // ========================================================================
     // VALIDATION: Ensure all components fit within Row 3 bounds  
@@ -1156,3 +1225,116 @@ void MainContentComponent::performIntegrationValidation(const juce::Rectangle<in
 
 
 
+
+void MainContentComponent::handleDrumKitChevrons(bool isRight) {
+    // Get current drumkit selection from dropdown
+    int currentIndex = drumKitDropdown.getSelectedId() - 1; // ComboBox IDs start at 1
+    int itemCount = drumKitDropdown.getNumItems();
+    
+    if (itemCount > 0) {
+        if (isRight) {
+            // Next drumkit (increment with wrap-around)
+            currentIndex = (currentIndex + 1) % itemCount;
+        } else {
+            // Previous drumkit (decrement with wrap-around)
+            currentIndex = (currentIndex - 1 + itemCount) % itemCount;
+        }
+        
+        // Update dropdown selection (ComboBox IDs start at 1)
+        drumKitDropdown.setSelectedId(currentIndex + 1, juce::dontSendNotification);
+        
+        // Update the selected label with Playfair Display font
+        juce::String selectedText = drumKitDropdown.getText();
+        drumKitSelectedLabel.setText(selectedText, juce::dontSendNotification);
+        drumKitSelectedLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 16.0f)); // Ensure Playfair Display
+        
+        // Ensure label is shown after chevron navigation (following preset pattern)
+        showDrumKitLabel();
+        
+        // Notify parent component of drumkit change
+        if (onDrumKitChanged) {
+            onDrumKitChanged(selectedText);
+        }
+        
+        // Trigger the dropdown's change callback if it exists
+        if (drumKitDropdown.onChange) {
+            drumKitDropdown.onChange();
+        }
+    }
+}
+
+void MainContentComponent::updateDrumKitList(const juce::StringArray& drumkitNames) {
+    // Clear existing items and repopulate with new drumkit list
+    drumKitDropdown.clear(juce::dontSendNotification);
+    
+    // Add drumkits to dropdown with proper IDs (starting from 1)
+    for (int i = 0; i < drumkitNames.size(); ++i) {
+        drumKitDropdown.addItem(drumkitNames[i], i + 1);
+    }
+    
+    // Set default selection if items exist
+    if (drumkitNames.size() > 0) {
+        drumKitDropdown.setSelectedId(1, juce::dontSendNotification);
+        // Update label with Playfair Display font
+        drumKitSelectedLabel.setText(drumkitNames[0], juce::dontSendNotification);
+        drumKitSelectedLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 16.0f));
+    } else {
+        drumKitSelectedLabel.setText("No DrumKits", juce::dontSendNotification);
+        drumKitSelectedLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 16.0f));
+    }
+}
+
+void MainContentComponent::setSelectedDrumKit(const juce::String& drumkitName) {
+    // Find the drumkit in the dropdown and select it
+    for (int i = 0; i < drumKitDropdown.getNumItems(); ++i) {
+        if (drumKitDropdown.getItemText(i) == drumkitName) {
+            drumKitDropdown.setSelectedId(i + 1, juce::dontSendNotification);
+            // Update label with Playfair Display font
+            drumKitSelectedLabel.setText(drumkitName, juce::dontSendNotification);
+            drumKitSelectedLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 16.0f));
+            
+            // Notify parent component
+            if (onDrumKitChanged) {
+                onDrumKitChanged(drumkitName);
+            }
+            break;
+        }
+    }
+}
+
+void MainContentComponent::updateDrumKitDisplayToggle() {
+    if (showingDrumKitLabel) {
+        // Show large drumkit label, hide dropdown menu (following preset pattern)
+        drumKitSelectedLabel.setVisible(true);
+        drumKitDropdown.setVisible(false);
+    } else {
+        // Show dropdown menu, hide large drumkit label (following preset pattern)
+        drumKitSelectedLabel.setVisible(false);
+        drumKitDropdown.setVisible(true);
+    }
+}
+
+void MainContentComponent::showDrumKitLabel() {
+    showingDrumKitLabel = true;
+    updateDrumKitDisplayToggle();
+}
+
+void MainContentComponent::showDrumKitMenu() {
+    showingDrumKitLabel = false;
+    updateDrumKitDisplayToggle();
+    
+    // Focus on the dropdown to show it (following preset pattern)
+    drumKitDropdown.showPopup();
+}
+
+void MainContentComponent::mouseDown(const juce::MouseEvent& event) {
+    // Handle drumkit label clicks (following TopBarComponent pattern)
+    if (event.eventComponent == &drumKitSelectedLabel && showingDrumKitLabel) {
+        // User clicked the drumkit label - show menu
+        showDrumKitMenu();
+        return;
+    }
+    
+    // Call parent implementation for other mouse events
+    juce::Component::mouseDown(event);
+}

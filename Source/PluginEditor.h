@@ -49,7 +49,7 @@ private:
 
     void showSettingsPanel();
     void showDrumKitPopup();
-    int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
+    void showMixerPopup();    int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     bool isInitialized = false;
     void initializeManagers();
     void createComponents();

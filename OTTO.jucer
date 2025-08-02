@@ -357,7 +357,6 @@
                 file="Assets/MidiFiles/Fills/80's Brit Rock Fill 15.MID"/>
           <FILE id="h8LjdC" name="80's Brit Rock Fill 16.MID" compile="0" resource="1"
                 file="Assets/MidiFiles/Fills/80's Brit Rock Fill 16.MID"/>
-          <FILE id="pgheZG" name="go.sh" compile="0" resource="1" file="Assets/MidiFiles/Fills/go.sh"/>
         </GROUP>
         <GROUP id="{8BBA12FF-9716-323B-7FB4-54388D2C9687}" name="Grooves">
           <FILE id="ClJifO" name="70's Rock.MID" compile="0" resource="1" file="Assets/MidiFiles/Grooves/70's Rock.MID"/>

@@ -4,42 +4,6 @@ All notable changes to the OTTO project will be documented in this file.
 
 ## [Unreleased] - 2025-01-XX
 
-### ✅ **LAYOUT: Row 3 Mixer and Mute Button Position Swap**
-
-#### **🎯 UI Layout Optimization**
-
-**Objective:**
-- Swapped positions of Mixer and Mute buttons in Row 3 to improve user workflow
-- Mute button moved to rightmost position for easier access
-- Mixer button moved to second-from-right position
-
-**Implementation:**
-- Updated INIConfig::LayoutConstants::Row3 button positioning constants
-- Modified layout comment from `[Edit] [<] [DrumKit ▼] [>] [Mute] [Mixer]` to `[Edit] [<] [DrumKit ▼] [>] [Mixer] [Mute]`
-- Reordered variable declarations to resolve forward reference compilation issues
-- Updated MainContentComponent.cpp layout comments to reflect new order
-
-**Technical Details:**
-```cpp
-// INIConfig.h - Updated positioning
-// Mute button (rightmost)
-constexpr int muteButtonX = Defaults::DEFAULT_INTERFACE_WIDTH - defaultMargin - buttonSize;
-
-// Mixer button (second from right)  
-constexpr int mixerButtonX = muteButtonX - buttonSize - buttonSpacing;
-
-// Updated total width calculation
-constexpr int totalUsedWidth = muteButtonX + muteButtonSize + defaultMargin - startX;
-```
-
-**Results:**
-- ✅ Mute button now rightmost in Row 3 layout
-- ✅ Mixer button positioned second from right
-- ✅ Resolved compilation errors (forward reference and duplicate declarations)
-- ✅ Successfully builds on macOS (Standalone, VST3, AU, CLAP)
-- ✅ Maintains INI-driven responsive layout system
-- ✅ Preserves all existing functionality and JUCE 8 compliance
-
 ### ✅ **IMPROVED: Preset Menu Font Size Reduction**
 
 #### **🎯 Visual Balance Enhancement**

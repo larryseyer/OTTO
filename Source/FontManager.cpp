@@ -18,7 +18,7 @@ const std::map<juce::String, juce::uint32> FontManager::iconMappings = {
     {"chevron-right", 0xE13A},
 
     {"speaker-high", 0xEA77}, {"volume", 0xEA77},
-    {"speaker-x", 0xEA7C}, {"mute", 0xEA7C},
+    {"speaker-x", 0xEA7C}, {"mute", 0xE456}, {"unmute", 0xE44A},
     {"speaker-low", 0xEA78},
     {"microphone", 0xE9BD},
 

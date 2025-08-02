@@ -111,6 +111,7 @@ public:
     void setPhosphorWeight(FontManager::PhosphorWeight weight);
     FontManager::PhosphorWeight getPhosphorWeight() const { return phosphorWeight; }
     juce::String getIconName() const { return iconName; }
+    void setIconName(const juce::String& newIconName);
 
     void paintButton(juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
 

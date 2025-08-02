@@ -767,3 +767,8 @@ void EffectButton::paintButton(juce::Graphics& g, bool shouldDrawButtonAsHighlig
                INIConfig::LayoutConstants::effectButtonBypassLineWidth);
  }
 }
+
+void PhosphorIconButton::setIconName(const juce::String& newIconName) {
+    iconName = newIconName;
+    repaint();
+}

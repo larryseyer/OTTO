@@ -54,6 +54,7 @@
 #include "MainContentComponentRightSection.h"
 #include "SceneLauncherComponent.h"
 #include "LoopSectionComponent.h"
+#include "Mixer.h"
 #include "INIConfig.h"
 #include "INIDataManager.h"
 #include "ErrorHandling.h"
@@ -110,7 +111,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
       drumKitEditButton("pencil", FontManager::PhosphorWeight::Regular),        // Toggle edit mode for pattern editing
       drumKitLeftChevron("caret-left", FontManager::PhosphorWeight::Regular),   // Navigate to previous drum kit
       drumKitRightChevron("caret-right", FontManager::PhosphorWeight::Regular), // Navigate to next drum kit
-      drumKitMuteButton("speaker-slash", FontManager::PhosphorWeight::Regular), // Mute/unmute current player
+      drumKitMuteButton("unmute", FontManager::PhosphorWeight::Regular), // Mute/unmute current player
       drumKitMixerButton("mixer", FontManager::PhosphorWeight::Regular),        // Open mixer window
       
       // ROW 4 COMPONENTS: Pattern management buttons for add/remove operations
@@ -225,6 +226,11 @@ MainContentComponent::~MainContentComponent() {
 
 void MainContentComponent::updatePlayerDisplay(int playerIndex) {
     currentPlayerIndex = INIConfig::clampPlayerIndex(playerIndex);
+    
+    // Update mute button state and icon to reflect current player's mute status
+    bool isCurrentPlayerMuted = mixer.isChannelMuted(currentPlayerIndex);
+    drumKitMuteButton.setToggleState(isCurrentPlayerMuted, juce::dontSendNotification);
+    drumKitMuteButton.setIconName(isCurrentPlayerMuted ? "mute" : "unmute");
 
 }
 
@@ -658,6 +664,10 @@ void MainContentComponent::setupRow3Components() {
     drumKitMuteButton.setComponentID("drumkit_mute_button");
     drumKitMuteButton.setColorScheme(&colorScheme);
     drumKitMuteButton.addListener(this);
+    // Initialize mute button state and icon based on current player's mute status
+    bool isCurrentPlayerMuted = mixer.isChannelMuted(currentPlayerIndex);
+    drumKitMuteButton.setToggleState(isCurrentPlayerMuted, juce::dontSendNotification);
+    drumKitMuteButton.setIconName(isCurrentPlayerMuted ? "mute" : "unmute");
     addAndMakeVisible(drumKitMuteButton);
     
     // Mixer button for drumkit mixer popup
@@ -756,15 +766,18 @@ void MainContentComponent::buttonClicked(juce::Button* button) {
     }
     else if (button == &drumKitMuteButton) {
         // Handle drumkit mute
-        // Handle drumkit mute toggle
-        static bool isMuted = false;
-        isMuted = !isMuted;
+        // Handle player mute toggle - mute/unmute the currently selected player
+        bool currentMuteState = mixer.isChannelMuted(currentPlayerIndex);
+        bool newMuteState = !currentMuteState;
         
-        // Update button visual state
-        drumKitMuteButton.setToggleState(isMuted, juce::dontSendNotification);
+        // Update mixer state
+        mixer.setChannelMute(currentPlayerIndex, newMuteState);
         
-        // TODO: Connect to actual mute functionality when audio engine is ready
-        DBG("DrumKit mute toggled: " << (isMuted ? "MUTED" : "UNMUTED"));
+        // Update button visual state and icon
+        drumKitMuteButton.setToggleState(newMuteState, juce::dontSendNotification);
+        drumKitMuteButton.setIconName(newMuteState ? "mute" : "unmute");
+        
+        DBG("Player " << (currentPlayerIndex + 1) << " mute toggled: " << (newMuteState ? "MUTED" : "UNMUTED"));
     }
     else if (button == &drumKitMixerButton) {
         // Handle drumkit mixer popup
@@ -870,14 +883,15 @@ void MainContentComponent::updateRow3Layout() {
                                  chevronSize,
                                  chevronSize);
     
-    // Mute button - positioned using INI constants
-    drumKitMuteButton.setBounds(startX + chevronSize + spacing + dropdownWidth + spacing + chevronSize + spacing,
-                               buttonY,
+    // Mute button - positioned using INI constants with coordinate system adjustment
+    // Note: Row3 Y positions are absolute from interface top, subtract ROW_3_Y for MainContentComponent coordinates
+    drumKitMuteButton.setBounds(layoutManager.scaled(Row3::muteButtonX),
+                               layoutManager.scaled(Row3::muteButtonY) - layoutManager.scaled(ROW_3_Y),
                                layoutManager.scaled(Row3::muteButtonSize),
                                layoutManager.scaled(Row3::muteButtonSize));
-        // Mixer button - positioned using INI constants
-    drumKitMixerButton.setBounds(getWidth() - layoutManager.scaled(defaultMargin + Row3::mixerButtonSize),
-                                layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::mixerButtonSize) / 2)),
+    // Mixer button - positioned using INI constants (rightmost) with coordinate system adjustment
+    drumKitMixerButton.setBounds(layoutManager.scaled(Row3::mixerButtonX),
+                                layoutManager.scaled(Row3::mixerButtonY) - layoutManager.scaled(ROW_3_Y),
                                 layoutManager.scaled(Row3::mixerButtonSize),
                                 layoutManager.scaled(Row3::mixerButtonSize));
     

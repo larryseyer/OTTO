@@ -1526,15 +1526,16 @@ namespace LayoutConstants {
        constexpr int rightChevronY = editButtonY;
        constexpr int rightChevronSize = buttonSize;
 
-       // Mute button positioning
-       constexpr int muteButtonX = rightChevronX + rightChevronSize + buttonSpacing;
-       constexpr int muteButtonY = editButtonY;
-       constexpr int muteButtonSize = buttonSize;
 
        // Mixer button positioning (rightmost)
-       constexpr int mixerButtonX = muteButtonX + muteButtonSize + buttonSpacing;
+       constexpr int mixerButtonX = Defaults::DEFAULT_INTERFACE_WIDTH - defaultMargin - buttonSize;
        constexpr int mixerButtonY = editButtonY;
        constexpr int mixerButtonSize = buttonSize;
+
+       // Mute button positioning (just to the left of mixer button) - MOVED AFTER MIXER DECLARATION
+       constexpr int muteButtonX = mixerButtonX - buttonSize - buttonSpacing;
+       constexpr int muteButtonY = editButtonY;
+       constexpr int muteButtonSize = buttonSize;
 
        // DrumKit selected label positioning - centered below dropdown
        constexpr float selectedLabelWidthPercent = 15.0f;        // 15% of interface width

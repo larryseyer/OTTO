@@ -876,11 +876,11 @@ void MainContentComponent::updateRow3Layout() {
                                 layoutManager.scaled(Row3::mixerButtonSize),
                                 layoutManager.scaled(Row3::mixerButtonSize));
     
-    // DrumKit selected label - positioned using INI constants with Playfair Display font
-    drumKitSelectedLabel.setBounds(startX + chevronSize + spacing + ((dropdownWidth - layoutManager.scaled(Row3::selectedLabelWidth)) / 2),
-                                  layoutManager.scaled(Row3::selectedLabelY),
-                                  layoutManager.scaled(Row3::selectedLabelWidth),
-                                  layoutManager.scaled(Row3::selectedLabelHeight));
+    // DrumKit selected label - positioned using IDENTICAL bounds as dropdown (following preset pattern)
+    drumKitSelectedLabel.setBounds(startX + chevronSize + spacing,
+                                  layoutManager.scaled(defaultPadding + ((Row3::contentHeight - Row3::dropdownHeight) / 2)),
+                                  dropdownWidth,
+                                  dropdownHeight);
     
     // ========================================================================
     // VALIDATION: Ensure all components fit within Row 3 bounds  

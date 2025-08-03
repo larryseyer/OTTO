@@ -31,7 +31,7 @@
  *
  * @author OTTO Development Team
  * @version 2.0
- * @date 2024
+ * @date 2025
  */
 
 #pragma once
@@ -208,12 +208,6 @@ namespace INIConfig {
         /** @brief Default window Y position on screen (used by PluginEditor.cpp) */
         static const int DEFAULT_INTERFACE_Y = 100;
 
-        /** @brief Legacy window X position constant (backward compatibility) */
-        static const int DEFAULT_WINDOW_X = 100;
-
-        /** @brief Legacy window Y position constant (backward compatibility) */
-        static const int DEFAULT_WINDOW_Y = 100;
-
         /** @brief Base UI scale factor for interface elements (used by CustomLookAndFeel.cpp) */
         static const float DEFAULT_INTERFACE_SCALE = 1.0f;
 
@@ -260,7 +254,7 @@ namespace INIConfig {
         static const int DEFAULT_QUANTIZE_VALUE = 16;
 
         /** @brief Default count-in duration in bars */
-        static const int DEFAULT_COUNT_IN_BARS = 1;
+        static const int DEFAULT_COUNT_IN_BARS = 0;
 
         // ========================================================================
         // AUDIO ENGINE SETTINGS
@@ -313,8 +307,8 @@ namespace INIConfig {
         // These settings control the musical behavior and player state management.
         // Used by: PlayerTabsComponent.cpp, MainContentComponent.cpp, PatternManager.cpp
 
-        /** @brief Default drum kit selection ("Acoustic", "Electronic", "Vintage") */
-        static const juce::String DEFAULT_DRUMKIT = "Acoustic";
+        /** @brief Default drum kit selection (Get this list from our 'assets' path and/or use data path) */
+        static const juce::String DEFAULT_DRUMKIT = "Default";
 
         /** @brief Default player enabled state (each of 8 players) */
         static const bool DEFAULT_PLAYER_ENABLED = true;
@@ -353,7 +347,7 @@ namespace INIConfig {
         static const bool DEFAULT_FAVORITE_STATE = false;
 
         /** @brief Default loop position percentage (0-100) */
-        static const float DEFAULT_LOOP_POSITION = 50.0f;
+        static const float DEFAULT_LOOP_POSITION = 0.0f;
 
         // ========================================================================
         // MIXING AND EFFECTS SETTINGS
@@ -365,19 +359,19 @@ namespace INIConfig {
         static const float DEFAULT_MASTER_VOLUME = 0.8f;
 
         /** @brief Default reverb send mix level (0.0 to 1.0) */
-        static const float DEFAULT_REVERB_MIX = 0.2f;
+        static const float DEFAULT_REVERB_MIX = 0.0f;
 
         /** @brief Default delay send mix level (0.0 to 1.0) */
-        static const float DEFAULT_DELAY_MIX = 0.1f;
+        static const float DEFAULT_DELAY_MIX = 0.0f;
 
         /** @brief Default kick drum volume level (0.0 to 1.0) */
-        static const float DEFAULT_KICK_VOLUME = 0.9f;
+        static const float DEFAULT_KICK_VOLUME = 0.8f;
 
         /** @brief Default snare drum volume level (0.0 to 1.0) */
         static const float DEFAULT_SNARE_VOLUME = 0.8f;
 
         /** @brief Default hi-hat volume level (0.0 to 1.0) */
-        static const float DEFAULT_HIHAT_VOLUME = 0.7f;
+        static const float DEFAULT_HIHAT_VOLUME = 0.8f;
 
         // ========================================================================
         // PHOSPHOR ICON SYSTEM SETTINGS
@@ -1187,7 +1181,6 @@ namespace LayoutConstants {
    constexpr int sfzBaseMidiNote = 36;
    constexpr int sfzPitchCenterBase = 60;
 
-   // DEPRECATED: Loop section constants moved to Row6 namespace for Phase 5 integration
    // Temporary backward compatibility constants (will be removed once all references are updated)
    constexpr int loopSectionLabelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.085f);
    constexpr int loopSectionLabelHeight = 20;
@@ -1304,12 +1297,6 @@ namespace LayoutConstants {
    constexpr int minWindowWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * 0.6667f);
    constexpr int minWindowHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * 0.75f);
 
-   // ========================================================================
-   // OTTO GUI 6-ROW LAYOUT SYSTEM - PHASE 1: FOUNDATION
-   // ========================================================================
-   // Percentage-based row structure for consistent GUI layout across all platforms
-   // Base calculations use Defaults::DEFAULT_INTERFACE_HEIGHT for responsive scaling
-
    // Row height percentages (must total 100%) - CORRECTED OTTO LAYOUT STRUCTURE
     constexpr float ROW_1_HEIGHT_PERCENT = 10.0f;  // Row 1: TopBar (Transport, Tempo, Gear)
     constexpr float ROW_2_HEIGHT_PERCENT = 8.0f;   // Row 2: Player Buttons/Tabs
@@ -1317,7 +1304,6 @@ namespace LayoutConstants {
     constexpr float ROW_4_HEIGHT_PERCENT = 12.0f;  // Row 4: Drum Pattern Menu and Labels
     constexpr float ROW_5_HEIGHT_PERCENT = 50.0f;  // Row 5: Large 4x4 Matrix, Buttons, Sliders
     constexpr float ROW_6_HEIGHT_PERCENT = 8.0f;   // Row 6: Small Loop Controls (Start, End, Position)
-
 
    // Compile-time validation that percentages total 100%
    static_assert(ROW_1_HEIGHT_PERCENT + ROW_2_HEIGHT_PERCENT + ROW_3_HEIGHT_PERCENT +
@@ -1408,49 +1394,35 @@ namespace LayoutConstants {
    }
 
    namespace Row2 {
-       // Row 2: Player Buttons/Tabs - 6%
        constexpr int height = ROW_2_HEIGHT;
        constexpr int yPosition = ROW_2_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // PHASE 4: PlayerTabs Component Layout Definition - PERCENTAGE-BASED
-       // =================================================================
-       // Layout: 8 player tabs with responsive percentage-based positioning
-       // Button 1: [4.5% margin][Button1] (left margin)
-       // Buttons 2-7: [2.25% margin][Button] (spacing between tabs)
-       // Button 8: [2.25% margin][Button8][4.5% margin] (right margin)
-
        // Tab configuration percentages
        constexpr int tabsCount = 8;
-       // UPDATED: Reduced button height by 5% and centered vertically
        constexpr float tabHeightReductionPercent = 5.0f;  // 5% reduction in button height
-
 
        // Responsive tab width and spacing percentages (based on interface width)
        constexpr float tabWidthPercent = 9.0f;          // Each tab: 9% of interface width
        constexpr float tabSpacingPercent = 2.25f;       // Between tabs: 2.25% of interface width
 
-       // UPDATED: Calculate centered horizontal positioning
        constexpr float totalTabsWidthPercent = (tabsCount * tabWidthPercent) + ((tabsCount - 1) * tabSpacingPercent);
        constexpr float horizontalCenteringOffsetPercent = (100.0f - totalTabsWidthPercent) / 2.0f;
 
-
-
        // Calculated dimensions using percentages
-       // UPDATED: 10% reduced height, vertically centered
        constexpr int originalTabContentHeight = height - (defaultPadding * 2);
        constexpr int tabContentHeight = static_cast<int>(originalTabContentHeight * (100.0f - tabHeightReductionPercent) / 100.0f);
        constexpr int tabTopOffset = (height - tabContentHeight) / 2;  // Center vertically in row
 
-
        constexpr int tabWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (tabWidthPercent / 100.0f));
-       // UPDATED: Horizontally centered positioning
        constexpr int leftMargin = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (horizontalCenteringOffsetPercent / 100.0f));
        constexpr int tabSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (tabSpacingPercent / 100.0f));
 
        // Highlight bar dimensions (percentage-based)
-       constexpr float highlightHeightPercent = 0.25f;  // 0.25% of interface height
+
+        // BUG!!!  This bar should start at the left edge of our button and continue to the right edge of our button
+       constexpr float highlightHeightPercent = 0.1f * ROW_2_HEIGHT;;
        constexpr int highlightHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (highlightHeightPercent / 100.0f));
        constexpr int highlightMargin = defaultSpacing;
        constexpr int highlightWidthReduction = defaultMargin;
@@ -1471,14 +1443,11 @@ namespace LayoutConstants {
    }
 
    namespace Row3 {
-       // Row 3: DrumKit Menu Controls - 16%
        constexpr int height = ROW_3_HEIGHT;
        constexpr int yPosition = ROW_3_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // CORRECTED LAYOUT: DrumKit Menu Row
-       // =====================================
        // Layout: [Edit] [<] [DrumKit ▼] [>] [Mixer] [Mute]
 
        // Large player number font size and dimensions - PERCENTAGE-BASED
@@ -1571,15 +1540,15 @@ namespace LayoutConstants {
        constexpr int activeSpacing = useCompactMode ? compactSpacing : buttonSpacing;
    }
 
+
    namespace Row4 {
-       // Row 4: Drum Pattern Menu and Labels - 14%
+
+       // BUG!!!  Elements in Row 4 are not showing up at the correct Y Position
        constexpr int height = ROW_4_HEIGHT;
        constexpr int yPosition = ROW_4_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // CORRECTED LAYOUT: Drum Pattern Menu and Labels
-       // ===================================================================
        // Layout: [Pattern Label] [Pattern Group Dropdown] [Status Info] [Actions]
 
        // Component width percentages (based on interface width)
@@ -1643,21 +1612,19 @@ namespace LayoutConstants {
    }
 
    namespace Row5 {
-       // Row 5: Large 4x4 Matrix, Buttons, and Sliders (MAIN CONTENT) - 45%
+
+       // Row 5: Large 4x4 Matrix, Buttons, and Sliders
        constexpr int height = ROW_5_HEIGHT;
        constexpr int yPosition = ROW_5_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // CORRECTED LAYOUT: 4x4 Matrix + Controls (Main Content Area)
-       // ================================================================
-       // Left Section: 4x4 drum matrix (buttons) needs more space
-       // Right Section: Controls (toggles, fills, sliders) needs less space
-       // Split optimized for content: 65% left (pattern matrix) / 35% right (controls)
+       // Left Section: 4x4 drum matrix (buttons)
+       // Right Section: Controls (toggles, fills, sliders)
 
-       constexpr float leftSectionWidthPercent = 63.5f;    // Pattern matrix gets more space
-       constexpr float rightSectionWidthPercent = 35.0f;   // Controls get remaining space
-       constexpr float sectionMarginPercent = 0.3f;        // Small margin between sections
+       constexpr float leftSectionWidthPercent = 60.0f;    // Pattern matrix gets more space
+       constexpr float rightSectionWidthPercent = 39.5f;   // Controls get remaining space
+       constexpr float sectionMarginPercent = 0.5f;        // Small margin between sections
 
        // Validate percentages
        static_assert(leftSectionWidthPercent + rightSectionWidthPercent <= 100.0f,
@@ -1688,16 +1655,11 @@ namespace LayoutConstants {
    }
 
    namespace Row6 {
-       // Row 6: Small Loop Controls (Start, End, Position Indicator) - 12%
+       // Row 6: Small Loop Controls (Start, End, Position Indicator)
        constexpr int height = ROW_6_HEIGHT;
        constexpr int yPosition = ROW_6_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
-
-       // CORRECTED LAYOUT: Loop Start/End Controls + Position Indicator
-       // ===================================================================
-       // Layout: [LOOP START] [================== Loop Slider ==================] [LOOP END]
-       // Compact row for loop timeline control
 
        // Loop section positioning - full interface width utilization
        constexpr float labelWidthPercent = 8.5f;          // "LOOP START"/"LOOP END" labels

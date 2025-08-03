@@ -21,11 +21,12 @@ MainContentComponentRightSection::MainContentComponentRightSection(MidiEngine& m
 }
 
 void MainContentComponentRightSection::setupComponents() {
-    addAndMakeVisible(togglesLabel);
-    addAndMakeVisible(fillsLabel);
-    addAndMakeVisible(swingLabel);
-    addAndMakeVisible(energyLabel);
-    addAndMakeVisible(volumeLabel);
+    // REMOVED: Labels are now managed by MainContentComponent Row 4
+    // addAndMakeVisible(togglesLabel);
+    // addAndMakeVisible(fillsLabel);
+    // addAndMakeVisible(swingLabel);
+    // addAndMakeVisible(energyLabel);
+    // addAndMakeVisible(volumeLabel);
     // REMOVED: middleSeparator - no internal separators in unified 6-row system
     // addAndMakeVisible(middleSeparator);
 
@@ -291,34 +292,19 @@ void MainContentComponentRightSection::resized() {
     // Use consistent percentage-based layout within the allocated Row 5 space
     int topSectionHeight = static_cast<int>(bounds.getHeight() * 0.2f); // 20% for top labels
     
-    // Position labels in top section
-    int labelY = layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
-    int labelWidth = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionLabelWidth);
-    int labelHeight = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionLabelHeight);
-
-    int toggleCol = layoutManager.scaled(INIConfig::LayoutConstants::togglesLabelX);
-    togglesLabel.setBounds(toggleCol, labelY, labelWidth, labelHeight);
-
-    int fillCol = layoutManager.scaled(INIConfig::LayoutConstants::fillsLabelX);
-    fillsLabel.setBounds(fillCol, labelY, labelWidth, labelHeight);
-
-    int sliderCol1 = layoutManager.scaled(INIConfig::LayoutConstants::swingLabelX);
-    int sliderCol2 = layoutManager.scaled(INIConfig::LayoutConstants::energyLabelX);
-    int sliderCol3 = layoutManager.scaled(INIConfig::LayoutConstants::volumeLabelX);
-    int sliderLabelWidth = layoutManager.scaled(INIConfig::LayoutConstants::sliderWidth);
-
-    swingLabel.setBounds(sliderCol1, labelY, sliderLabelWidth, labelHeight);
-    energyLabel.setBounds(sliderCol2, labelY, sliderLabelWidth, labelHeight);
-    volumeLabel.setBounds(sliderCol3, labelY, sliderLabelWidth + layoutManager.scaled(INIConfig::LayoutConstants::volumeLabelWidthExtra), labelHeight);
+    // REMOVED: Label positioning - now handled by MainContentComponent Row 4
 
     // REMOVED: middleSeparator - no internal separators in unified 6-row system
     // middleSeparator positioning removed - handled by MainContentComponent row separators
 
-    // Position buttons and sliders in remaining space
-    int buttonY = topSectionHeight + layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
+    // Position buttons and sliders in available space
+    int buttonY = layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
     int buttonWidth = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonWidth);
     int buttonHeight = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonHeight);
     int buttonSpacing = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonSpacing);
+
+    int toggleCol = layoutManager.scaled(INIConfig::LayoutConstants::togglesLabelX);
+    int fillCol = layoutManager.scaled(INIConfig::LayoutConstants::fillsLabelX);
 
     for (int i = 0; i < 5; ++i) {
         toggleButtons[i].setBounds(toggleCol, buttonY + (i * buttonSpacing), buttonWidth, buttonHeight);
@@ -328,6 +314,10 @@ void MainContentComponentRightSection::resized() {
     int sliderWidth = layoutManager.scaled(INIConfig::LayoutConstants::sliderWidth);
     int sliderHeight = layoutManager.scaled(INIConfig::LayoutConstants::sliderHeight);
     int sliderY = buttonY;
+
+    int sliderCol1 = layoutManager.scaled(INIConfig::LayoutConstants::swingLabelX);
+    int sliderCol2 = layoutManager.scaled(INIConfig::LayoutConstants::energyLabelX);
+    int sliderCol3 = layoutManager.scaled(INIConfig::LayoutConstants::volumeLabelX);
 
     swingSlider.setBounds(sliderCol1, sliderY, sliderWidth, sliderHeight);
     energySlider.setBounds(sliderCol2, sliderY, sliderWidth, sliderHeight);

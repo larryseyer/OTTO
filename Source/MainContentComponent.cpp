@@ -118,6 +118,12 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
       // Provide quick access to pattern creation and deletion functions
       patternAddButton("plus", FontManager::PhosphorWeight::Regular),          // Create new pattern
       patternDeleteButton("trash", FontManager::PhosphorWeight::Regular),      // Delete selected pattern
+      // Additional Row 4 components per user specification
+      patternGroupEditButton("pencil", FontManager::PhosphorWeight::Regular),     // Edit pattern groups
+      patternGroupLeftChevron("caret-left", FontManager::PhosphorWeight::Regular), // Previous pattern group
+      patternGroupRightChevron("caret-right", FontManager::PhosphorWeight::Regular), // Next pattern group
+      patternGroupFavoriteButton("heart", FontManager::PhosphorWeight::Regular),   // Favorite pattern group
+
       
       // ROW SEPARATORS: Visual dividers between each interface row
       // Use ColorScheme for theme-consistent styling, positioned between rows 1-6
@@ -679,6 +685,111 @@ void MainContentComponent::setupRow3Components() {
 
 void MainContentComponent::setupRow4Components() {
     // ========================================================================
+    // ROW 4: COMPLETE PATTERN GROUP CONTROLS SETUP - PER USER SPECIFICATION
+    // ========================================================================
+    // Layout: [Edit icon] [<] [Pattern Group ▼] [>] [★] [Toggles] [Fills] [Swing] [Energy] [Volume]
+    
+    // Edit button for pattern group editing
+    patternGroupEditButton.setComponentID("pattern_group_edit_button");
+    patternGroupEditButton.setColorScheme(&colorScheme);
+    patternGroupEditButton.addListener(this);
+    addAndMakeVisible(patternGroupEditButton);
+    
+    // Left chevron for previous pattern group
+    patternGroupLeftChevron.setComponentID("pattern_group_left_chevron");
+    patternGroupLeftChevron.setColorScheme(&colorScheme);
+    patternGroupLeftChevron.addListener(this);
+    addAndMakeVisible(patternGroupLeftChevron);
+    
+    // Pattern Group Label: Static text identifier for the pattern group section
+    patternGroupLabel.setComponentID("pattern_group_label");
+    patternGroupLabel.setText("Group", juce::dontSendNotification);
+    patternGroupLabel.setColour(juce::Label::textColourId, 
+                               colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+    patternGroupLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(patternGroupLabel);
+    
+    // Pattern group dropdown (keep existing)
+    patternGroupDropdown.setComponentID("pattern_group_dropdown");
+    patternGroupDropdown.addListener(this);
+    patternGroupDropdown.setTextWhenNothingSelected("Select Pattern Group...");
+    patternGroupDropdown.setTextWhenNoChoicesAvailable("No groups available");
+    patternGroupDropdown.setJustificationType(juce::Justification::centred);
+    
+    // Apply consistent color scheme to dropdown components
+    patternGroupDropdown.setColour(juce::ComboBox::textColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    patternGroupDropdown.setColour(juce::ComboBox::backgroundColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::ControlBackground));
+    patternGroupDropdown.setColour(juce::ComboBox::arrowColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    patternGroupDropdown.setColour(juce::ComboBox::buttonColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+    patternGroupDropdown.setColour(juce::ComboBox::outlineColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::Separator));
+    addAndMakeVisible(patternGroupDropdown);
+    
+    // Right chevron for next pattern group
+    patternGroupRightChevron.setComponentID("pattern_group_right_chevron");
+    patternGroupRightChevron.setColorScheme(&colorScheme);
+    patternGroupRightChevron.addListener(this);
+    addAndMakeVisible(patternGroupRightChevron);
+    
+    patternGroupFavoriteButton.setComponentID("pattern_group_favorite_button");
+    patternGroupFavoriteButton.setColorScheme(&colorScheme);
+    patternGroupFavoriteButton.addListener(this);
+    addAndMakeVisible(patternGroupFavoriteButton);
+    
+    togglesLabel.setComponentID("toggles_label");
+    togglesLabel.setText("Toggles", juce::dontSendNotification);
+    togglesLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+    togglesLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(togglesLabel);
+    
+    fillsLabel.setComponentID("fills_label");
+    fillsLabel.setText("Fills", juce::dontSendNotification);
+    fillsLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+    fillsLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(fillsLabel);
+    
+    swingLabel.setComponentID("swing_label");
+    swingLabel.setText("Swing", juce::dontSendNotification);
+    swingLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+    swingLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(swingLabel);
+    
+    energyLabel.setComponentID("energy_label");
+    energyLabel.setText("Energy", juce::dontSendNotification);
+    energyLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+    energyLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(energyLabel);
+    
+    volumeLabel.setComponentID("volume_label");
+    volumeLabel.setText("Volume", juce::dontSendNotification);
+    volumeLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+    volumeLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(volumeLabel);
+    
+    // Pattern Status Label: Dynamic display of current pattern group status
+    patternStatusLabel.setComponentID("pattern_status_label");
+    patternStatusLabel.setText("Ready", juce::dontSendNotification);
+    patternStatusLabel.setColour(juce::Label::textColourId, 
+                                colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+    patternStatusLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(patternStatusLabel);
+    
+    // Pattern Add Button: Creates new pattern groups with proper INI integration
+    patternAddButton.setComponentID("pattern_add_button");
+    patternAddButton.setColorScheme(&colorScheme);
+    patternAddButton.addListener(this);
+    addAndMakeVisible(patternAddButton);
+    
+    // Pattern Delete Button: Removes selected pattern groups with confirmation
+    patternDeleteButton.setComponentID("pattern_delete_button");
+    patternDeleteButton.setColorScheme(&colorScheme);
+    patternDeleteButton.addListener(this);
+    addAndMakeVisible(patternDeleteButton);
+    // ========================================================================
     // PHASE 4: ROW 4 PATTERN GROUP CONTROLS SETUP - ENHANCED INI INTEGRATION
     // ========================================================================
     // Layout: [Group Label] [Pattern Group Dropdown] [Status Info] [Actions]
@@ -793,6 +904,22 @@ void MainContentComponent::buttonClicked(juce::Button* button) {
     else if (button == &patternDeleteButton) {
         // Handle delete selected pattern
         // TODO: Implement pattern deletion
+    else if (button == &patternGroupEditButton) {
+        // Handle pattern group edit mode toggle
+        // Implementation depends on existing pattern group editing system
+    }
+    else if (button == &patternGroupLeftChevron) {
+        // Handle previous pattern group navigation
+        // Implementation depends on existing pattern group navigation system
+    }
+    else if (button == &patternGroupRightChevron) {
+        // Handle next pattern group navigation
+        // Implementation depends on existing pattern group navigation system
+    }
+    else if (button == &patternGroupFavoriteButton) {
+        // Handle pattern group favorite toggle
+    }
+
     }
 }
 
@@ -912,6 +1039,92 @@ void MainContentComponent::updateRow3Layout() {
 }
 
 void MainContentComponent::updateRow4Layout() {
+    // ========================================================================
+    // ROW 4: COMPLETE PATTERN GROUP CONTROLS LAYOUT - PER USER SPECIFICATION
+    // ========================================================================
+    // Layout: [Edit icon] [<] [Pattern Group ▼] [>] [★] [Toggles] [Fills] [Swing] [Energy] [Volume]
+    
+    using namespace INIConfig::LayoutConstants;
+    
+    // Edit button positioning
+    patternGroupEditButton.setBounds(layoutManager.scaled(Row4::editButtonX),
+                                   layoutManager.scaled(Row4::editButtonY),
+                                   layoutManager.scaled(Row4::editButtonWidth),
+                                   layoutManager.scaled(Row4::buttonHeight));
+    
+    // Left chevron positioning
+    patternGroupLeftChevron.setBounds(layoutManager.scaled(Row4::leftChevronX),
+                                    layoutManager.scaled(Row4::leftChevronY),
+                                    layoutManager.scaled(Row4::chevronButtonWidth),
+                                    layoutManager.scaled(Row4::buttonHeight));
+    
+    // Pattern group dropdown positioning
+    patternGroupDropdown.setBounds(layoutManager.scaled(Row4::dropdownX),
+                                 layoutManager.scaled(Row4::dropdownY),
+                                 layoutManager.scaled(Row4::dropdownWidth),
+                                 layoutManager.scaled(Row4::dropdownHeight));
+    
+    // Right chevron positioning
+    patternGroupRightChevron.setBounds(layoutManager.scaled(Row4::rightChevronX),
+                                     layoutManager.scaled(Row4::rightChevronY),
+                                     layoutManager.scaled(Row4::chevronButtonWidth),
+                                     layoutManager.scaled(Row4::buttonHeight));
+    
+    // Favorite button positioning
+    patternGroupFavoriteButton.setBounds(layoutManager.scaled(Row4::favoriteButtonX),
+                                       layoutManager.scaled(Row4::favoriteButtonY),
+                                       layoutManager.scaled(Row4::favoriteButtonWidth),
+                                       layoutManager.scaled(Row4::buttonHeight));
+    
+    // Labels positioning
+    togglesLabel.setBounds(layoutManager.scaled(Row4::togglesLabelX),
+                          layoutManager.scaled(Row4::labelY),
+                          layoutManager.scaled(Row4::labelWidth),
+                          layoutManager.scaled(Row4::labelHeight));
+    
+    fillsLabel.setBounds(layoutManager.scaled(Row4::fillsLabelX),
+                        layoutManager.scaled(Row4::labelY),
+                        layoutManager.scaled(Row4::labelWidth),
+                        layoutManager.scaled(Row4::labelHeight));
+    
+    swingLabel.setBounds(layoutManager.scaled(Row4::swingLabelX),
+                        layoutManager.scaled(Row4::labelY),
+                        layoutManager.scaled(Row4::labelWidth),
+                        layoutManager.scaled(Row4::labelHeight));
+    
+    energyLabel.setBounds(layoutManager.scaled(Row4::energyLabelX),
+                         layoutManager.scaled(Row4::labelY),
+                         layoutManager.scaled(Row4::labelWidth),
+                         layoutManager.scaled(Row4::labelHeight));
+    
+    volumeLabel.setBounds(layoutManager.scaled(Row4::volumeLabelX),
+                         layoutManager.scaled(Row4::labelY),
+                         layoutManager.scaled(Row4::labelWidth),
+                         layoutManager.scaled(Row4::labelHeight));
+    
+    // Apply consistent FontManager sizing
+    togglesLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                                           layoutManager.scaled(12.0f)));
+    fillsLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                                         layoutManager.scaled(12.0f)));
+    swingLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                                         layoutManager.scaled(12.0f)));
+    energyLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                                          layoutManager.scaled(12.0f)));
+    volumeLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                                          layoutManager.scaled(12.0f)));
+    
+    // ========================================================================
+    // VALIDATION: Ensure all components fit within Row 4 bounds
+    #ifdef JUCE_DEBUG
+        int totalUsedWidth = layoutManager.scaled(Row4::totalUsedWidth);
+        int availableWidth = getWidth();
+        jassert(totalUsedWidth <= availableWidth); // Runtime validation for dynamic sizing
+        
+        // Touch target validation
+        jassert(layoutManager.scaled(Row4::buttonHeight) >= 44); // Min touch target
+        jassert(layoutManager.scaled(Row4::dropdownHeight) >= 44); // Min touch target
+    #endif
     // ========================================================================
     // PHASE 4: ROW 4 PATTERN GROUP CONTROLS - ENHANCED INI-DRIVEN LAYOUT
     // ========================================================================

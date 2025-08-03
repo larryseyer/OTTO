@@ -1546,7 +1546,7 @@ namespace LayoutConstants {
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-       // Layout: [Pattern Label] [Pattern Group Dropdown] [Status Info] [Actions]
+           // Layout: [Drum pattern group edit icon], [left chevron], [drum pattern group menu/label], [right chevron], [favorite icon], [toggles label], [fills label], [swing label]
 
        // Component width percentages (based on interface width)
        constexpr float groupLabelWidthPercent = 8.0f;     // "Group" label: 8% of interface width

@@ -119,6 +119,17 @@ private:
     juce::Label patternStatusLabel;
     PhosphorIconButton patternAddButton;
     PhosphorIconButton patternDeleteButton;
+    // Additional Row 4 components per user specification
+    PhosphorIconButton patternGroupEditButton;
+    PhosphorIconButton patternGroupLeftChevron;
+    PhosphorIconButton patternGroupRightChevron;
+    PhosphorIconButton patternGroupFavoriteButton;
+    juce::Label togglesLabel;
+    juce::Label fillsLabel;
+    juce::Label swingLabel;
+    juce::Label energyLabel;
+    juce::Label volumeLabel;
+
     
     std::unique_ptr<MainContentComponentLeftSection> leftSection;
     std::unique_ptr<MainContentComponentRightSection> rightSection;

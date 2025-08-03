@@ -1546,53 +1546,66 @@ namespace LayoutConstants {
        constexpr int contentHeight = height - (defaultPadding * 2);
        constexpr int contentY = yPosition + defaultPadding;
 
-           // Layout: [Drum pattern group edit icon], [left chevron], [drum pattern group menu/label], [right chevron], [favorite icon], [toggles label], [fills label], [swing label]
+           // Layout: [Edit/Pencil icon for Pattern groups], [left chevron], [pattern groups dropdown menu/label combo], [right chevron], [favorites group icon], [Toggles label], [Fills label], [Swing label], [Energy label], [Volume label]
 
        // Component width percentages (based on interface width)
-       constexpr float groupLabelWidthPercent = 8.0f;     // "Group" label: 8% of interface width
-       constexpr float dropdownWidthPercent = 20.0f;      // Pattern group dropdown: 20% of interface width
-       constexpr float statusWidthPercent = 15.0f;        // Status display: 15% of interface width
-       constexpr float actionButtonWidthPercent = 8.0f;   // Action buttons: 8% each
-       constexpr float componentSpacingPercent = 2.0f;    // Spacing between components: 2%
+       constexpr float editButtonWidthPercent = 6.0f;        // Edit button: 6% of interface width
+       constexpr float chevronButtonWidthPercent = 4.0f;     // Chevron buttons: 4% each
+       constexpr float dropdownWidthPercent = 18.0f;         // Pattern group dropdown: 18% of interface width
+       constexpr float favoriteButtonWidthPercent = 6.0f;    // Favorite button: 6% of interface width
+       constexpr float labelWidthPercent = 8.0f;             // Labels: 8% each (5 labels = 40%)
+       constexpr float componentSpacingPercent = 1.0f;       // Spacing between components: 1%
 
        // Component height percentages (based on row content height)
-       constexpr float labelHeightPercent = 70.0f;        // Labels: 70% of content height
-       constexpr float dropdownHeightPercent = 80.0f;     // Dropdown: 80% of content height
-       constexpr float buttonHeightPercent = 75.0f;       // Buttons: 75% of content height
+       constexpr float buttonHeightPercent = 75.0f;          // Buttons: 75% of content height
+       constexpr float dropdownHeightPercent = 80.0f;        // Dropdown: 80% of content height
+       constexpr float labelHeightPercent = 70.0f;           // Labels: 70% of content height
 
        // Calculated dimensions
-       constexpr int groupLabelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (groupLabelWidthPercent / 100.0f));
+       constexpr int editButtonWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (editButtonWidthPercent / 100.0f));
+       constexpr int chevronButtonWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (chevronButtonWidthPercent / 100.0f));
        constexpr int dropdownWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (dropdownWidthPercent / 100.0f));
-       constexpr int statusWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (statusWidthPercent / 100.0f));
-       constexpr int actionButtonWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (actionButtonWidthPercent / 100.0f));
+       constexpr int favoriteButtonWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (favoriteButtonWidthPercent / 100.0f));
+       constexpr int labelWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (labelWidthPercent / 100.0f));
        constexpr int componentSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (componentSpacingPercent / 100.0f));
 
-       constexpr int labelHeight = static_cast<int>(contentHeight * (labelHeightPercent / 100.0f));
-       constexpr int dropdownHeight = static_cast<int>(contentHeight * (dropdownHeightPercent / 100.0f));
        constexpr int buttonHeight = static_cast<int>(contentHeight * (buttonHeightPercent / 100.0f));
+       constexpr int dropdownHeight = static_cast<int>(contentHeight * (dropdownHeightPercent / 100.0f));
+       constexpr int labelHeight = static_cast<int>(contentHeight * (labelHeightPercent / 100.0f));
 
        // Layout positioning - left to right flow
        constexpr int startX = defaultMargin;
 
-       // Group label positioning
-       constexpr int groupLabelX = startX;
-       constexpr int groupLabelY = defaultPadding + ((contentHeight - labelHeight) / 2);
+       // Edit button positioning
+       constexpr int editButtonX = startX;
+       constexpr int editButtonY = defaultPadding + ((contentHeight - buttonHeight) / 2);
+
+       // Left chevron positioning
+       constexpr int leftChevronX = editButtonX + editButtonWidth + componentSpacing;
+       constexpr int leftChevronY = defaultPadding + ((contentHeight - buttonHeight) / 2);
 
        // Pattern group dropdown positioning
-       constexpr int dropdownX = groupLabelX + groupLabelWidth + componentSpacing;
+       constexpr int dropdownX = leftChevronX + chevronButtonWidth + componentSpacing;
        constexpr int dropdownY = defaultPadding + ((contentHeight - dropdownHeight) / 2);
 
-       // Status display positioning
-       constexpr int statusX = dropdownX + dropdownWidth + componentSpacing;
-       constexpr int statusY = defaultPadding + ((contentHeight - labelHeight) / 2);
+       // Right chevron positioning
+       constexpr int rightChevronX = dropdownX + dropdownWidth + componentSpacing;
+       constexpr int rightChevronY = defaultPadding + ((contentHeight - buttonHeight) / 2);
 
-       // Action buttons positioning (add, delete, etc.)
-       constexpr int firstActionButtonX = statusX + statusWidth + componentSpacing;
-       constexpr int actionButtonY = defaultPadding + ((contentHeight - buttonHeight) / 2);
-       constexpr int secondActionButtonX = firstActionButtonX + actionButtonWidth + componentSpacing;
+       // Favorite button positioning
+       constexpr int favoriteButtonX = rightChevronX + chevronButtonWidth + componentSpacing;
+       constexpr int favoriteButtonY = defaultPadding + ((contentHeight - buttonHeight) / 2);
+
+       // Labels positioning (5 labels: Toggles, Fills, Swing, Energy, Volume)
+       constexpr int togglesLabelX = favoriteButtonX + favoriteButtonWidth + componentSpacing;
+       constexpr int fillsLabelX = togglesLabelX + labelWidth + componentSpacing;
+       constexpr int swingLabelX = fillsLabelX + labelWidth + componentSpacing;
+       constexpr int energyLabelX = swingLabelX + labelWidth + componentSpacing;
+       constexpr int volumeLabelX = energyLabelX + labelWidth + componentSpacing;
+       constexpr int labelY = defaultPadding + ((contentHeight - labelHeight) / 2);
 
        // Total width calculation for validation
-       constexpr int totalUsedWidth = secondActionButtonX + actionButtonWidth + defaultMargin - startX;
+       constexpr int totalUsedWidth = volumeLabelX + labelWidth + defaultMargin - startX;
 
        // Layout validation
        static_assert(totalUsedWidth <= Defaults::DEFAULT_INTERFACE_WIDTH,

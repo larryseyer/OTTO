@@ -59,7 +59,13 @@ public:
     int getFavoritesSelection() const;
     void setFavoritesSelection(int selection);
 
-    void setINIDataManager(INIDataManager* manager) { iniDataManager = manager; }
+    void setINIDataManager(INIDataManager* manager) { 
+        iniDataManager = manager; 
+        // Initialize pattern groups when INI manager is available
+        initializePatternGroups();
+    }
+    
+    void setupRow4LabelIntegration();
 
     void updateFromState(const ComponentState& state);
     void switchToPlayer(int playerIndex, const ComponentState& state);
@@ -113,23 +119,18 @@ private:
     
     bool showingDrumKitLabel = true;  // Toggle state: true = show label, false = show menu
     
-    // Row 4: Pattern Group Controls
-    juce::Label patternGroupLabel;
-    HierarchicalComboBox patternGroupDropdown;
-    juce::Label patternStatusLabel;
-    PhosphorIconButton patternAddButton;
-    PhosphorIconButton patternDeleteButton;
-    // Additional Row 4 components per user specification
-    PhosphorIconButton patternGroupEditButton;
-    PhosphorIconButton patternGroupLeftChevron;
-    PhosphorIconButton patternGroupRightChevron;
-    PhosphorIconButton patternGroupFavoriteButton;
-    juce::Label togglesLabel;
-    juce::Label fillsLabel;
-    juce::Label swingLabel;
-    juce::Label energyLabel;
-    juce::Label volumeLabel;
-
+    // Row 4: Pattern Group Controls - Complete 10-component layout
+    // Components moved from LeftSection and RightSection to create unified Row 4
+    PhosphorIconButton patternGroupEditButton;        // Edit/Pencil icon (from LeftSection editButton)
+    PhosphorIconButton patternGroupLeftChevron;       // Left chevron (from LeftSection leftChevronButton)
+    HierarchicalComboBox patternGroupDropdown;        // Pattern group dropdown (existing)
+    PhosphorIconButton patternGroupRightChevron;      // Right chevron (from LeftSection rightChevronButton)
+    PhosphorIconButton patternGroupFavoriteButton;    // Favorite icon (from LeftSection favoriteButton)
+    juce::Label togglesLabel;                         // Toggles label (from RightSection)
+    juce::Label fillsLabel;                           // Fills label (from RightSection)
+    juce::Label swingLabel;                           // Swing label (from RightSection)
+    juce::Label energyLabel;                          // Energy label (from RightSection)
+    juce::Label volumeLabel;                          // Volume label (from RightSection)
     
     std::unique_ptr<MainContentComponentLeftSection> leftSection;
     std::unique_ptr<MainContentComponentRightSection> rightSection;
@@ -145,6 +146,20 @@ private:
     int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     INIDataManager* iniDataManager = nullptr;
     bool livePerformanceMode = false;
+    
+    // Pattern Group Management State
+    int currentPatternGroupIndex = 0;
+    juce::Array<BeatsButtonGroup> availablePatternGroups;
+    bool patternGroupEditMode = false;
+    
+    // PHASE 6: Performance Optimization Cache
+    struct PatternGroupCache {
+        juce::HashMap<int, juce::String> groupNameCache;
+        juce::HashMap<int, float> swingCache;
+        juce::HashMap<int, float> energyCache;
+        double lastCacheUpdate = 0.0;
+        bool cacheValid = false;
+    } patternGroupCache;
 
     void validatePlayerIndex(int playerIndex) const;
 
@@ -152,6 +167,7 @@ private:
     void updateLayoutForPerformanceMode();
     void setupRow3Components();
     void setupRow4Components();
+    void setupRow4Labels();
     void updateRow2Layout();
     void updateRow3Layout();
     void updateRow4Layout();
@@ -159,8 +175,61 @@ private:
     void updateRow6Layout();
     void handleDrumKitChevrons(bool isRight);
     
+    // Pattern Group Management Methods
+    void initializePatternGroups();
+    void updatePatternGroupDropdown();
+    void handlePatternGroupNavigation(bool isNext);
+    void togglePatternGroupEditMode();
+    void togglePatternGroupFavorite();
+    void switchToPatternGroup(int groupIndex);
+    BeatsButtonGroup* getCurrentPatternGroup();
+    void updateRow4LabelsFromControls();
+    void updateRow4LabelStates();
+    void refreshPatternGroupUI();
+    
+    // PHASE 5: Enhanced Row 4 Visual Polish Methods
+    void setupRow4Label(juce::Label& label, const juce::String& componentId, 
+                       const juce::String& text, const juce::String& tooltip);
+    void updatePatternGroupButtonStates();
+    void validatePatternGroupIntegrity();
+    void handlePatternGroupLoadingState(bool isLoading);
+    void createDefaultPatternGroups();
+    void updateRow4LabelsForEditMode(bool editModeActive);
+    void setupRow4KeyboardNavigation();
+    void setupRow4AccessibilityFeatures();
+    
+    // PHASE 6: Row 5 Beat Grid Integration Methods
+    void synchronizePatternGroupWithBeatGrid(int groupIndex);
+    void updateBeatGridFromPatternGroup(const BeatsButtonGroup& patternGroup);
+    void updatePatternGroupFromBeatGrid();
+    void handlePatternGroupTransition(int fromIndex, int toIndex);
+    void optimizePatternGroupSwitching();
+    void validateBeatGridIntegrity();
+    void setupBidirectionalCommunication();
+    void handleRealTimePatternUpdates();
+    
+    // PHASE 6: Performance Optimization Methods
+    void updatePatternGroupCache();
+    void optimizeDropdownForLargeDatasets();
+    void cleanupUnusedPatternData();
+    void precacheFrequentPatternGroups();
+    
+    // Override for keyboard shortcuts
+    bool keyPressed(const juce::KeyPress& key) override;
+    
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);
+    
+    // PHASE 5: Row 4 Pattern Group Testing Methods
+    void performRow4IntegrationTesting();
+    void testPatternGroupButtonStates();
+    void testPatternGroupDropdownBehavior();
+    void testPatternGroupNavigationEdgeCases();
+    void testPatternGroupEditModeIntegration();
+    void testPatternGroupFavoriteSystem();
+    void testRow4LabelVisualFeedback();
+    void testPatternGroupPerformance();
+    void testPatternGroupMemoryManagement();
 #endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainContentComponent)

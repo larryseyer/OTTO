@@ -15,7 +15,8 @@ void MainContentComponentLeftSection::initializeEmptyPatternGroups(ComponentStat
     }
 
     if (!state.beatsButtonGroups.isEmpty()) {
-        currentSelectedGroup = state.beatsButtonGroups[0].groupName;
+        const auto& firstGroup = state.beatsButtonGroups.getReference(0);
+        currentSelectedGroup = firstGroup.groupName;
         midiBeatsButtonGroup.setText(currentSelectedGroup);
         midiFileManager->selectGroup(currentSelectedGroup);
     }
@@ -73,7 +74,8 @@ void MainContentComponentLeftSection::ensureValidGroupSelection(ComponentState& 
     }
 
     if (!found) {
-        currentSelectedGroup = state.beatsButtonGroups[0].groupName;
+        const auto& firstGroup = state.beatsButtonGroups.getReference(0);
+        currentSelectedGroup = firstGroup.groupName;
     }
 
     midiBeatsButtonGroup.setText(currentSelectedGroup);
@@ -93,18 +95,28 @@ void MainContentComponentLeftSection::setCurrentSelectedGroup(const juce::String
 }
 
 void MainContentComponentLeftSection::handleChevrons(bool isRight, ComponentState& state) {
-    if (state.beatsButtonGroups.isEmpty()) {
+    // Create a defensive copy to prevent race conditions with other components
+    // that might be modifying beatsButtonGroups (MidiFileManager, StateManager, etc.)
+    juce::Array<BeatsButtonGroup> groupsCopy = state.beatsButtonGroups;
+    
+    if (groupsCopy.isEmpty()) {
         forceRefreshMidiFiles(state);
+        groupsCopy = state.beatsButtonGroups; // Refresh our copy
     }
 
-    if (state.beatsButtonGroups.isEmpty()) {
+    if (groupsCopy.isEmpty()) {
         BeatsButtonGroup defaultGroup("Group 1");
         state.beatsButtonGroups.add(defaultGroup);
+        groupsCopy.add(defaultGroup);
     }
 
     int currentIndex = -1;
-    for (int i = 0; i < state.beatsButtonGroups.size(); ++i) {
-        if (state.beatsButtonGroups[i].groupName == currentSelectedGroup) {
+    const int groupCount = groupsCopy.size();
+    
+    // Find current group index using our safe copy
+    for (int i = 0; i < groupCount; ++i) {
+        const auto& group = groupsCopy.getReference(i);
+        if (group.groupName == currentSelectedGroup) {
             currentIndex = i;
             break;
         }
@@ -114,13 +126,44 @@ void MainContentComponentLeftSection::handleChevrons(bool isRight, ComponentStat
         currentIndex = 0;
     }
 
-    if (isRight) {
-        currentIndex = (currentIndex + 1) % state.beatsButtonGroups.size();
-    } else {
-        currentIndex = (currentIndex - 1 + state.beatsButtonGroups.size()) % state.beatsButtonGroups.size();
+    // Ensure we have groups and prevent division by zero
+    if (groupCount == 0) {
+        BeatsButtonGroup defaultGroup("Group 1");
+        state.beatsButtonGroups.add(defaultGroup);
+        setCurrentSelectedGroup("Group 1");
+        updateMidiFileButtons(state);
+        savePlayerBeatsButtonState(currentPlayerIndex, state);
+        return;
     }
 
-    juce::String newGroupName = state.beatsButtonGroups[currentIndex].groupName;
+    // Safe modulo operations with our known group count
+    if (isRight) {
+        currentIndex = (currentIndex + 1) % groupCount;
+    } else {
+        currentIndex = (currentIndex - 1 + groupCount) % groupCount;
+    }
+
+    // Final bounds check
+    if (currentIndex < 0 || currentIndex >= groupCount) {
+        currentIndex = 0;
+    }
+
+    // Get the new group name from our safe copy
+    juce::String newGroupName;
+    if (currentIndex < groupsCopy.size()) {
+        newGroupName = groupsCopy.getReference(currentIndex).groupName;
+    }
+    
+    // Fallback to first group if something went wrong
+    if (newGroupName.isEmpty() && !groupsCopy.isEmpty()) {
+        newGroupName = groupsCopy.getReference(0).groupName;
+    }
+    
+    // Ultimate fallback
+    if (newGroupName.isEmpty()) {
+        newGroupName = "Group 1";
+    }
+    
     setCurrentSelectedGroup(newGroupName);
     updateMidiFileButtons(state);
     savePlayerBeatsButtonState(currentPlayerIndex, state);
@@ -252,14 +295,16 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                 state,
                 [this, groupName, &state]() {
                     for (int i = 0; i < state.beatsButtonGroups.size(); ++i) {
-                        if (state.beatsButtonGroups[i].groupName == groupName) {
+                        const auto& group = state.beatsButtonGroups.getReference(i);
+                        if (group.groupName == groupName) {
                             state.beatsButtonGroups.remove(i);
                             break;
                         }
                     }
 
                     if (!state.beatsButtonGroups.isEmpty()) {
-                        setCurrentSelectedGroup(state.beatsButtonGroups[0].groupName);
+                        const auto& firstGroup = state.beatsButtonGroups.getReference(0);
+                        setCurrentSelectedGroup(firstGroup.groupName);
                         updateMidiFileButtons(state);
                     } else {
                         setCurrentSelectedGroup("Group 1");
@@ -303,17 +348,8 @@ void MainContentComponentLeftSection::showGroupManagerPopup(GroupManagerMode mod
                 colorScheme,
                 state,
                 [this, groupName, &state]() {
-                    auto* group = findOrCreateGroup(groupName, state);
-                    if (group) {
-                        group->midiFiles.clear();
-                        for (int i = 0; i < 16; ++i) {
-                            group->midiFiles.add(assignedMidiFiles[i]);
-                        }
-                        group->selectedButton = selectedDrumButton;
-                    }
-
-                    savePlayerBeatsButtonState(currentPlayerIndex, state);
-
+                    // This should be handled by the popup's internal logic
+                    // Just close the popup here
                     if (auto* topLevel = getTopLevelComponent()) {
                         for (int i = topLevel->getNumChildComponents() - 1; i >= 0; --i) {
                             if (topLevel->getChildComponent(i)->getName() == "CustomGroupManagerPopup") {
@@ -347,109 +383,17 @@ BeatsButtonGroup* MainContentComponentLeftSection::findOrCreateGroup(const juce:
         }
     }
 
-    BeatsButtonGroup newGroup;
-    newGroup.groupName = groupName;
+    BeatsButtonGroup newGroup(groupName);
     newGroup.isCustomGroup = true;
-    newGroup.selectedButton = 0;
     state.beatsButtonGroups.add(newGroup);
-
     return &state.beatsButtonGroups.getReference(state.beatsButtonGroups.size() - 1);
 }
 
-void MainContentComponentLeftSection::savePlayerBeatsButtonState(int playerIndex, ComponentState& state) {
-    if (playerIndex >= 0 && playerIndex < 8) {
-        auto& playerSettings = state.playerSettings[playerIndex];
-        playerSettings.selectedMidiGroup = currentSelectedGroup;
-        playerSettings.selectedButton = selectedDrumButton;
 
-        for (int i = 0; i < 16; ++i) {
-            playerSettings.assignedMidiFiles[i] = assignedMidiFiles[i];
-        }
-
-        auto* group = findOrCreateGroup(currentSelectedGroup, state);
-        if (group) {
-            group->selectedButton = selectedDrumButton;
-        }
-    }
-}
-
-void MainContentComponentLeftSection::loadPlayerBeatsButtonState(int playerIndex, const ComponentState& state) {
-    if (playerIndex >= 0 && playerIndex < 8) {
-        const auto& playerSettings = state.playerSettings[playerIndex];
-
-        auto& stringCache = StringCache::getInstance();
-        currentSelectedGroup = playerSettings.selectedMidiGroup.isEmpty() ?
-            stringCache.getGroupString(playerIndex + 1) : playerSettings.selectedMidiGroup;
-
-        selectedDrumButton = INIConfig::clampButtonIndex(playerSettings.selectedButton);
-
-        for (int i = 0; i < 16; ++i) {
-            assignedMidiFiles[i] = playerSettings.assignedMidiFiles[i];
-        }
-    }
-}
-
-void MainContentComponentLeftSection::initializePlayerWithMidiFiles(int playerIndex, ComponentState& state) {
-    if (playerIndex >= 0 && playerIndex < 8 && midiFileManager) {
-        if (!isInitialized) {
-            initializeEmptyPatternGroups(state);
-        }
-
-        auto& stringCache = StringCache::getInstance();
-        const juce::String defaultGroup = stringCache.getGroupString(playerIndex + 1);
-        auto& playerSettings = state.playerSettings[playerIndex];
-        playerSettings.selectedMidiGroup = defaultGroup;
-        playerSettings.selectedButton = 0;
-
-        juce::String targetGroup = defaultGroup;
-        bool found = false;
-        for (const auto& group : state.beatsButtonGroups) {
-            if (group.groupName == defaultGroup) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found && !state.beatsButtonGroups.isEmpty()) {
-            targetGroup = state.beatsButtonGroups[0].groupName;
-            playerSettings.selectedMidiGroup = targetGroup;
-        }
-
-        for (const auto& group : state.beatsButtonGroups) {
-            if (group.groupName == targetGroup) {
-                for (int i = 0; i < 16 && i < group.midiFiles.size(); ++i) {
-                    playerSettings.assignedMidiFiles[i] = group.midiFiles[i];
-                }
-                break;
-            }
-        }
-    }
-}
 
 void MainContentComponentLeftSection::saveCurrentPlayerCompleteState(ComponentState& state) {
     if (currentPlayerIndex >= 0 && currentPlayerIndex < 8) {
         savePlayerBeatsButtonState(currentPlayerIndex, state);
-        auto* group = findOrCreateGroup(currentSelectedGroup, state);
-        if (group) {
-            group->selectedButton = selectedDrumButton;
-            group->midiFiles.clear();
-            for (int i = 0; i < 16; ++i) {
-                group->midiFiles.add(assignedMidiFiles[i]);
-            }
-        }
-    }
-}
-
-void MainContentComponentLeftSection::updateStateFromCurrentUI(ComponentState& state) {
-    if (currentPlayerIndex >= 0 && currentPlayerIndex < 8) {
-        auto& playerSettings = state.playerSettings[currentPlayerIndex];
-        playerSettings.selectedMidiGroup = currentSelectedGroup;
-        playerSettings.selectedButton = selectedDrumButton;
-
-        for (int i = 0; i < 16; ++i) {
-            playerSettings.assignedMidiFiles[i] = assignedMidiFiles[i];
-        }
-
         auto* group = findOrCreateGroup(currentSelectedGroup, state);
         if (group) {
             group->selectedButton = selectedDrumButton;
@@ -469,7 +413,8 @@ void MainContentComponentLeftSection::updateUIFromState(const ComponentState& st
             setCurrentSelectedGroup(playerSettings.selectedMidiGroup);
         } else {
             if (!state.beatsButtonGroups.isEmpty()) {
-                setCurrentSelectedGroup(state.beatsButtonGroups[0].groupName);
+                const auto& firstGroup = state.beatsButtonGroups.getReference(0);
+                setCurrentSelectedGroup(firstGroup.groupName);
             } else {
                 setCurrentSelectedGroup("Group 1");
             }
@@ -501,9 +446,78 @@ void MainContentComponentLeftSection::syncWithBeatsButtonGroups(const ComponentS
         }
 
         if (!found && !state.beatsButtonGroups.isEmpty()) {
-            setCurrentSelectedGroup(state.beatsButtonGroups[0].groupName);
+            const auto& firstGroup = state.beatsButtonGroups.getReference(0);
+            setCurrentSelectedGroup(firstGroup.groupName);
         }
 
         updateMidiFileButtons(state);
+    }
+}
+
+void MainContentComponentLeftSection::updateStateFromCurrentUI(ComponentState& state) {
+    // Update the current state from UI elements
+    for (int i = 0; i < 16; ++i) {
+        state.beatStates[i] = drumButtons[i].getToggleState();
+    }
+    
+    // Update current group selection
+    if (currentPlayerIndex >= 0 && currentPlayerIndex < 8) {
+        auto& playerSettings = state.playerSettings[currentPlayerIndex];
+        playerSettings.selectedMidiGroup = currentSelectedGroup;
+        playerSettings.selectedButton = selectedDrumButton;
+        
+        for (int i = 0; i < 16; ++i) {
+            playerSettings.assignedMidiFiles[i] = assignedMidiFiles[i];
+        }
+    }
+}
+
+void MainContentComponentLeftSection::loadPlayerBeatsButtonState(int playerIndex, const ComponentState& state) {
+    if (playerIndex < 0 || playerIndex >= 8) {
+        return;
+    }
+    
+    const auto& playerSettings = state.playerSettings[playerIndex];
+    
+    // Load assigned MIDI files
+    for (int i = 0; i < 16; ++i) {
+        assignedMidiFiles[i] = playerSettings.assignedMidiFiles[i];
+    }
+    
+    // Load selected group
+    if (!playerSettings.selectedMidiGroup.isEmpty()) {
+        setCurrentSelectedGroup(playerSettings.selectedMidiGroup);
+    }
+    
+    // Load selected button
+    selectedDrumButton = INIConfig::clampButtonIndex(playerSettings.selectedButton);
+    
+    updateMidiFileButtons(state);
+    updateSelectedButton();
+}
+
+void MainContentComponentLeftSection::savePlayerBeatsButtonState(int playerIndex, ComponentState& state) {
+    if (playerIndex < 0 || playerIndex >= 8) {
+        return;
+    }
+    
+    auto& playerSettings = state.playerSettings[playerIndex];
+    playerSettings.selectedMidiGroup = currentSelectedGroup;
+    playerSettings.selectedButton = selectedDrumButton;
+    
+    for (int i = 0; i < 16; ++i) {
+        playerSettings.assignedMidiFiles[i] = assignedMidiFiles[i];
+    }
+    
+    // Update the group in beatsButtonGroups as well
+    for (auto& group : state.beatsButtonGroups) {
+        if (group.groupName == currentSelectedGroup) {
+            group.selectedButton = selectedDrumButton;
+            group.midiFiles.clear();
+            for (int i = 0; i < 16; ++i) {
+                group.midiFiles.add(assignedMidiFiles[i]);
+            }
+            break;
+        }
     }
 }

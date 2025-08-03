@@ -58,11 +58,12 @@ private:
     FontManager& fontManager;
     ColorScheme& colorScheme;
 
-    juce::Label togglesLabel;
-    juce::Label fillsLabel;
-    juce::Label swingLabel;
-    juce::Label energyLabel;
-    juce::Label volumeLabel;
+    // REMOVED: Labels now managed by MainContentComponent Row 4
+    // juce::Label togglesLabel;
+    // juce::Label fillsLabel;
+    // juce::Label swingLabel;
+    // juce::Label energyLabel;
+    // juce::Label volumeLabel;
 
     juce::TextButton toggleButtons[INIConfig::UI::MAX_TOGGLE_STATES];
     juce::TextButton fillButtons[INIConfig::UI::MAX_FILL_STATES];

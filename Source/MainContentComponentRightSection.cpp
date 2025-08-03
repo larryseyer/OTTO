@@ -30,30 +30,8 @@ void MainContentComponentRightSection::setupComponents() {
     // REMOVED: middleSeparator - no internal separators in unified 6-row system
     // addAndMakeVisible(middleSeparator);
 
-    togglesLabel.setComponentID("toggles_label");
-    togglesLabel.setText("Toggles", juce::dontSendNotification);
-    togglesLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
-    togglesLabel.setJustificationType(juce::Justification::centred);
-
-    fillsLabel.setComponentID("fills_label");
-    fillsLabel.setText("Fills", juce::dontSendNotification);
-    fillsLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
-    fillsLabel.setJustificationType(juce::Justification::centred);
-
-    swingLabel.setComponentID("swing_label");
-    swingLabel.setText("Swing", juce::dontSendNotification);
-    swingLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
-    swingLabel.setJustificationType(juce::Justification::centred);
-
-    energyLabel.setComponentID("energy_label");
-    energyLabel.setText("Energy", juce::dontSendNotification);
-    energyLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
-    energyLabel.setJustificationType(juce::Justification::centred);
-
-    volumeLabel.setComponentID("volume_label");
-    volumeLabel.setText("Volume", juce::dontSendNotification);
-    volumeLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
-    volumeLabel.setJustificationType(juce::Justification::centred);
+    // REMOVED: Label configuration - now handled by MainContentComponent Row 4
+    // MainContentComponent::setupRow4Label() method handles all label setup
 
     juce::String toggleNames[] = {"Auto", "Manual", "Stick", "Ride", "Lock"};
     for (int i = 0; i < 5; ++i) {

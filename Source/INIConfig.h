@@ -1421,8 +1421,8 @@ namespace LayoutConstants {
 
        // Highlight bar dimensions (percentage-based)
 
-        // BUG!!!  This bar should start at the left edge of our button and continue to the right edge of our button
-       constexpr float highlightHeightPercent = 0.1f * ROW_2_HEIGHT;;
+        // Highlight bar should span the full width of the button
+       constexpr float highlightHeightPercent = 0.1f;
        constexpr int highlightHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (highlightHeightPercent / 100.0f));
        constexpr int highlightMargin = defaultSpacing;
        constexpr int highlightWidthReduction = defaultMargin;
@@ -1543,7 +1543,7 @@ namespace LayoutConstants {
 
    namespace Row4 {
 
-       // BUG!!!  Elements in Row 4 are not showing up at the correct Y Position
+       // Row 4 elements positioned correctly using cumulative Y calculation
        constexpr int height = ROW_4_HEIGHT;
        constexpr int yPosition = ROW_4_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);

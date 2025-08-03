@@ -226,6 +226,30 @@ Each of OTTO's 8 players provides comprehensive control:
 - Integration with popular DAW ecosystems
 - Mobile-optimized interface enhancements
 
+## 📁 Project Organization
+
+### Build System
+- `/scripts/build/` - All build scripts for all platforms (macOS, Windows, Linux, iOS, Android)
+- `/Builds/` - Generated build outputs organized by platform (MacOSX, iOS, LinuxMakefile, VisualStudio2022, Android)
+- `CMakeLists.txt` - Main build configuration for all platforms
+- `/cmake/` - Platform-specific toolchain files (iOS-Enhanced.cmake, Android-Enhanced.cmake, Windows.cmake, etc.)
+
+### Source Code
+- `/Source/` - All C++ source code and headers
+- `/Source/tests/` - Test files (excluded from main build)
+- `/Resources/` - Binary data and assets with dedicated CMakeLists.txt for asset compilation
+
+### Documentation
+- `/docs/` - All project documentation (.md files)
+- Key files: BUILDRULES.md, DESIGNRULES.md, INIRULES.md, ZENCODER_RULES.md
+
+### Testing
+- `/e2e-test/` - End-to-end test suite with dedicated CMakeLists.txt
+- `/build-tests/` - Build testing utilities
+
+### Assets
+- `/Assets/` - GUI assets, fonts, drumkits, MIDI files organized by type
+
 ## 📚 Documentation
 
 - **[docs/REPO.md](docs/REPO.md)** - GitHub repository guidelines and contribution rules

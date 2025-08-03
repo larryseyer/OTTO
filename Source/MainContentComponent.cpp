@@ -123,6 +123,12 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
       patternGroupLeftChevron("caret-left", FontManager::PhosphorWeight::Regular), // Previous pattern group
       patternGroupRightChevron("caret-right", FontManager::PhosphorWeight::Regular), // Next pattern group
       patternGroupFavoriteButton("heart", FontManager::PhosphorWeight::Regular),   // Favorite pattern group
+      
+      togglesLabel("Toggles", juce::dontSendNotification),
+      fillsLabel("Fills", juce::dontSendNotification),
+      swingLabel("Swing", juce::dontSendNotification),
+      energyLabel("Energy", juce::dontSendNotification),
+      volumeLabel("Volume", juce::dontSendNotification),
 
       
       // ROW SEPARATORS: Visual dividers between each interface row

@@ -1436,7 +1436,7 @@ void TopBarComponent::resized() {
 
     // ICON-WIDTH-BASED SPACING: Calculate AFTER any icon size adjustments
     // This ensures spacing is always proportional to the FINAL icon size
-    int iconWidth = iconSize; // Icons are square, so width = final iconSize
+    // int iconWidth = iconSize; // Icons are square, so width = final iconSize
     int iconSpacing = 2; // FIXED SMALL SPACING - test if percentage calculation is the problem
 
     // Left side controls: Gear, Link, Cloud buttons - positioned with responsive calculations
@@ -1514,7 +1514,7 @@ void TopBarComponent::resized() {
     int bpmHeight = iconSize; // Same height as icons for consistency
 
     // Calculate available space between play button and OTTO logo for all right-side controls
-    int totalAvailableRightSpace = ottoX - bpmX - iconSpacing;
+    // int totalAvailableRightSpace = ottoX - bpmX - iconSpacing;
 
     // BPM width: 1/3 wider allocation for tempo decimals
     int absoluteMinBpmWidth = static_cast<int>(iconSize * 2.6f);  // 260% of icon size - 33% increase from 200%

@@ -1245,7 +1245,7 @@ void MainContentComponent::performIntegrationValidation(const juce::Rectangle<in
     // ========================================================================
     
     // Interface completeness validation
-    int expectedTotalHeight = layoutManager.scaled(ROW_6_Y + ROW_6_HEIGHT);
+    // int expectedTotalHeight = layoutManager.scaled(ROW_6_Y + ROW_6_HEIGHT);
     int mainContentHeight = bounds.getHeight();
     int mainContentOffset = layoutManager.scaled(ROW_3_Y);
     
@@ -1463,15 +1463,8 @@ void MainContentComponent::initializePatternGroups() {
             currentPatternGroupIndex = 0;
             
             // Try to restore last selected pattern group from preferences
-            auto lastGroupName = INIDataManager::getInstance().getLastSelectedPatternGroup();
-            if (lastGroupName.isNotEmpty()) {
-                for (int i = 0; i < availablePatternGroups.size(); ++i) {
-                    if (availablePatternGroups.getReference(i).groupName == lastGroupName) {
-                        currentPatternGroupIndex = i;
-                        break;
-                    }
-                }
-            }
+            // TODO: Implement pattern group preference restoration when INI system supports it
+            // For now, default to first group
         }
         
         // Update UI components with loaded data
@@ -1534,7 +1527,7 @@ void MainContentComponent::createDefaultPatternGroups() {
         group.isFavorite = groupInfo.isFavorite;
         
         // Initialize with empty beat patterns - will be populated by user
-        group.beatsButtons.clear();
+        // Note: BeatsButtonGroup uses midiFiles array for pattern storage
         
         availablePatternGroups.add(group);
     }
@@ -1578,13 +1571,13 @@ void MainContentComponent::updatePatternGroupDropdown() {
     }
     
     // Sort favorites alphabetically
-    favoriteIndices.sort([this](int a, int b) {
+    std::sort(favoriteIndices.begin(), favoriteIndices.end(), [this](int a, int b) {
         return availablePatternGroups.getReference(a).groupName.compareIgnoreCase(
                availablePatternGroups.getReference(b).groupName) < 0;
     });
     
     // Sort regular groups alphabetically
-    regularIndices.sort([this](int a, int b) {
+    std::sort(regularIndices.begin(), regularIndices.end(), [this](int a, int b) {
         return availablePatternGroups.getReference(a).groupName.compareIgnoreCase(
                availablePatternGroups.getReference(b).groupName) < 0;
     });
@@ -1686,7 +1679,8 @@ void MainContentComponent::handlePatternGroupNavigation(bool isNext) {
     if (iniDataManager) {
         auto* currentGroup = getCurrentPatternGroup();
         if (currentGroup) {
-            INIDataManager::getInstance().setLastSelectedPatternGroup(currentGroup->groupName);
+            // TODO: Implement setLastSelectedPatternGroup when INI system supports it
+            // iniDataManager->setLastSelectedPatternGroup(currentGroup->groupName);
         }
     }
     
@@ -1859,7 +1853,7 @@ void MainContentComponent::setupRow4Label(juce::Label& label, const juce::String
     
     // Enhanced label styling with proper font management
     label.setFont(fontManager.getFont(FontManager::FontRole::Body, 
-                                    INIConfig::LayoutConstants::Row4::labelFontSize));
+                                    INIConfig::LayoutConstants::fontSizeLabel));
     
     // Initial inactive state - will be updated based on control values
     label.setColour(juce::Label::textColourId, 
@@ -2036,7 +2030,7 @@ void MainContentComponent::updateRow4LabelsForEditMode(bool editModeActive) {
         colorScheme.getColor(ColorScheme::ColorRole::Accent) :
         colorScheme.getColor(ColorScheme::ColorRole::SecondaryText);
     
-    auto normalColor = colorScheme.getColor(ColorScheme::ColorRole::SecondaryText);
+    // auto normalColor = colorScheme.getColor(ColorScheme::ColorRole::SecondaryText);
     
     if (editModeActive) {
         // In edit mode - highlight labels to show they're editable
@@ -2274,7 +2268,7 @@ void MainContentComponent::testPatternGroupFavoriteSystem() {
     jassert(patternGroupFavoriteButton.getToggleState() == group->isFavorite);
     
     // Test favorite icon update
-    auto expectedIcon = group->isFavorite ? "heart-fill" : "heart";
+    // auto expectedIcon = group->isFavorite ? "heart-fill" : "heart";
     // Note: Icon name testing would require access to PhosphorIconButton internals
     
     DBG("Pattern Group Favorite System: PASSED");
@@ -2285,7 +2279,7 @@ void MainContentComponent::testRow4LabelVisualFeedback() {
     
     // Test edit mode label updates
     updateRow4LabelsForEditMode(true);
-    auto editColor = colorScheme.getColor(ColorScheme::ColorRole::Accent);
+    // auto editColor = colorScheme.getColor(ColorScheme::ColorRole::Accent);
     
     // Verify labels have edit mode colors (would need color comparison)
     // This is a visual test that would be validated manually
@@ -2772,7 +2766,8 @@ void MainContentComponent::updateBeatGridFromPatternGroup(const BeatsButtonGroup
             loadStates(currentState);
             
             // Update the left section with the pattern group's MIDI assignments
-            leftSection->updateMidiFileButtons(currentState);
+            // Note: updateMidiFileButtons is private, using loadStates instead
+            leftSection->loadStates(currentState);
         }
         
         DBG("PHASE 6: Beat grid updated for pattern group: " << patternGroup.groupName);
@@ -3062,8 +3057,8 @@ void MainContentComponent::precacheFrequentPatternGroups() {
         // Pre-cache the current pattern group and adjacent groups for quick navigation
         if (currentPatternGroupIndex >= 0 && currentPatternGroupIndex < availablePatternGroups.size()) {
             // Cache current group
-            int prevIndex = (currentPatternGroupIndex - 1 + availablePatternGroups.size()) % availablePatternGroups.size();
-            int nextIndex = (currentPatternGroupIndex + 1) % availablePatternGroups.size();
+            // int prevIndex = (currentPatternGroupIndex - 1 + availablePatternGroups.size()) % availablePatternGroups.size();
+            // int nextIndex = (currentPatternGroupIndex + 1) % availablePatternGroups.size();
             
             // Pre-cache adjacent groups for smooth navigation
             // This could include pre-loading MIDI files or other resources

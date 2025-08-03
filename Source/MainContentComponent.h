@@ -16,6 +16,15 @@ class MainContentComponentRightSection;
 class SceneLauncherComponent;
 class LoopSectionComponent;
 
+// PHASE 6: Performance Optimization Cache
+struct PatternGroupCache {
+    juce::HashMap<int, juce::String> groupNameCache;
+    juce::HashMap<int, float> swingCache;
+    juce::HashMap<int, float> energyCache;
+    double lastCacheUpdate = 0.0;
+    bool cacheValid = false;
+};
+
 class MainContentComponent : public juce::Component,
                               public juce::Button::Listener,
                               public juce::ComboBox::Listener {
@@ -153,13 +162,7 @@ private:
     bool patternGroupEditMode = false;
     
     // PHASE 6: Performance Optimization Cache
-    struct PatternGroupCache {
-        juce::HashMap<int, juce::String> groupNameCache;
-        juce::HashMap<int, float> swingCache;
-        juce::HashMap<int, float> energyCache;
-        double lastCacheUpdate = 0.0;
-        bool cacheValid = false;
-    } patternGroupCache;
+    PatternGroupCache patternGroupCache;
 
     void validatePlayerIndex(int playerIndex) const;
 

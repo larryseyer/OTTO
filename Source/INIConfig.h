@@ -1420,9 +1420,7 @@ namespace LayoutConstants {
        constexpr int tabSpacing = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (tabSpacingPercent / 100.0f));
 
        // Highlight bar dimensions (percentage-based)
-
-        // Highlight bar should span the full width of the button
-       constexpr float highlightHeightPercent = 0.1f;
+       constexpr float highlightHeightPercent = 0.1f * ROW_2_HEIGHT;;
        constexpr int highlightHeight = static_cast<int>(Defaults::DEFAULT_INTERFACE_HEIGHT * (highlightHeightPercent / 100.0f));
        constexpr int highlightMargin = defaultSpacing;
        constexpr int highlightWidthReduction = defaultMargin;
@@ -1543,7 +1541,6 @@ namespace LayoutConstants {
 
    namespace Row4 {
 
-       // Row 4 elements positioned correctly using cumulative Y calculation
        constexpr int height = ROW_4_HEIGHT;
        constexpr int yPosition = ROW_4_Y;
        constexpr int contentHeight = height - (defaultPadding * 2);

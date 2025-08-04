@@ -215,7 +215,7 @@ void Row4Component::updatePatternGroupLayout() {
     
     auto bounds = getLocalBounds();
     
-    // Position components using INI-driven layout constants
+    // Position pattern group components using INI-driven layout constants
     patternGroupEditButton.setBounds(
         layoutManager.scaled(editIconX),
         layoutManager.scaled(editIconY),
@@ -251,7 +251,7 @@ void Row4Component::updatePatternGroupLayout() {
         layoutManager.scaled(iconHeight)
     );
     
-    // CRITICAL: Position labels in Row 4 using INI constants
+    // CRITICAL: Position labels in Row 4 using existing INI constants
     togglesLabel.setBounds(
         layoutManager.scaled(togglesLabelX),
         layoutManager.scaled(togglesLabelY),

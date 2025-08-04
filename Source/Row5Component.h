@@ -3,6 +3,8 @@
 #include "UtilityComponents.h"
 #include "ComponentState.h"
 #include "INIConfig.h"
+#include "Animation/AnimationManager.h"
+#include "DragDrop/DragDropManager.h"
 
 class MidiEngine;
 class Mixer;
@@ -48,6 +50,13 @@ public:
     void setMidiFileAssignment(int buttonIndex, const juce::String& midiFile);
     int getSelectedDrumButton() const { return selectedDrumButton; }
     void setSelectedDrumButton(int buttonIndex);
+    void triggerDrumPad(int padIndex);
+    
+    void setAnimationManager(AnimationManager* manager) { animationManager = manager; }
+    void setupDragDropTargets();
+    void setupHoverEffects();
+    void setupRealTimeIndicators();
+    void updateBeatVisualization();
     
     // Player state management
     void setCurrentPlayerIndex(int index) { currentPlayerIndex = index; }
@@ -59,11 +68,69 @@ public:
     std::function<void(int, const juce::String&, float)> onPlayerSliderValueChanged;
     std::function<void(int, int, bool)> onPlayerToggleChanged;
     std::function<void(int, int, bool)> onPlayerFillChanged;
+
+    class DrumPadDragTarget : public juce::FileDragAndDropTarget, public juce::MouseListener {
+    public:
+        DrumPadDragTarget(Row5Component& parent, int padIndex) 
+            : parentComponent(parent), padIndex(padIndex) {}
+        
+        bool isInterestedInFileDrag(const juce::StringArray& files) override {
+            return files.size() == 1 && 
+                   (files[0].endsWith(".mid") || files[0].endsWith(".midi"));
+        }
+        
+        void filesDropped(const juce::StringArray& files, int x, int y) override {
+            juce::ignoreUnused(x, y);
+            if (files.size() > 0) {
+                parentComponent.setMidiFileAssignment(padIndex, files[0]);
+                parentComponent.drumButtons[padIndex].setColour(
+                    juce::TextButton::buttonColourId,
+                    parentComponent.colorScheme.getColor(ColorScheme::ColorRole::Success));
+            }
+        }
+        
+        void fileDragEnter(const juce::StringArray& files, int x, int y) override {
+            juce::ignoreUnused(files, x, y);
+            parentComponent.drumButtons[padIndex].setColour(
+                juce::TextButton::buttonColourId,
+                parentComponent.colorScheme.getColor(ColorScheme::ColorRole::Accent));
+        }
+        
+        void fileDragExit(const juce::StringArray& files) override {
+            juce::ignoreUnused(files);
+            parentComponent.drumButtons[padIndex].setColour(
+                juce::TextButton::buttonColourId,
+                parentComponent.colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        }
+        
+        // MouseListener methods for hover effects
+        void mouseEnter(const juce::MouseEvent& event) override {
+            juce::ignoreUnused(event);
+            if (parentComponent.animationManager && parentComponent.animationManager->shouldUseAnimations()) {
+                parentComponent.drumButtons[padIndex].setColour(juce::TextButton::buttonColourId,
+                    parentComponent.colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground).brighter(0.1f));
+            }
+        }
+        
+        void mouseExit(const juce::MouseEvent& event) override {
+            juce::ignoreUnused(event);
+            parentComponent.drumButtons[padIndex].setColour(juce::TextButton::buttonColourId,
+                parentComponent.colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        }
+        
+    private:
+        Row5Component& parentComponent;
+        int padIndex;
+        
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DrumPadDragTarget)
+    };
+    
     std::function<void(int, const juce::String&)> onMidiFileChanged;
     
 private:
     MidiEngine& midiEngine;
     Mixer& mixer;
+    AnimationManager* animationManager = nullptr;
     juce::AudioProcessorValueTreeState& valueTreeState;
     
     // LEFT SECTION: 4x4 Drum Pattern Grid (60% width)
@@ -86,6 +153,10 @@ private:
     juce::String assignedMidiFiles[INIConfig::Audio::NUM_DRUM_PADS];
     bool toggleStates[INIConfig::UI::MAX_TOGGLE_STATES] = {};
     bool fillStates[INIConfig::UI::MAX_FILL_STATES] = {};
+    
+    juce::OwnedArray<DrumPadDragTarget> drumPadDragTargets;
+    class BeatVisualizationTimer;
+    std::unique_ptr<juce::Timer> beatVisualizationTimer;
     
     void setupInteractiveComponents();
     void updateInteractiveLayout();

@@ -3,6 +3,8 @@
 #include "Mixer.h"
 #include "JUCE8_CODING_STANDARDS.h"
 #include "ErrorHandling.h"
+#include "Animation/AnimationManager.h"
+#include "DragDrop/DragDropManager.h"
 #include <iostream>
 
 Row5Component::Row5Component(MidiEngine& midiEngine,
@@ -19,6 +21,9 @@ Row5Component::Row5Component(MidiEngine& midiEngine,
     , rightSeparator(colorScheme) {
     
     setupInteractiveComponents();
+    setupDragDropTargets();
+    setupHoverEffects();
+    setupRealTimeIndicators();
 }
 
 void Row5Component::paint(juce::Graphics& g) {
@@ -28,6 +33,48 @@ void Row5Component::paint(juce::Graphics& g) {
 
 void Row5Component::resized() {
     updateInteractiveLayout();
+}
+
+void Row5Component::triggerDrumPad(int padIndex) {
+    if (padIndex >= 0 && padIndex < INIConfig::Audio::NUM_DRUM_PADS) {
+        drumButtons[padIndex].triggerClick();
+    }
+}
+
+void Row5Component::setupDragDropTargets() {
+    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
+        auto dragTarget = std::make_unique<DrumPadDragTarget>(*this, i);
+        drumButtons[i].addMouseListener(dragTarget.get(), false);
+        drumPadDragTargets.add(std::move(dragTarget));
+    }
+}
+
+void Row5Component::setupHoverEffects() {
+}
+
+void Row5Component::setupRealTimeIndicators() {
+    class BeatVisualizationTimer : public juce::Timer {
+    public:
+        BeatVisualizationTimer(Row5Component& parent) : parentComponent(parent) {}
+        void timerCallback() override {
+            parentComponent.updateBeatVisualization();
+        }
+    private:
+        Row5Component& parentComponent;
+    };
+    
+    beatVisualizationTimer = std::make_unique<BeatVisualizationTimer>(*this);
+    beatVisualizationTimer->startTimerHz(60);
+}
+
+void Row5Component::updateBeatVisualization() {
+    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
+        bool isActive = false;
+        if (isActive) {
+            drumButtons[i].setColour(juce::TextButton::buttonColourId,
+                colorScheme.getColor(ColorScheme::ColorRole::Accent));
+        }
+    }
 }
 
 void Row5Component::saveStates(ComponentState& state) {
@@ -483,6 +530,7 @@ void Row5Component::updateFontsAndColors() {
         slider->setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     }
 }
+
 
 void Row5Component::onDrumButtonPressed(int buttonIndex) {
     setSelectedDrumButton(buttonIndex);

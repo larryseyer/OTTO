@@ -68,6 +68,10 @@
 #include "INIDataManager.h"
 #include "ErrorHandling.h"
 #include "PerformanceOptimizations.h"
+#include "Animation/AnimationManager.h"
+#include "UX/KeyboardHandler.h"
+#include "UX/ContextMenuManager.h"
+#include "Performance/RenderOptimizer.h"
 #include <iostream>
 
 /**
@@ -199,6 +203,24 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
             layoutManager, fontManager, colorScheme);
     }
     addAndMakeVisible(*row6Component);  // Loop controls functionality in row-based architecture
+
+    platformManager = std::make_unique<PlatformResponsiveManager>();
+    animationManager = std::make_unique<AnimationManager>(*platformManager);
+    keyboardHandler = std::make_unique<KeyboardHandler>(fontManager, colorScheme);
+    contextMenuManager = std::make_unique<ContextMenuManager>(colorScheme, fontManager);
+    renderOptimizer = std::make_unique<RenderOptimizer>();
+
+    setupKeyboardHandlerCallbacks();
+    setupContextMenuCallbacks();
+    setupAnimationManagers();
+    
+    if (row5Component) {
+        row5Component->setAnimationManager(animationManager.get());
+        row5Component->setupDragDropTargets();
+        row5Component->setupHoverEffects();
+        row5Component->setupRealTimeIndicators();
+    }
+    
     
     // ROW SEPARATORS: Visual dividers for clear section definition
     // Positioned between rows using INIConfig::LayoutConstants positioning
@@ -878,6 +900,43 @@ bool MainContentComponent::keyPressed(const juce::KeyPress& key) {
     if (row6Component && row6Component->keyPressed(key)) return true;
     
     return juce::Component::keyPressed(key);
+}
+
+void MainContentComponent::setupKeyboardHandlerCallbacks() {
+    if (keyboardHandler) {
+        keyboardHandler->onEditModeToggle = [this](bool editMode) {
+            setEditModeVisuals(editMode);
+        };
+
+        keyboardHandler->onPlayerSwitch = [this](int playerIndex) {
+            updatePlayerDisplay(playerIndex);
+        };
+
+        keyboardHandler->onDrumPadTrigger = [this](int padIndex) {
+            if (row5Component) {
+                row5Component->triggerDrumPad(padIndex);
+            }
+        };
+    }
+}
+
+void MainContentComponent::setupContextMenuCallbacks() {
+    if (contextMenuManager) {
+        contextMenuManager->onPatternGroupAction = [this](const juce::String& action) {
+            if (row4Component) {
+                row4Component->handlePatternGroupAction(action);
+            }
+        };
+    }
+}
+
+void MainContentComponent::setupAnimationManagers() {
+    if (row4Component && animationManager) {
+        row4Component->setAnimationManager(animationManager.get());
+    }
+    if (row5Component && animationManager) {
+        row5Component->setAnimationManager(animationManager.get());
+    }
 }
 
 #ifdef JUCE_DEBUG

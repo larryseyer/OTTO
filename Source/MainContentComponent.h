@@ -7,6 +7,8 @@
 #include "ColorScheme.h"
 #include "ComponentState.h"
 #include "INIConfig.h"
+#include "PlatformResponsiveManager.h"
+
 
 class MidiEngine;
 class Mixer;
@@ -21,6 +23,11 @@ class Row3Component;
 class Row4Component;
 class Row5Component;
 class Row6Component;
+class AnimationManager;
+class KeyboardHandler;
+class ContextMenuManager;
+class RenderOptimizer;
+class PlatformResponsiveManager;
 
 // PHASE 6: Performance Optimization Cache
 struct PatternGroupCache {
@@ -167,6 +174,12 @@ private:
     std::unique_ptr<Row4Component> row4Component;
     std::unique_ptr<Row5Component> row5Component;
     std::unique_ptr<Row6Component> row6Component;
+    
+    std::unique_ptr<PlatformResponsiveManager> platformManager;
+    std::unique_ptr<AnimationManager> animationManager;
+    std::unique_ptr<KeyboardHandler> keyboardHandler;
+    std::unique_ptr<ContextMenuManager> contextMenuManager;
+    std::unique_ptr<RenderOptimizer> renderOptimizer;
     // Row separators - one between each row for visual debugging
     SeparatorComponent row1Separator;  // Between Row 1 (TopBar) and Row 2 (Player Tabs)
     SeparatorComponent row2Separator;  // Between Row 2 (Player Tabs) and Row 3 (DrumKit Menu)
@@ -252,6 +265,11 @@ private:
     // PHASE 8: Layout helper methods
     void updateRowSeparators();
     void updateDebugLabels();
+    
+    void setupKeyboardHandlerCallbacks();
+    void setupContextMenuCallbacks();
+    void setupAnimationManagers();
+    void setCurrentPlayerIndex(int index) { currentPlayerIndex = index; }
     
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);

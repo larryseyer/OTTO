@@ -44,35 +44,26 @@ void Row5Component::triggerDrumPad(int padIndex) {
 void Row5Component::setupDragDropTargets() {
     for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
         auto dragTarget = std::make_unique<DrumPadDragTarget>(*this, i);
+        drumButtons[i].addMouseListener(dragTarget.get(), false);
         drumPadDragTargets.add(std::move(dragTarget));
-        drumButtons[i].addMouseListener(drumPadDragTargets[i], false);
     }
 }
 
 void Row5Component::setupHoverEffects() {
-    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
-        auto& button = drumButtons[i];
-        
-        button.onMouseEnter = [this, i]() {
-            if (animationManager && animationManager->shouldUseAnimations()) {
-                drumButtons[i].setColour(juce::TextButton::buttonColourId,
-                    colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground).brighter(0.1f));
-            }
-        };
-        
-        button.onMouseExit = [this, i]() {
-            drumButtons[i].setColour(juce::TextButton::buttonColourId,
-                colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
-        };
-    }
 }
 
 void Row5Component::setupRealTimeIndicators() {
-    beatVisualizationTimer = std::make_unique<juce::Timer>();
-    beatVisualizationTimer->onTimer = [this]() {
-        updateBeatVisualization();
+    class BeatVisualizationTimer : public juce::Timer {
+    public:
+        BeatVisualizationTimer(Row5Component& parent) : parentComponent(parent) {}
+        void timerCallback() override {
+            parentComponent.updateBeatVisualization();
+        }
+    private:
+        Row5Component& parentComponent;
     };
     
+    beatVisualizationTimer = std::make_unique<BeatVisualizationTimer>(*this);
     beatVisualizationTimer->startTimerHz(60);
 }
 
@@ -503,100 +494,6 @@ void Row5Component::updateFontsAndColors() {
     auto buttonFont = fontManager.getFont(FontManager::FontRole::Button, 12.0f);
     auto sliderFont = fontManager.getFont(FontManager::FontRole::Body, 11.0f);
     
-
-class Row5Component::DrumPadDragTarget : public juce::FileDragAndDropTarget {
-public:
-    DrumPadDragTarget(Row5Component& parent, int padIndex) 
-        : parentComponent(parent), padIndex(padIndex) {}
-    
-    bool isInterestedInFileDrag(const juce::StringArray& files) override {
-        return files.size() == 1 && 
-               (files[0].endsWith(".mid") || files[0].endsWith(".midi"));
-    }
-    
-    void filesDropped(const juce::StringArray& files, int x, int y) override {
-        juce::ignoreUnused(x, y);
-        if (files.size() > 0) {
-            parentComponent.setMidiFileAssignment(padIndex, files[0]);
-            parentComponent.drumButtons[padIndex].setColour(
-                juce::TextButton::buttonColourId,
-                parentComponent.colorScheme.getColor(ColorScheme::ColorRole::Success));
-        }
-    }
-    
-    void fileDragEnter(const juce::StringArray& files, int x, int y) override {
-        juce::ignoreUnused(files, x, y);
-        parentComponent.drumButtons[padIndex].setColour(
-            juce::TextButton::buttonColourId,
-            parentComponent.colorScheme.getColor(ColorScheme::ColorRole::Accent));
-    }
-    
-    void fileDragExit(const juce::StringArray& files) override {
-        juce::ignoreUnused(files);
-        parentComponent.drumButtons[padIndex].setColour(
-            juce::TextButton::buttonColourId,
-            parentComponent.colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
-    }
-    
-private:
-    Row5Component& parentComponent;
-    int padIndex;
-};
-
-void Row5Component::setupDragDropTargets() {
-    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
-        auto dragTarget = std::make_unique<DrumPadDragTarget>(*this, i);
-        drumPadDragTargets.add(std::move(dragTarget));
-        drumButtons[i].addMouseListener(drumPadDragTargets[i], false);
-    }
-}
-
-void Row5Component::setupHoverEffects() {
-    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
-        auto& button = drumButtons[i];
-        
-        button.onMouseEnter = [this, i]() {
-            if (animationManager && animationManager->shouldUseAnimations()) {
-                drumButtons[i].setColour(juce::TextButton::buttonColourId,
-                    colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground).brighter(0.1f));
-            }
-        };
-        
-        button.onMouseExit = [this, i]() {
-            drumButtons[i].setColour(juce::TextButton::buttonColourId,
-                colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
-        };
-    }
-}
-
-void Row5Component::setupRealTimeIndicators() {
-    beatVisualizationTimer = std::make_unique<juce::Timer>();
-    beatVisualizationTimer->onTimer = [this]() {
-        updateBeatVisualization();
-    };
-    
-    beatVisualizationTimer->startTimerHz(60);
-}
-
-void Row5Component::updateBeatVisualization() {
-    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
-        bool isActive = false;
-        if (isActive) {
-            drumButtons[i].setColour(juce::TextButton::buttonColourId,
-                colorScheme.getColor(ColorScheme::ColorRole::Accent));
-        }
-    }
-}
-
-void Row5Component::triggerDrumPad(int padIndex) {
-    if (padIndex >= 0 && padIndex < INIConfig::Audio::NUM_DRUM_PADS) {
-        setSelectedDrumButton(padIndex);
-        if (animationManager) {
-            animationManager->animateButtonPress(drumButtons[padIndex], 150);
-        }
-    }
-}
-
     // Drum buttons
     for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
         auto& button = drumButtons[i];
@@ -633,6 +530,7 @@ void Row5Component::triggerDrumPad(int padIndex) {
         slider->setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     }
 }
+
 
 void Row5Component::onDrumButtonPressed(int buttonIndex) {
     setSelectedDrumButton(buttonIndex);

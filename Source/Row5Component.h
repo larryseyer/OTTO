@@ -69,7 +69,62 @@ public:
     std::function<void(int, int, bool)> onPlayerToggleChanged;
     std::function<void(int, int, bool)> onPlayerFillChanged;
 
-    class DrumPadDragTarget;
+    class DrumPadDragTarget : public juce::FileDragAndDropTarget, public juce::MouseListener {
+    public:
+        DrumPadDragTarget(Row5Component& parent, int padIndex) 
+            : parentComponent(parent), padIndex(padIndex) {}
+        
+        bool isInterestedInFileDrag(const juce::StringArray& files) override {
+            return files.size() == 1 && 
+                   (files[0].endsWith(".mid") || files[0].endsWith(".midi"));
+        }
+        
+        void filesDropped(const juce::StringArray& files, int x, int y) override {
+            juce::ignoreUnused(x, y);
+            if (files.size() > 0) {
+                parentComponent.setMidiFileAssignment(padIndex, files[0]);
+                parentComponent.drumButtons[padIndex].setColour(
+                    juce::TextButton::buttonColourId,
+                    parentComponent.colorScheme.getColor(ColorScheme::ColorRole::Success));
+            }
+        }
+        
+        void fileDragEnter(const juce::StringArray& files, int x, int y) override {
+            juce::ignoreUnused(files, x, y);
+            parentComponent.drumButtons[padIndex].setColour(
+                juce::TextButton::buttonColourId,
+                parentComponent.colorScheme.getColor(ColorScheme::ColorRole::Accent));
+        }
+        
+        void fileDragExit(const juce::StringArray& files) override {
+            juce::ignoreUnused(files);
+            parentComponent.drumButtons[padIndex].setColour(
+                juce::TextButton::buttonColourId,
+                parentComponent.colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        }
+        
+        // MouseListener methods for hover effects
+        void mouseEnter(const juce::MouseEvent& event) override {
+            juce::ignoreUnused(event);
+            if (parentComponent.animationManager && parentComponent.animationManager->shouldUseAnimations()) {
+                parentComponent.drumButtons[padIndex].setColour(juce::TextButton::buttonColourId,
+                    parentComponent.colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground).brighter(0.1f));
+            }
+        }
+        
+        void mouseExit(const juce::MouseEvent& event) override {
+            juce::ignoreUnused(event);
+            parentComponent.drumButtons[padIndex].setColour(juce::TextButton::buttonColourId,
+                parentComponent.colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        }
+        
+    private:
+        Row5Component& parentComponent;
+        int padIndex;
+        
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DrumPadDragTarget)
+    };
+    
     std::function<void(int, const juce::String&)> onMidiFileChanged;
     
 private:
@@ -100,6 +155,7 @@ private:
     bool fillStates[INIConfig::UI::MAX_FILL_STATES] = {};
     
     juce::OwnedArray<DrumPadDragTarget> drumPadDragTargets;
+    class BeatVisualizationTimer;
     std::unique_ptr<juce::Timer> beatVisualizationTimer;
     
     void setupInteractiveComponents();

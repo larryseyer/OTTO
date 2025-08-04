@@ -20,6 +20,21 @@ public:
     int getOptimalDuration(int baseDuration) const;
     
 private:
+    class SliderAnimationTimer : public juce::Timer {
+    public:
+        SliderAnimationTimer(juce::Slider& slider, float startValue, float targetValue, 
+                           juce::int64 startTime, int duration, AnimationManager& manager);
+        void timerCallback() override;
+        
+    private:
+        juce::Slider& slider;
+        float startValue, targetValue;
+        juce::int64 startTime;
+        int duration;
+        AnimationManager& animationManager;
+    };
+    
+    juce::OwnedArray<SliderAnimationTimer> activeTimers;
     PlatformResponsiveManager& platformManager;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AnimationManager)

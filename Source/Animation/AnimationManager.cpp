@@ -31,25 +31,9 @@ void AnimationManager::animateSliderValue(juce::Slider& slider, float targetValu
     auto startTime = juce::Time::getMillisecondCounterHiRes();
     auto duration = getOptimalDuration(durationMs);
     
-    auto timer = std::make_unique<juce::Timer>();
-    timer->onTimer = [&slider, startValue, targetValue, startTime, duration, timer = timer.get()]() {
-        auto currentTime = juce::Time::getMillisecondCounterHiRes();
-        auto elapsed = currentTime - startTime;
-        
-        if (elapsed >= duration) {
-            slider.setValue(targetValue, juce::dontSendNotification);
-            timer->stopTimer();
-            return;
-        }
-        
-        float progress = static_cast<float>(elapsed) / static_cast<float>(duration);
-        progress = easeInOut(progress);
-        
-        float currentValue = startValue + (targetValue - startValue) * progress;
-        slider.setValue(currentValue, juce::dontSendNotification);
-    };
-    
+    auto timer = std::make_unique<SliderAnimationTimer>(slider, startValue, targetValue, startTime, duration, *this);
     timer->startTimerHz(60);
+    activeTimers.add(std::move(timer));
 }
 
 void AnimationManager::animateButtonPress(juce::Button& button, int durationMs) {
@@ -82,4 +66,27 @@ bool AnimationManager::shouldUseAnimations() const {
 
 int AnimationManager::getOptimalDuration(int baseDuration) const {
     return platformManager.getAnimationDuration(baseDuration);
+}
+
+AnimationManager::SliderAnimationTimer::SliderAnimationTimer(juce::Slider& slider, float startValue, float targetValue, 
+                                                           juce::int64 startTime, int duration, AnimationManager& manager)
+    : slider(slider), startValue(startValue), targetValue(targetValue), startTime(startTime), duration(duration), animationManager(manager) {
+}
+
+void AnimationManager::SliderAnimationTimer::timerCallback() {
+    auto currentTime = juce::Time::getMillisecondCounterHiRes();
+    auto elapsed = currentTime - startTime;
+    
+    if (elapsed >= duration) {
+        slider.setValue(targetValue, juce::dontSendNotification);
+        stopTimer();
+        animationManager.activeTimers.removeObject(this);
+        return;
+    }
+    
+    float progress = static_cast<float>(elapsed) / static_cast<float>(duration);
+    progress = AnimationManager::easeInOut(progress);
+    
+    float currentValue = startValue + (targetValue - startValue) * progress;
+    slider.setValue(currentValue, juce::dontSendNotification);
 }

@@ -4,6 +4,7 @@ ContextMenuManager::ContextMenuManager(ColorScheme& colorScheme, FontManager& fo
     : colorScheme(colorScheme), fontManager(fontManager) {
 }
 
+
 void ContextMenuManager::showPatternGroupMenu(juce::Component* parent, juce::Point<int> position) {
     juce::PopupMenu menu;
     stylePopupMenu(menu);
@@ -14,17 +15,19 @@ void ContextMenuManager::showPatternGroupMenu(juce::Component* parent, juce::Poi
     menu.addItem(3, "Add to Favorites");
     menu.addItem(4, "Export Pattern Group");
     
-    auto result = menu.show();
-    if (result > 0 && onPatternGroupAction) {
-        juce::String action;
-        switch (result) {
-            case 1: action = "duplicate"; break;
-            case 2: action = "delete"; break;
-            case 3: action = "favorite"; break;
-            case 4: action = "export"; break;
-        }
-        onPatternGroupAction(action);
-    }
+    menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(parent).withTargetScreenArea(juce::Rectangle<int>(position.x, position.y, 1, 1)),
+        [this](int result) {
+            if (result > 0 && onPatternGroupAction) {
+                juce::String action;
+                switch (result) {
+                    case 1: action = "duplicate"; break;
+                    case 2: action = "delete"; break;
+                    case 3: action = "favorite"; break;
+                    case 4: action = "export"; break;
+                }
+                onPatternGroupAction(action);
+            }
+        });
 }
 
 void ContextMenuManager::showDrumPadMenu(juce::Component* parent, juce::Point<int> position, int padIndex) {
@@ -40,19 +43,21 @@ void ContextMenuManager::showDrumPadMenu(juce::Component* parent, juce::Point<in
     menu.addItem(5, "Mute Pad");
     menu.addItem(6, "Solo Pad");
     
-    auto result = menu.show();
-    if (result > 0 && onDrumPadAction) {
-        juce::String action;
-        switch (result) {
-            case 1: action = "assign"; break;
-            case 2: action = "clear"; break;
-            case 3: action = "copy"; break;
-            case 4: action = "paste"; break;
-            case 5: action = "mute"; break;
-            case 6: action = "solo"; break;
-        }
-        onDrumPadAction(padIndex, action);
-    }
+    menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(parent).withTargetScreenArea(juce::Rectangle<int>(position.x, position.y, 1, 1)),
+        [this, padIndex](int result) {
+            if (result > 0 && onDrumPadAction) {
+                juce::String action;
+                switch (result) {
+                    case 1: action = "assign"; break;
+                    case 2: action = "clear"; break;
+                    case 3: action = "copy"; break;
+                    case 4: action = "paste"; break;
+                    case 5: action = "mute"; break;
+                    case 6: action = "solo"; break;
+                }
+                onDrumPadAction(padIndex, action);
+            }
+        });
 }
 
 void ContextMenuManager::showPlayerMenu(juce::Component* parent, juce::Point<int> position, int playerIndex) {
@@ -67,18 +72,20 @@ void ContextMenuManager::showPlayerMenu(juce::Component* parent, juce::Point<int
     menu.addSeparator();
     menu.addItem(5, "Export Player Settings");
     
-    auto result = menu.show();
-    if (result > 0 && onPlayerAction) {
-        juce::String action;
-        switch (result) {
-            case 1: action = "duplicate"; break;
-            case 2: action = "clear"; break;
-            case 3: action = "mute"; break;
-            case 4: action = "solo"; break;
-            case 5: action = "export"; break;
-        }
-        onPlayerAction(playerIndex, action);
-    }
+    menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(parent).withTargetScreenArea(juce::Rectangle<int>(position.x, position.y, 1, 1)),
+        [this, playerIndex](int result) {
+            if (result > 0 && onPlayerAction) {
+                juce::String action;
+                switch (result) {
+                    case 1: action = "duplicate"; break;
+                    case 2: action = "clear"; break;
+                    case 3: action = "mute"; break;
+                    case 4: action = "solo"; break;
+                    case 5: action = "export"; break;
+                }
+                onPlayerAction(playerIndex, action);
+            }
+        });
 }
 
 void ContextMenuManager::stylePopupMenu(juce::PopupMenu& menu) {

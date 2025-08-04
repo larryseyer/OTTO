@@ -7,6 +7,8 @@
 #include "ColorScheme.h"
 #include "ComponentState.h"
 #include "INIConfig.h"
+#include "PlatformResponsiveManager.h"
+
 
 class MidiEngine;
 class Mixer;
@@ -21,6 +23,11 @@ class Row3Component;
 class Row4Component;
 class Row5Component;
 class Row6Component;
+class AnimationManager;
+class KeyboardHandler;
+class ContextMenuManager;
+class RenderOptimizer;
+class PlatformResponsiveManager;
 
 // PHASE 6: Performance Optimization Cache
 struct PatternGroupCache {
@@ -168,6 +175,7 @@ private:
     std::unique_ptr<Row5Component> row5Component;
     std::unique_ptr<Row6Component> row6Component;
     
+    std::unique_ptr<PlatformResponsiveManager> platformManager;
     std::unique_ptr<AnimationManager> animationManager;
     std::unique_ptr<KeyboardHandler> keyboardHandler;
     std::unique_ptr<ContextMenuManager> contextMenuManager;
@@ -261,8 +269,7 @@ private:
     void setupKeyboardHandlerCallbacks();
     void setupContextMenuCallbacks();
     void setupAnimationManagers();
-    void setEditModeVisuals(bool editMode);
-    void updatePlayerDisplay(int playerIndex);
+    void setCurrentPlayerIndex(int index) { currentPlayerIndex = index; }
     
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);

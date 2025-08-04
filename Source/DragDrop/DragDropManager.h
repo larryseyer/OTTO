@@ -7,7 +7,7 @@ class PatternDragSource : public juce::DragAndDropContainer {
 public:
     PatternDragSource(int patternIndex, const juce::String& patternName);
     
-    void startDragging(const juce::String& description, juce::Component* sourceComponent) override;
+    void startDragging(const juce::String& description, juce::Component* sourceComponent);
     
 private:
     int patternIndex;

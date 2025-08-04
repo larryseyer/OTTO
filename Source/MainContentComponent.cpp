@@ -781,25 +781,25 @@ void MainContentComponent::updateRowSeparators() {
 }
 
 void MainContentComponent::updateDebugLabels() {
-    // Position debug labels in center of each row using correct INIConfig constants
+    // Position red row markers on far left, just above their black horizontal lines
     using namespace INIConfig::LayoutConstants;
     auto bounds = getLocalBounds();
     
-    int labelWidth = 200;
-    int labelHeight = 40;
-    int centerX = bounds.getWidth() / 2 - labelWidth / 2;
+    int markerWidth = layoutManager.scaled(60);
+    int markerHeight = layoutManager.scaled(20);
+    int markerX = layoutManager.scaled(5); // Far left position
     
-    int row1Y = layoutManager.scaled(ROW_1_HEIGHT) / 2 - labelHeight / 2;
-    int row2Y = layoutManager.scaled(ROW_1_HEIGHT) + layoutManager.scaled(ROW_2_HEIGHT) / 2 - labelHeight / 2;
-    int row4Y = layoutManager.scaled(ROW_1_HEIGHT + ROW_2_HEIGHT + ROW_3_HEIGHT) + layoutManager.scaled(ROW_4_HEIGHT) / 2 - labelHeight / 2;
-    int row5Y = layoutManager.scaled(ROW_1_HEIGHT + ROW_2_HEIGHT + ROW_3_HEIGHT + ROW_4_HEIGHT) + layoutManager.scaled(ROW_5_HEIGHT) / 2 - labelHeight / 2;
-    int row6Y = layoutManager.scaled(ROW_1_HEIGHT + ROW_2_HEIGHT + ROW_3_HEIGHT + ROW_4_HEIGHT + ROW_5_HEIGHT) + layoutManager.scaled(ROW_6_HEIGHT) / 2 - labelHeight / 2;
+    int row1Y = layoutManager.scaled(Row1::yPosition);
+    int row2Y = layoutManager.scaled(Row2::yPosition);
+    int row4Y = layoutManager.scaled(Row4::yPosition);
+    int row5Y = layoutManager.scaled(Row5::yPosition);
+    int row6Y = layoutManager.scaled(Row6::yPosition);
     
-    rowLabel1.setBounds(centerX, row1Y, labelWidth, labelHeight);
-    rowLabel2.setBounds(centerX, row2Y, labelWidth, labelHeight);
-    rowLabel4.setBounds(centerX, row4Y, labelWidth, labelHeight);
-    rowLabel5.setBounds(centerX, row5Y, labelWidth, labelHeight);
-    rowLabel6.setBounds(centerX, row6Y, labelWidth, labelHeight);
+    rowLabel1.setBounds(markerX, row1Y - markerHeight, markerWidth, markerHeight);
+    rowLabel2.setBounds(markerX, row2Y - markerHeight, markerWidth, markerHeight);
+    rowLabel4.setBounds(markerX, row4Y - markerHeight, markerWidth, markerHeight);
+    rowLabel5.setBounds(markerX, row5Y - markerHeight, markerWidth, markerHeight);
+    rowLabel6.setBounds(markerX, row6Y - markerHeight, markerWidth, markerHeight);
 }
 
 // PHASE 8: Pattern group management methods - simplified for Row4Component delegation

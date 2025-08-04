@@ -67,14 +67,34 @@
             file="Source/MainContentComponent.cpp"/>
       <FILE id="mybpd9" name="MainContentComponent.h" compile="0" resource="0"
             file="Source/MainContentComponent.h"/>
-      <FILE id="gt4ebK" name="MainContentComponentLeftSection.cpp" compile="1"
-            resource="0" file="Source/MainContentComponentLeftSection.cpp"/>
-      <FILE id="OIG2z4" name="MainContentComponentLeftSection.h" compile="0"
-            resource="0" file="Source/MainContentComponentLeftSection.h"/>
-      <FILE id="FrlriN" name="MainContentComponentRightSection.cpp" compile="1"
-            resource="0" file="Source/MainContentComponentRightSection.cpp"/>
-      <FILE id="ApP8xx" name="MainContentComponentRightSection.h" compile="0"
-            resource="0" file="Source/MainContentComponentRightSection.h"/>
+      <FILE id="R1comp" name="Row1Component.cpp" compile="1"
+            resource="0" file="Source/Row1Component.cpp"/>
+      <FILE id="R1head" name="Row1Component.h" compile="0"
+            resource="0" file="Source/Row1Component.h"/>
+      <FILE id="R2comp" name="Row2Component.cpp" compile="1"
+            resource="0" file="Source/Row2Component.cpp"/>
+      <FILE id="R2head" name="Row2Component.h" compile="0"
+            resource="0" file="Source/Row2Component.h"/>
+      <FILE id="R3comp" name="Row3Component.cpp" compile="1"
+            resource="0" file="Source/Row3Component.cpp"/>
+      <FILE id="R3head" name="Row3Component.h" compile="0"
+            resource="0" file="Source/Row3Component.h"/>
+      <FILE id="R4comp" name="Row4Component.cpp" compile="1"
+            resource="0" file="Source/Row4Component.cpp"/>
+      <FILE id="R4head" name="Row4Component.h" compile="0"
+            resource="0" file="Source/Row4Component.h"/>
+      <FILE id="R5comp" name="Row5Component.cpp" compile="1"
+            resource="0" file="Source/Row5Component.cpp"/>
+      <FILE id="R5head" name="Row5Component.h" compile="0"
+            resource="0" file="Source/Row5Component.h"/>
+      <FILE id="R6comp" name="Row6Component.cpp" compile="1"
+            resource="0" file="Source/Row6Component.cpp"/>
+      <FILE id="R6head" name="Row6Component.h" compile="0"
+            resource="0" file="Source/Row6Component.h"/>
+      <FILE id="RBcomp" name="RowComponentBase.cpp" compile="1"
+            resource="0" file="Source/RowComponentBase.cpp"/>
+      <FILE id="RBhead" name="RowComponentBase.h" compile="0"
+            resource="0" file="Source/RowComponentBase.h"/>
       <FILE id="mWsoKt" name="MidiAnalysisTypes.h" compile="0" resource="0"
             file="Source/MidiAnalysisTypes.h"/>
       <FILE id="Grxf3M" name="MidiEngine.cpp" compile="1" resource="0" file="Source/MidiEngine.cpp"/>

@@ -281,8 +281,12 @@ void MainContentComponentRightSection::resized() {
     int buttonHeight = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonHeight);
     int buttonSpacing = layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonSpacing);
 
-    int toggleCol = layoutManager.scaled(INIConfig::LayoutConstants::togglesLabelX);
-    int fillCol = layoutManager.scaled(INIConfig::LayoutConstants::fillsLabelX);
+    int rightSectionX = layoutManager.scaled(INIConfig::LayoutConstants::Row5::rightSectionX);
+    
+    // Position toggle and fill buttons within the right section content area
+    int toggleCol = rightSectionX + layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
+    int fillCol = toggleCol + layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonWidth) + 
+                  layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonSpacing);
 
     for (int i = 0; i < 5; ++i) {
         toggleButtons[i].setBounds(toggleCol, buttonY + (i * buttonSpacing), buttonWidth, buttonHeight);
@@ -293,9 +297,15 @@ void MainContentComponentRightSection::resized() {
     int sliderHeight = layoutManager.scaled(INIConfig::LayoutConstants::sliderHeight);
     int sliderY = buttonY;
 
-    int sliderCol1 = layoutManager.scaled(INIConfig::LayoutConstants::swingLabelX);
-    int sliderCol2 = layoutManager.scaled(INIConfig::LayoutConstants::energyLabelX);
-    int sliderCol3 = layoutManager.scaled(INIConfig::LayoutConstants::volumeLabelX);
+    // Position sliders within Row 5 right section, avoiding Row 4 label coordinates
+    int sliderStartX = fillCol + layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonWidth) + 
+                       layoutManager.scaled(INIConfig::LayoutConstants::rightSectionButtonSpacing);
+    int sliderSpacing = layoutManager.scaled(INIConfig::LayoutConstants::sliderWidth) + 
+                        layoutManager.scaled(INIConfig::LayoutConstants::defaultPadding);
+    
+    int sliderCol1 = sliderStartX;
+    int sliderCol2 = sliderCol1 + sliderSpacing;
+    int sliderCol3 = sliderCol2 + sliderSpacing;
 
     swingSlider.setBounds(sliderCol1, sliderY, sliderWidth, sliderHeight);
     energySlider.setBounds(sliderCol2, sliderY, sliderWidth, sliderHeight);

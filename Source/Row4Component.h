@@ -2,6 +2,8 @@
 #include "RowComponentBase.h"
 #include "UtilityComponents.h"
 #include "JUCE8_CODING_STANDARDS.h"
+#include "Animation/AnimationManager.h"
+#include "DragDrop/DragDropManager.h"
 
 class MidiEngine;
 class INIDataManager;
@@ -39,8 +41,15 @@ public:
                        const juce::String& swingText, const juce::String& energyText,
                        const juce::String& volumeText);
     
+    void setupPatternGroupDragDrop();
+    void setupPatternGroupAnimations();
+    void animatePatternGroupChange(int newIndex);
+    void handlePatternGroupAction(const juce::String& action);
+    void setAnimationManager(AnimationManager* manager) { animationManager = manager; }
+    
 private:
     MidiEngine& midiEngine;
+    AnimationManager* animationManager = nullptr;
     INIDataManager* iniDataManager = nullptr;
     
     // Row 4: Pattern Group Controls - Complete 10-component layout
@@ -59,6 +68,8 @@ private:
     // State management
     int currentPatternGroupIndex = 0;
     bool patternGroupEditMode = false;
+    
+    std::unique_ptr<PatternDragSource> patternDragSource;
     
     void setupPatternGroupComponents();
     void updatePatternGroupLayout();

@@ -1,6 +1,8 @@
 #include "Row4Component.h"
 #include "MidiEngine.h"
 #include "INIConfig.h"
+#include "Animation/AnimationManager.h"
+#include "DragDrop/DragDropManager.h"
 // JUCE 8 coding standards applied throughout this file
 
 Row4Component::Row4Component(MidiEngine& midiEngine,
@@ -17,6 +19,8 @@ Row4Component::Row4Component(MidiEngine& midiEngine,
     setupPatternGroupComponents();
     setupLabels();
     setupPatternGroupCallbacks();
+    setupPatternGroupDragDrop();
+    setupPatternGroupAnimations();
 }
 
 void Row4Component::paint(juce::Graphics& g) {
@@ -201,13 +205,7 @@ void Row4Component::setupPatternGroupCallbacks() {
         togglePatternGroupFavorite();
     };
     
-    // Dropdown selection
-    patternGroupDropdown.onChange = [this]() {
-        int selectedIndex = patternGroupDropdown.getSelectedItemIndex();
-        if (selectedIndex >= 0) {
-            setCurrentPatternGroupIndex(selectedIndex);
-        }
-    };
+    // Dropdown selection handled in setupPatternGroupAnimations()
 }
 
 void Row4Component::updatePatternGroupLayout() {
@@ -286,4 +284,56 @@ void Row4Component::updatePatternGroupLayout() {
         layoutManager.scaled(labelWidth),
         layoutManager.scaled(labelHeight)
     );
+}
+
+void Row4Component::setupPatternGroupDragDrop() {
+    patternGroupDropdown.setMouseCursor(juce::MouseCursor::DraggingHandCursor);
+    
+    patternDragSource = std::make_unique<PatternDragSource>(
+        currentPatternGroupIndex, 
+        patternGroupDropdown.getText()
+    );
+}
+
+void Row4Component::setupPatternGroupAnimations() {
+    patternGroupDropdown.onChange = [this]() {
+        int selectedIndex = patternGroupDropdown.getSelectedItemIndex();
+        if (selectedIndex >= 0) {
+            if (animationManager && animationManager->shouldUseAnimations()) {
+                animatePatternGroupChange(selectedIndex);
+            } else {
+                setCurrentPatternGroupIndex(selectedIndex);
+            }
+        }
+    };
+}
+
+void Row4Component::animatePatternGroupChange(int newIndex) {
+    if (animationManager) {
+        animationManager->animatePatternSwitch(*this, 200);
+        
+        juce::Timer::callAfterDelay(100, [this, newIndex]() {
+            setCurrentPatternGroupIndex(newIndex);
+        });
+    } else {
+        auto fadeOut = [this, newIndex]() {
+            setAlpha(0.7f);
+            juce::Timer::callAfterDelay(100, [this, newIndex]() {
+                setCurrentPatternGroupIndex(newIndex);
+                juce::Timer::callAfterDelay(50, [this]() {
+                    setAlpha(1.0f);
+                });
+            });
+        };
+        fadeOut();
+    }
+}
+
+void Row4Component::handlePatternGroupAction(const juce::String& action) {
+    if (action == "duplicate") {
+    } else if (action == "delete") {
+    } else if (action == "favorite") {
+        togglePatternGroupFavorite();
+    } else if (action == "export") {
+    }
 }

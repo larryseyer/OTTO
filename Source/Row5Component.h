@@ -3,6 +3,8 @@
 #include "UtilityComponents.h"
 #include "ComponentState.h"
 #include "INIConfig.h"
+#include "Animation/AnimationManager.h"
+#include "DragDrop/DragDropManager.h"
 
 class MidiEngine;
 class Mixer;
@@ -48,6 +50,13 @@ public:
     void setMidiFileAssignment(int buttonIndex, const juce::String& midiFile);
     int getSelectedDrumButton() const { return selectedDrumButton; }
     void setSelectedDrumButton(int buttonIndex);
+    void triggerDrumPad(int padIndex);
+    
+    void setAnimationManager(AnimationManager* manager) { animationManager = manager; }
+    void setupDragDropTargets();
+    void setupHoverEffects();
+    void setupRealTimeIndicators();
+    void updateBeatVisualization();
     
     // Player state management
     void setCurrentPlayerIndex(int index) { currentPlayerIndex = index; }
@@ -59,11 +68,14 @@ public:
     std::function<void(int, const juce::String&, float)> onPlayerSliderValueChanged;
     std::function<void(int, int, bool)> onPlayerToggleChanged;
     std::function<void(int, int, bool)> onPlayerFillChanged;
+
+    class DrumPadDragTarget;
     std::function<void(int, const juce::String&)> onMidiFileChanged;
     
 private:
     MidiEngine& midiEngine;
     Mixer& mixer;
+    AnimationManager* animationManager = nullptr;
     juce::AudioProcessorValueTreeState& valueTreeState;
     
     // LEFT SECTION: 4x4 Drum Pattern Grid (60% width)
@@ -86,6 +98,9 @@ private:
     juce::String assignedMidiFiles[INIConfig::Audio::NUM_DRUM_PADS];
     bool toggleStates[INIConfig::UI::MAX_TOGGLE_STATES] = {};
     bool fillStates[INIConfig::UI::MAX_FILL_STATES] = {};
+    
+    juce::OwnedArray<DrumPadDragTarget> drumPadDragTargets;
+    std::unique_ptr<juce::Timer> beatVisualizationTimer;
     
     void setupInteractiveComponents();
     void updateInteractiveLayout();

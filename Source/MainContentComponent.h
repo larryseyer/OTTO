@@ -167,6 +167,11 @@ private:
     std::unique_ptr<Row4Component> row4Component;
     std::unique_ptr<Row5Component> row5Component;
     std::unique_ptr<Row6Component> row6Component;
+    
+    std::unique_ptr<AnimationManager> animationManager;
+    std::unique_ptr<KeyboardHandler> keyboardHandler;
+    std::unique_ptr<ContextMenuManager> contextMenuManager;
+    std::unique_ptr<RenderOptimizer> renderOptimizer;
     // Row separators - one between each row for visual debugging
     SeparatorComponent row1Separator;  // Between Row 1 (TopBar) and Row 2 (Player Tabs)
     SeparatorComponent row2Separator;  // Between Row 2 (Player Tabs) and Row 3 (DrumKit Menu)
@@ -252,6 +257,12 @@ private:
     // PHASE 8: Layout helper methods
     void updateRowSeparators();
     void updateDebugLabels();
+    
+    void setupKeyboardHandlerCallbacks();
+    void setupContextMenuCallbacks();
+    void setupAnimationManagers();
+    void setEditModeVisuals(bool editMode);
+    void updatePlayerDisplay(int playerIndex);
     
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);

@@ -104,8 +104,9 @@ OTTOAudioProcessorEditor::OTTOAudioProcessorEditor(OTTOAudioProcessor& p)
                 }
             }
         } else {
-            if (mainContent && mainContent->getLeftSection()) {
-                mainContent->getLeftSection()->checkAndLoadDefaultPatterns(componentState);
+            // PHASE 8: Pattern initialization moved to Row4Component
+            if (mainContent) {
+                // PHASE 8: Pattern initialization moved to Row4Component - no action needed
             }
         }
     }
@@ -125,8 +126,9 @@ OTTOAudioProcessorEditor::OTTOAudioProcessorEditor(OTTOAudioProcessor& p)
         loadAllComponentStates();
         updateUIFromState();
     } else {
-        if (mainContent && mainContent->getLeftSection()) {
-            mainContent->getLeftSection()->checkAndLoadDefaultPatterns(componentState);
+        // PHASE 8: Pattern initialization moved to Row4Component
+        if (mainContent) {
+            // PHASE 8: Pattern initialization moved to Row4Component - no action needed
         }
     }
 

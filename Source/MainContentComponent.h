@@ -11,11 +11,16 @@
 class MidiEngine;
 class Mixer;
 class INIDataManager;
-class MainContentComponentLeftSection;
-class MainContentComponentRightSection;
+
+
 class SceneLauncherComponent;
 class LoopSectionComponent;
 class Row1Component;
+class Row2Component;
+class Row3Component;
+class Row4Component;
+class Row5Component;
+class Row6Component;
 
 // PHASE 6: Performance Optimization Cache
 struct PatternGroupCache {
@@ -80,8 +85,8 @@ public:
     void updateFromState(const ComponentState& state);
     void switchToPlayer(int playerIndex, const ComponentState& state);
 
-    MainContentComponentLeftSection* getLeftSection() const { return leftSection.get(); }
-    MainContentComponentRightSection* getRightSection() const { return rightSection.get(); }
+
+
 
     void setLivePerformanceMode(bool enabled);
     bool isLivePerformanceMode() const { return livePerformanceMode; }
@@ -92,6 +97,16 @@ public:
     void updateDrumKitDisplayToggle();
     void showDrumKitLabel();
     void showDrumKitMenu();
+    
+    // Row3Component interface methods
+    void setDrumKitEditMode(bool editMode);
+    bool isDrumKitEditMode() const;
+    void setDrumKitMuteState(bool muted);
+    bool isDrumKitMuted() const;
+    
+    // Row6Component interface methods
+    float getLoopPosition() const;
+    void setLoopPosition(float position);
     
     void mouseDown(const juce::MouseEvent& event) override;
 
@@ -142,11 +157,16 @@ private:
     juce::Label energyLabel;                          // Energy label (from RightSection)
     juce::Label volumeLabel;                          // Volume label (from RightSection)
     
-    std::unique_ptr<MainContentComponentLeftSection> leftSection;
-    std::unique_ptr<MainContentComponentRightSection> rightSection;
+
+
     std::unique_ptr<SceneLauncherComponent> sceneLauncher;
     std::unique_ptr<LoopSectionComponent> loopSection;
     std::unique_ptr<Row1Component> row1Component;
+    std::unique_ptr<Row2Component> row2Component;
+    std::unique_ptr<Row3Component> row3Component;
+    std::unique_ptr<Row4Component> row4Component;
+    std::unique_ptr<Row5Component> row5Component;
+    std::unique_ptr<Row6Component> row6Component;
     // Row separators - one between each row for visual debugging
     SeparatorComponent row1Separator;  // Between Row 1 (TopBar) and Row 2 (Player Tabs)
     SeparatorComponent row2Separator;  // Between Row 2 (Player Tabs) and Row 3 (DrumKit Menu)
@@ -171,8 +191,15 @@ private:
     void notifyStateChanged(ComponentState& state);
     void updateLayoutForPerformanceMode();
     void setupRow3Components();
+    void setupRow3Callbacks();
     void setupRow4Components();
+    void setupRow4Callbacks();
     void setupRow4Labels();
+    void setupRow5Components();
+    void setupRow5Callbacks();
+    void setupRow6Components();
+    void setupRow6Callbacks();
+    void updateRow6ComponentState(const ComponentState& state);
     void updateRow2Layout();
     void updateRow3Layout();
     void updateRow4Layout();
@@ -221,6 +248,10 @@ private:
     
     // Override for keyboard shortcuts
     bool keyPressed(const juce::KeyPress& key) override;
+    
+    // PHASE 8: Layout helper methods
+    void updateRowSeparators();
+    void updateDebugLabels();
     
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);

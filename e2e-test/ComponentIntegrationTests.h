@@ -1,7 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "../JUCE8_CODING_STANDARDS.h"
+#include "../Source/JUCE8_CODING_STANDARDS.h"
 #include "../Source/INIConfig.h"
 #include "../Source/MainContentComponent.h"
 #include "../Source/PluginProcessor.h"
@@ -10,8 +10,7 @@
 #include "../Source/PlayerTabsComponent.h"
 #include "../Source/DrumKitSectionComponent.h"
 #include "../Source/SceneLauncherComponent.h"
-#include "../Source/MainContentComponentLeftSection.h"
-#include "../Source/MainContentComponentRightSection.h"
+
 #include "../Source/LoopSectionComponent.h"
 #include "../Source/ResponsiveLayoutManager.h"
 #include "../Source/FontManager.h"

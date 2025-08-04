@@ -1,5 +1,5 @@
 #include <JuceHeader.h>
-#include "../JUCE8_CODING_STANDARDS.h"
+#include "../Source/JUCE8_CODING_STANDARDS.h"
 #include "../Source/INIConfig.h"
 
 // Include all E2E test suites

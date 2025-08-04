@@ -11,7 +11,7 @@
 #include "INIDataManager.h"
 #include "CustomLookAndFeel.h"
 #include "MainContentComponent.h"
-#include "MainContentComponentLeftSection.h"
+
 
 class OTTOAudioProcessorEditor : public juce::AudioProcessorEditor,
                                  public juce::Button::Listener,

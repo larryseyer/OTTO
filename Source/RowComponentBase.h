@@ -25,14 +25,16 @@ public:
     
     void lookAndFeelChanged() override;
     
+    // Public methods for RowComponentManager
+    void setupCommonComponents();
+    void updateCommonColors();
+    
 protected:
     const int rowNumber;
     ResponsiveLayoutManager& layoutManager;
     FontManager& fontManager;
     ColorScheme& colorScheme;
     
-    void setupCommonComponents();
-    void updateCommonColors();
     juce::Rectangle<int> getScaledBounds(int x, int y, int width, int height) const;
     
 private:

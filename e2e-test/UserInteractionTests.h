@@ -1,7 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "../JUCE8_CODING_STANDARDS.h"
+#include "../Source/JUCE8_CODING_STANDARDS.h"
 #include "../Source/INIConfig.h"
 #include "../Source/MainContentComponent.h"
 #include "../Source/PluginProcessor.h"

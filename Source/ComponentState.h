@@ -451,6 +451,9 @@ public:
     int tempo = INIConfig::Defaults::DEFAULT_TEMPO;
     int currentPreset = INIConfig::Defaults::DEFAULT_CURRENT_PRESET;
     int phosphorIconWeight = INIConfig::Defaults::DEFAULT_PHOSPHOR_WEIGHT;
+    
+    // PHASE 7: Loop controls state
+    float loopPosition = INIConfig::Defaults::DEFAULT_LOOP_POSITION;
 
     // DrumKit popup window state
     int drumKitWindowX = 100;

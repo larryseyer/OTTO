@@ -450,7 +450,6 @@ void Row5Component::updateFontsAndColors() {
     // Drum buttons
     for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
         auto& button = drumButtons[i];
-        button.setFont(buttonFont, false);
         button.setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         button.setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
         button.setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
@@ -459,7 +458,6 @@ void Row5Component::updateFontsAndColors() {
     // Toggle buttons
     for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
         auto& button = toggleButtons[i];
-        button.setFont(buttonFont, false);
         button.setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         button.setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
         button.setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
@@ -468,16 +466,15 @@ void Row5Component::updateFontsAndColors() {
     // Fill buttons
     for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
         auto& button = fillButtons[i];
-        button.setFont(buttonFont, false);
         button.setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         button.setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
         button.setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
     }
     
     // Sliders
-    auto sliderColor = colorScheme.getColor(ColorScheme::ColorRole::SliderBackground);
+    auto sliderColor = colorScheme.getColor(ColorScheme::ColorRole::SliderTrack);
     auto thumbColor = colorScheme.getColor(ColorScheme::ColorRole::SliderThumb);
-    auto textColor = colorScheme.getColor(ColorScheme::ColorRole::SliderText);
+    auto textColor = colorScheme.getColor(ColorScheme::ColorRole::PrimaryText);
     
     for (auto* slider : {&swingSlider, &energySlider, &volumeSlider}) {
         slider->setColour(juce::Slider::backgroundColourId, sliderColor);
@@ -499,7 +496,7 @@ void Row5Component::onDrumButtonPressed(int buttonIndex) {
         }
     } else {
         // In play mode, trigger drum sound
-        midiEngine.triggerDrumPad(buttonIndex, currentPlayerIndex);
+        midiEngine.triggerClip(0, buttonIndex);
     }
 }
 

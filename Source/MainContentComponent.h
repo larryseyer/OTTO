@@ -15,6 +15,7 @@ class MainContentComponentLeftSection;
 class MainContentComponentRightSection;
 class SceneLauncherComponent;
 class LoopSectionComponent;
+class Row1Component;
 
 // PHASE 6: Performance Optimization Cache
 struct PatternGroupCache {
@@ -145,6 +146,7 @@ private:
     std::unique_ptr<MainContentComponentRightSection> rightSection;
     std::unique_ptr<SceneLauncherComponent> sceneLauncher;
     std::unique_ptr<LoopSectionComponent> loopSection;
+    std::unique_ptr<Row1Component> row1Component;
     // Row separators - one between each row for visual debugging
     SeparatorComponent row1Separator;  // Between Row 1 (TopBar) and Row 2 (Player Tabs)
     SeparatorComponent row2Separator;  // Between Row 2 (Player Tabs) and Row 3 (DrumKit Menu)

@@ -54,6 +54,7 @@
 #include "MainContentComponentRightSection.h"
 #include "SceneLauncherComponent.h"
 #include "LoopSectionComponent.h"
+#include "Row1Component.h"
 #include "Mixer.h"
 #include "INIConfig.h"
 #include "INIDataManager.h"
@@ -161,6 +162,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     addAndMakeVisible(*leftSection);    // Drum grid and pattern controls
     addAndMakeVisible(*rightSection);   // Parameter sliders and mix controls  
     addAndMakeVisible(*loopSection);    // Transport and scene launcher
+    addAndMakeVisible(*row1Component);  // TopBar functionality in row-based architecture
     
     // ROW SEPARATORS: Visual dividers for clear section definition
     // Positioned between rows using INIConfig::LayoutConstants positioning
@@ -1077,6 +1079,10 @@ void MainContentComponent::updateRow5Layout() {
     // Left Section: 4x4 Pattern Matrix (63.5% width) - optimized for matrix display
     int leftSectionX = layoutManager.scaled(Row5::leftSectionX);
     int leftSectionWidth = layoutManager.scaled(Row5::leftSectionWidth);
+    if (row1Component) {
+        row1Component->setBounds(row1Component->getRowBounds());
+    }
+    
     leftSection->setBounds(leftSectionX, row5Y, leftSectionWidth, row5Height);
     
     // Right Section: Controls (35% width) - sliders, toggles, fills

@@ -1,7 +1,7 @@
+#include "JUCE8_CODING_STANDARDS.h"
 #include "Row5Component.h"
 #include "MidiEngine.h"
 #include "Mixer.h"
-#include "JUCE8_CODING_STANDARDS.h"
 #include "ErrorHandling.h"
 #include "Animation/AnimationManager.h"
 #include "DragDrop/DragDropManager.h"
@@ -14,10 +14,13 @@ Row5Component::Row5Component(MidiEngine& midiEngine,
                            ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
-    : RowComponentBase(5, layoutManager, fontManager, colorScheme)
+    : ResponsiveComponent()
     , midiEngine(midiEngine)
     , mixer(mixer)
     , valueTreeState(valueTreeState)
+    , layoutManager(layoutManager)
+    , fontManager(fontManager)
+    , colorScheme(colorScheme)
     , leftSeparator(colorScheme)
     , rightSeparator(colorScheme) {
     
@@ -33,6 +36,7 @@ void Row5Component::paint(juce::Graphics& g) {
 }
 
 void Row5Component::resized() {
+    ResponsiveComponent::resized(); // Call parent first
     updateInteractiveLayout();
     
     // PHASE 9D: Update spectrum analyzer bounds when component is resized
@@ -283,82 +287,99 @@ void Row5Component::setupInteractiveComponents() {
 }
 
 void Row5Component::updateInteractiveLayout() {
-    using namespace INIConfig::LayoutConstants;
-    
     auto bounds = getLocalBounds();
     
-    // Calculate section dimensions using Row5 constants
-    int leftSectionWidth = layoutManager.scaled(Row5::leftSectionWidth);
-    int rightSectionWidth = layoutManager.scaled(Row5::rightSectionWidth);
-    int sectionMargin = layoutManager.scaled(Row5::sectionMargin);
+    // Use responsive calculations instead of hardcoded values
+    int spacing = getResponsiveSpacing();
+    int margin = getResponsiveMargin(8);
     
-    // LEFT SECTION: 4x4 Drum Pattern Grid (60% width)
+    // Calculate section dimensions responsively
+    int leftSectionWidth = static_cast<int>(bounds.getWidth() * 0.6f); // 60% for drum grid
+    int rightSectionWidth = static_cast<int>(bounds.getWidth() * 0.35f); // 35% for controls
+    
+    // LEFT SECTION: 4x4 Drum Pattern Grid
     auto leftSection = bounds.removeFromLeft(leftSectionWidth);
-    leftSection = leftSection.reduced(layoutManager.scaled(defaultPadding));
+    leftSection = leftSection.reduced(margin);
     
-    // Position drum buttons in 4x4 grid
-    int buttonSize = std::min(leftSection.getWidth() / 4, leftSection.getHeight() / 4) - 
-                     layoutManager.scaled(defaultSpacing);
-    int gridStartX = leftSection.getX() + (leftSection.getWidth() - (buttonSize * 4 + layoutManager.scaled(defaultSpacing) * 3)) / 2;
-    int gridStartY = leftSection.getY() + (leftSection.getHeight() - (buttonSize * 4 + layoutManager.scaled(defaultSpacing) * 3)) / 2;
+    // Position drum buttons in 4x4 grid with responsive sizing
+    int drumButtonSize = getResponsiveButtonSize();
+    // Ensure drum buttons fit in grid with proper spacing
+    int maxButtonSize = std::min(leftSection.getWidth() / 4, leftSection.getHeight() / 4) - spacing;
+    drumButtonSize = std::min(drumButtonSize, maxButtonSize);
+    
+    int gridStartX = leftSection.getX() + (leftSection.getWidth() - (drumButtonSize * 4 + spacing * 3)) / 2;
+    int gridStartY = leftSection.getY() + (leftSection.getHeight() - (drumButtonSize * 4 + spacing * 3)) / 2;
+    
+    // Update drum button font size responsively
+    float drumFontSize = getResponsiveFontSize(12.0f);
     
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
             int buttonIndex = row * 4 + col;
-            int x = gridStartX + col * (buttonSize + layoutManager.scaled(defaultSpacing));
-            int y = gridStartY + row * (buttonSize + layoutManager.scaled(defaultSpacing));
-            drumButtons[buttonIndex].setBounds(x, y, buttonSize, buttonSize);
+            int x = gridStartX + col * (drumButtonSize + spacing);
+            int y = gridStartY + row * (drumButtonSize + spacing);
+            drumButtons[buttonIndex].setBounds(x, y, drumButtonSize, drumButtonSize);
+            drumButtons[buttonIndex].setFont(JUCE8_FONT(drumFontSize));
         }
     }
     
-    // Left separator
-    leftSeparator.setBounds(leftSectionWidth, 0, layoutManager.scaled(separatorThickness), bounds.getHeight());
+    // Left separator with responsive thickness
+    int separatorThickness = juce::jmax(1, static_cast<int>(bounds.getHeight() * 0.01f));
+    leftSeparator.setBounds(leftSectionWidth, 0, separatorThickness, bounds.getHeight());
     
     // Skip margin
-    bounds.removeFromLeft(sectionMargin);
+    bounds.removeFromLeft(margin);
     
-    // RIGHT SECTION: Interactive Controls (39.5% width)
+    // RIGHT SECTION: Interactive Controls
     auto rightSection = bounds.removeFromLeft(rightSectionWidth);
-    rightSection = rightSection.reduced(layoutManager.scaled(defaultPadding));
+    rightSection = rightSection.reduced(margin);
     
-    // Layout right section controls vertically
-    int controlHeight = layoutManager.scaled(30);
-    int controlSpacing = layoutManager.scaled(defaultSpacing);
+    // Layout right section controls vertically with responsive sizing
+    int controlHeight = static_cast<int>(drumButtonSize * 0.7f); // Scale with drum buttons
+    
+    // Update control font size responsively
+    float controlFontSize = getResponsiveFontSize(10.0f);
     
     // Toggle buttons row
     auto toggleArea = rightSection.removeFromTop(controlHeight);
-    int toggleButtonWidth = toggleArea.getWidth() / INIConfig::UI::MAX_TOGGLE_STATES - controlSpacing;
+    int toggleButtonWidth = (toggleArea.getWidth() - spacing * (INIConfig::UI::MAX_TOGGLE_STATES - 1)) / INIConfig::UI::MAX_TOGGLE_STATES;
     for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
-        int x = toggleArea.getX() + i * (toggleButtonWidth + controlSpacing);
+        int x = toggleArea.getX() + i * (toggleButtonWidth + spacing);
         toggleButtons[i].setBounds(x, toggleArea.getY(), toggleButtonWidth, controlHeight);
+        toggleButtons[i].setFont(JUCE8_FONT(controlFontSize));
     }
     
-    rightSection.removeFromTop(controlSpacing);
+    rightSection.removeFromTop(spacing);
     
     // Fill buttons row
     auto fillArea = rightSection.removeFromTop(controlHeight);
-    int fillButtonWidth = fillArea.getWidth() / INIConfig::UI::MAX_FILL_STATES - controlSpacing;
+    int fillButtonWidth = (fillArea.getWidth() - spacing * (INIConfig::UI::MAX_FILL_STATES - 1)) / INIConfig::UI::MAX_FILL_STATES;
     for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
-        int x = fillArea.getX() + i * (fillButtonWidth + controlSpacing);
+        int x = fillArea.getX() + i * (fillButtonWidth + spacing);
         fillButtons[i].setBounds(x, fillArea.getY(), fillButtonWidth, controlHeight);
+        fillButtons[i].setFont(JUCE8_FONT(controlFontSize));
     }
     
-    rightSection.removeFromTop(controlSpacing * 2);
+    rightSection.removeFromTop(spacing * 2);
     
-    // Sliders (remaining space divided equally)
-    int sliderHeight = (rightSection.getHeight() - controlSpacing * 2) / 3;
+    // Sliders (remaining space divided equally) with responsive font
+    int sliderHeight = (rightSection.getHeight() - spacing * 2) / 3;
+    float sliderFontSize = getResponsiveFontSize(11.0f);
     
     swingSlider.setBounds(rightSection.removeFromTop(sliderHeight));
-    rightSection.removeFromTop(controlSpacing);
+    swingSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    rightSection.removeFromTop(spacing);
     
     energySlider.setBounds(rightSection.removeFromTop(sliderHeight));
-    rightSection.removeFromTop(controlSpacing);
+    energySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    rightSection.removeFromTop(spacing);
     
     volumeSlider.setBounds(rightSection);
+    volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     
     // Right separator
-    rightSeparator.setBounds(bounds.getRight() - layoutManager.scaled(separatorThickness), 0, 
-                           layoutManager.scaled(separatorThickness), bounds.getHeight());
+    rightSeparator.setBounds(bounds.getRight() - separatorThickness, 0, 
+                           separatorThickness, bounds.getHeight());
 }
 
 void Row5Component::setupDrumGrid() {
@@ -747,4 +768,80 @@ juce::Rectangle<int> Row5Component::getSpectrumArea() const {
     int spectrumHeight = static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_5_SPECTRUM_HEIGHT_PERCENT / 100.0f);
     
     return juce::Rectangle<int>(spectrumX, spectrumY, spectrumWidth, spectrumHeight);
+}
+
+//==============================================================================
+// ResponsiveComponent Implementation
+//==============================================================================
+
+void Row5Component::updateResponsiveLayout() {
+    auto category = getCurrentDeviceCategory();
+    
+    // Device-specific adjustments for interactive controls
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            // Mobile: Larger touch targets, simplified layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            // Tablet: Medium touch targets, balanced layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            // Desktop: Standard layout with mouse precision
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            // Large Desktop: Expanded layout, more information density
+            break;
+        default:
+            break;
+    }
+    
+    resized();
+}
+
+int Row5Component::getResponsiveButtonSize() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base size from available space - this is the main content area
+    int baseSize = static_cast<int>(getHeight() * 0.15f); // 15% of row height for drum buttons
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget * 0.9f), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(40, baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(48, static_cast<int>(baseSize * 1.2f));
+        default:
+            return juce::jmax(40, baseSize);
+    }
+}
+
+int Row5Component::getResponsiveSpacing() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base spacing
+    int baseSpacing = rules.spacing.defaultSpacing;
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(8, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(6, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(4, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(6, baseSpacing);
+        default:
+            return baseSpacing;
+    }
+}
+
+float Row5Component::getResponsiveFontSize(float baseSize) const {
+    return ResponsiveComponent::getResponsiveFontSize(baseSize);
 }

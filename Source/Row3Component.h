@@ -1,5 +1,6 @@
 #pragma once
-#include "RowComponentBase.h"
+#include "JUCE8_CODING_STANDARDS.h"
+#include "UI/Layout/BreakpointManager.h"
 #include "UtilityComponents.h"
 #include "INIConfig.h"
 
@@ -7,7 +8,7 @@ class MidiEngine;
 class Mixer;
 class WaveformDisplay;
 
-class Row3Component : public RowComponentBase {
+class Row3Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row3Component(MidiEngine& midiEngine,
                  Mixer& mixer,
@@ -19,13 +20,21 @@ public:
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void saveStates(ComponentState& state) override;
-    void loadStates(const ComponentState& state) override;
-    void updateFromState(const ComponentState& state) override;
-    juce::String getRowName() const override { return "DrumKitControls"; }
-    juce::Rectangle<int> getRowBounds() const override;
+    void saveStates(ComponentState& state);
+    void loadStates(const ComponentState& state);
+    void updateFromState(const ComponentState& state);
+    juce::String getRowName() const { return "DrumKitControls"; }
+    juce::Rectangle<int> getRowBounds() const;
     void lookAndFeelChanged() override;
     void mouseDown(const juce::MouseEvent& event) override;
+    
+    // ResponsiveComponent overrides
+    void updateResponsiveLayout() override;
+    
+    // Responsive calculations
+    int getResponsiveButtonSize() const;
+    int getResponsiveSpacing() const;
+    float getResponsiveFontSize(float baseSize) const;
     
     // DrumKit functionality callbacks
     std::function<void(bool)> onEditModeChanged;
@@ -55,6 +64,9 @@ public:
 private:
     MidiEngine& midiEngine;
     Mixer& mixer;
+    ResponsiveLayoutManager& layoutManager;
+    FontManager& fontManager;
+    ColorScheme& colorScheme;
     
     // Row 3 Components: DrumKit control buttons using Phosphor icon system
     PhosphorIconButton drumKitEditButton;        // Toggle edit mode for pattern editing

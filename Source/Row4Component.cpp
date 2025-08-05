@@ -1,16 +1,19 @@
+#include "JUCE8_CODING_STANDARDS.h"
 #include "Row4Component.h"
 #include "MidiEngine.h"
 #include "INIConfig.h"
 #include "Animation/AnimationManager.h"
 #include "DragDrop/DragDropManager.h"
-// JUCE 8 coding standards applied throughout this file
 
 Row4Component::Row4Component(MidiEngine& midiEngine,
                            ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
-    : RowComponentBase(4, layoutManager, fontManager, colorScheme)
+    : ResponsiveComponent()
     , midiEngine(midiEngine)
+    , layoutManager(layoutManager)
+    , fontManager(fontManager)
+    , colorScheme(colorScheme)
     , patternGroupEditButton("pencil", FontManager::PhosphorWeight::Regular)
     , patternGroupLeftChevron("caret-left", FontManager::PhosphorWeight::Regular)
     , patternGroupRightChevron("caret-right", FontManager::PhosphorWeight::Regular)
@@ -28,6 +31,7 @@ void Row4Component::paint(juce::Graphics& g) {
 }
 
 void Row4Component::resized() {
+    ResponsiveComponent::resized(); // Call parent first
     updatePatternGroupLayout();
 }
 
@@ -209,81 +213,70 @@ void Row4Component::setupPatternGroupCallbacks() {
 }
 
 void Row4Component::updatePatternGroupLayout() {
-    using namespace INIConfig::LayoutConstants::Row4;
-    
     auto bounds = getLocalBounds();
     
-    // Position pattern group components using INI-driven layout constants
-    patternGroupEditButton.setBounds(
-        layoutManager.scaled(editIconX),
-        layoutManager.scaled(editIconY),
-        layoutManager.scaled(editIconWidth),
-        layoutManager.scaled(iconHeight)
-    );
+    // Use responsive calculations instead of hardcoded values
+    int buttonSize = getResponsiveButtonSize();
+    int spacing = getResponsiveSpacing();
+    int margin = getResponsiveMargin(8);
     
-    patternGroupLeftChevron.setBounds(
-        layoutManager.scaled(leftChevronX),
-        layoutManager.scaled(leftChevronY),
-        layoutManager.scaled(chevronWidth),
-        layoutManager.scaled(iconHeight)
-    );
+    int buttonY = (bounds.getHeight() - buttonSize) / 2;
     
-    patternGroupDropdown.setBounds(
-        layoutManager.scaled(dropdownX),
-        layoutManager.scaled(dropdownY),
-        layoutManager.scaled(dropdownWidth),
-        layoutManager.scaled(dropdownHeight)
-    );
+    // Pattern group controls - left side
+    int currentX = margin;
     
-    patternGroupRightChevron.setBounds(
-        layoutManager.scaled(rightChevronX),
-        layoutManager.scaled(rightChevronY),
-        layoutManager.scaled(chevronWidth),
-        layoutManager.scaled(iconHeight)
-    );
+    // Edit button
+    patternGroupEditButton.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing;
     
-    patternGroupFavoriteButton.setBounds(
-        layoutManager.scaled(favoriteIconX),
-        layoutManager.scaled(favoriteIconY),
-        layoutManager.scaled(favoriteIconWidth),
-        layoutManager.scaled(iconHeight)
-    );
+    // Left chevron
+    patternGroupLeftChevron.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing;
     
-    // CRITICAL: Position labels in Row 4 using existing INI constants
-    togglesLabel.setBounds(
-        layoutManager.scaled(togglesLabelX),
-        layoutManager.scaled(togglesLabelY),
-        layoutManager.scaled(labelWidth),
-        layoutManager.scaled(labelHeight)
-    );
+    // Pattern group dropdown
+    int dropdownWidth = static_cast<int>(bounds.getWidth() * 0.15f); // 15% of width
+    patternGroupDropdown.setBounds(currentX, buttonY, dropdownWidth, buttonSize);
     
-    fillsLabel.setBounds(
-        layoutManager.scaled(fillsLabelX),
-        layoutManager.scaled(fillsLabelY),
-        layoutManager.scaled(labelWidth),
-        layoutManager.scaled(labelHeight)
-    );
+    // Update dropdown font size responsively
+    float dropdownFontSize = getResponsiveFontSize(12.0f);
+    patternGroupDropdown.setFont(JUCE8_FONT(dropdownFontSize));
     
-    swingLabel.setBounds(
-        layoutManager.scaled(swingLabelX),
-        layoutManager.scaled(swingLabelY),
-        layoutManager.scaled(labelWidth),
-        layoutManager.scaled(labelHeight)
-    );
+    currentX += dropdownWidth + spacing;
     
-    energyLabel.setBounds(
-        layoutManager.scaled(energyLabelX),
-        layoutManager.scaled(energyLabelY),
-        layoutManager.scaled(labelWidth),
-        layoutManager.scaled(labelHeight)
-    );
+    // Right chevron
+    patternGroupRightChevron.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing;
     
-    volumeLabel.setBounds(
-        layoutManager.scaled(volumeLabelX),
-        layoutManager.scaled(volumeLabelY),
-        layoutManager.scaled(labelWidth),
-        layoutManager.scaled(labelHeight)
-    );
+    // Favorite button
+    patternGroupFavoriteButton.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing * 2; // Extra spacing before labels
+    
+    // Labels - right side of Row 4
+    int labelWidth = static_cast<int>((bounds.getWidth() - currentX - margin) / 5.0f); // Divide remaining space by 5 labels
+    int labelHeight = static_cast<int>(buttonSize * 0.8f);
+    int labelY = buttonY + (buttonSize - labelHeight) / 2;
+    
+    // Update label font size responsively
+    float labelFontSize = getResponsiveFontSize(10.0f);
+    
+    togglesLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
+    togglesLabel.setFont(JUCE8_FONT(labelFontSize));
+    currentX += labelWidth;
+    
+    fillsLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
+    fillsLabel.setFont(JUCE8_FONT(labelFontSize));
+    currentX += labelWidth;
+    
+    swingLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
+    swingLabel.setFont(JUCE8_FONT(labelFontSize));
+    currentX += labelWidth;
+    
+    energyLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
+    energyLabel.setFont(JUCE8_FONT(labelFontSize));
+    currentX += labelWidth;
+    
+    volumeLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
+    volumeLabel.setFont(JUCE8_FONT(labelFontSize));
 }
 
 void Row4Component::setupPatternGroupDragDrop() {
@@ -336,4 +329,80 @@ void Row4Component::handlePatternGroupAction(const juce::String& action) {
         togglePatternGroupFavorite();
     } else if (action == "export") {
     }
+}
+
+//==============================================================================
+// ResponsiveComponent Implementation
+//==============================================================================
+
+void Row4Component::updateResponsiveLayout() {
+    auto category = getCurrentDeviceCategory();
+    
+    // Device-specific adjustments for pattern group controls
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            // Mobile: Larger touch targets, simplified layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            // Tablet: Medium touch targets, balanced layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            // Desktop: Standard layout with mouse precision
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            // Large Desktop: Expanded layout, more information density
+            break;
+        default:
+            break;
+    }
+    
+    resized();
+}
+
+int Row4Component::getResponsiveButtonSize() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base size from row height
+    int baseSize = static_cast<int>(getHeight() * 0.6f); // 60% of row height
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget * 0.9f), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(28, baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(32, static_cast<int>(baseSize * 1.1f));
+        default:
+            return juce::jmax(28, baseSize);
+    }
+}
+
+int Row4Component::getResponsiveSpacing() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base spacing
+    int baseSpacing = rules.spacing.defaultSpacing;
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(6, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(4, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(3, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(4, baseSpacing);
+        default:
+            return baseSpacing;
+    }
+}
+
+float Row4Component::getResponsiveFontSize(float baseSize) const {
+    return ResponsiveComponent::getResponsiveFontSize(baseSize);
 }

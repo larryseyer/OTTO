@@ -1,12 +1,13 @@
 #pragma once
-#include "RowComponentBase.h"
+#include "JUCE8_CODING_STANDARDS.h"
+#include "UI/Layout/BreakpointManager.h"
 #include "UtilityComponents.h"
 #include "INIConfig.h"
 
 class MidiEngine;
 struct PlayerSettings;
 
-class Row2Component : public RowComponentBase {
+class Row2Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row2Component(MidiEngine& midiEngine,
                  juce::AudioProcessorValueTreeState& valueTreeState,
@@ -18,13 +19,21 @@ public:
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void saveStates(ComponentState& state) override;
-    void loadStates(const ComponentState& state) override;
-    void updateFromState(const ComponentState& state) override;
-    juce::String getRowName() const override { return "PlayerTabs"; }
-    juce::Rectangle<int> getRowBounds() const override;
+    void saveStates(ComponentState& state);
+    void loadStates(const ComponentState& state);
+    void updateFromState(const ComponentState& state);
+    juce::String getRowName() const { return "PlayerTabs"; }
+    juce::Rectangle<int> getRowBounds() const;
     void lookAndFeelChanged() override;
     void parentSizeChanged() override;
+    
+    // ResponsiveComponent overrides
+    void updateResponsiveLayout() override;
+    
+    // Responsive calculations
+    int getResponsiveButtonSize() const;
+    int getResponsiveSpacing() const;
+    float getResponsiveFontSize(float baseSize) const;
     
     // Player tab functionality
     int getSelectedTab() const { return selectedTab; }
@@ -41,6 +50,9 @@ public:
 private:
     MidiEngine& midiEngine;
     juce::AudioProcessorValueTreeState& valueTreeState;
+    ResponsiveLayoutManager& layoutManager;
+    FontManager& fontManager;
+    ColorScheme& colorScheme;
     
     // Player tab components
     juce::TextButton tabs[INIConfig::Defaults::MAX_PLAYERS];

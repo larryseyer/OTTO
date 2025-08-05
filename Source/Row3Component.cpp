@@ -24,6 +24,7 @@
  * @date 2025
  */
 
+#include "JUCE8_CODING_STANDARDS.h"
 #include "Row3Component.h"
 #include "MidiEngine.h"
 #include "Mixer.h"
@@ -36,8 +37,9 @@ Row3Component::Row3Component(MidiEngine& midiEngine,
                            ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
-    : RowComponentBase(3, layoutManager, fontManager, colorScheme),
+    : ResponsiveComponent(),
       midiEngine(midiEngine), mixer(mixer),
+      layoutManager(layoutManager), fontManager(fontManager), colorScheme(colorScheme),
       
       // Initialize DrumKit control buttons using Phosphor icon system
       drumKitEditButton("pencil", FontManager::PhosphorWeight::Regular),
@@ -61,6 +63,7 @@ void Row3Component::paint(juce::Graphics& g) {
 }
 
 void Row3Component::resized() {
+    ResponsiveComponent::resized(); // Call parent first
     updateDrumKitLayout();
     
     // PHASE 9D: Update waveform bounds when component is resized
@@ -256,37 +259,57 @@ void Row3Component::setupDrumKitComponents() {
 }
 
 void Row3Component::updateDrumKitLayout() {
-    using namespace INIConfig::LayoutConstants::Row3;
+    auto bounds = getLocalBounds();
     
-    // Player number label
-    playerNumberLabel.setBounds(playerNumberX, playerNumberY, 
-                               playerNumberWidth, playerNumberHeight);
+    // Use responsive calculations instead of hardcoded values
+    int buttonSize = getResponsiveButtonSize();
+    int spacing = getResponsiveSpacing();
+    int margin = getResponsiveMargin(10);
+    
+    int buttonY = (bounds.getHeight() - buttonSize) / 2;
+    
+    // Player number label - large display on the left
+    int playerNumWidth = static_cast<int>(buttonSize * 1.5f);
+    int playerNumHeight = buttonSize;
+    int playerNumX = margin;
+    
+    playerNumberLabel.setBounds(playerNumX, buttonY, playerNumWidth, playerNumHeight);
+    
+    // Update player number font size responsively
+    float playerFontSize = getResponsiveFontSize(24.0f);
+    playerNumberLabel.setFont(JUCE8_FONT(playerFontSize));
     
     // Edit button
-    drumKitEditButton.setBounds(editButtonX, editButtonY, 
-                               editButtonSize, editButtonSize);
+    int editButtonX = playerNumX + playerNumWidth + spacing;
+    drumKitEditButton.setBounds(editButtonX, buttonY, buttonSize, buttonSize);
     
     // Left chevron
-    drumKitLeftChevron.setBounds(leftChevronX, leftChevronY, 
-                                leftChevronSize, leftChevronSize);
+    int leftChevronX = editButtonX + buttonSize + spacing;
+    drumKitLeftChevron.setBounds(leftChevronX, buttonY, buttonSize, buttonSize);
     
-    // DrumKit dropdown and label (toggle visibility based on state)
-    drumKitDropdown.setBounds(dropdownX, dropdownY, 
-                             dropdownWidth, dropdownHeight);
-    drumKitSelectedLabel.setBounds(selectedLabelX, selectedLabelY, 
-                                  selectedLabelWidth, selectedLabelHeight);
+    // DrumKit dropdown and label (center area)
+    int dropdownX = leftChevronX + buttonSize + spacing;
+    int dropdownWidth = static_cast<int>(bounds.getWidth() * 0.25f); // 25% of width
+    
+    drumKitDropdown.setBounds(dropdownX, buttonY, dropdownWidth, buttonSize);
+    drumKitSelectedLabel.setBounds(dropdownX, buttonY, dropdownWidth, buttonSize);
+    
+    // Update dropdown font size responsively
+    float dropdownFontSize = getResponsiveFontSize(14.0f);
+    drumKitDropdown.setFont(JUCE8_FONT(dropdownFontSize));
+    drumKitSelectedLabel.setFont(JUCE8_FONT(dropdownFontSize));
     
     // Right chevron
-    drumKitRightChevron.setBounds(rightChevronX, rightChevronY, 
-                                 rightChevronSize, rightChevronSize);
+    int rightChevronX = dropdownX + dropdownWidth + spacing;
+    drumKitRightChevron.setBounds(rightChevronX, buttonY, buttonSize, buttonSize);
     
     // Mixer button
-    drumKitMixerButton.setBounds(mixerButtonX, mixerButtonY, 
-                                mixerButtonSize, mixerButtonSize);
+    int mixerButtonX = rightChevronX + buttonSize + spacing;
+    drumKitMixerButton.setBounds(mixerButtonX, buttonY, buttonSize, buttonSize);
     
     // Mute button
-    drumKitMuteButton.setBounds(muteButtonX, muteButtonY, 
-                               muteButtonSize, muteButtonSize);
+    int muteButtonX = mixerButtonX + buttonSize + spacing;
+    drumKitMuteButton.setBounds(muteButtonX, buttonY, buttonSize, buttonSize);
 }
 
 void Row3Component::updatePlayerNumberDisplay() {
@@ -483,4 +506,80 @@ juce::String Row3Component::getCurrentDrumKitSamplePath() const {
     // For now, return a placeholder path based on current drum kit name
     juce::String basePath = "/drumkits/" + currentDrumKitName.toLowerCase().replaceCharacter(' ', '_');
     return basePath + "/kick.wav";  // Default to kick sample
+}
+
+//==============================================================================
+// ResponsiveComponent Implementation
+//==============================================================================
+
+void Row3Component::updateResponsiveLayout() {
+    auto category = getCurrentDeviceCategory();
+    
+    // Device-specific adjustments for drumkit controls
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            // Mobile: Larger touch targets, simplified layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            // Tablet: Medium touch targets, balanced layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            // Desktop: Standard layout with mouse precision
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            // Large Desktop: Expanded layout, more information density
+            break;
+        default:
+            break;
+    }
+    
+    resized();
+}
+
+int Row3Component::getResponsiveButtonSize() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base size from row height
+    int baseSize = static_cast<int>(getHeight() * 0.7f); // 70% of row height
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget * 0.9f), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(32, baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(36, static_cast<int>(baseSize * 1.1f));
+        default:
+            return juce::jmax(32, baseSize);
+    }
+}
+
+int Row3Component::getResponsiveSpacing() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base spacing
+    int baseSpacing = rules.spacing.defaultSpacing;
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(8, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(6, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(4, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(5, baseSpacing);
+        default:
+            return baseSpacing;
+    }
+}
+
+float Row3Component::getResponsiveFontSize(float baseSize) const {
+    return ResponsiveComponent::getResponsiveFontSize(baseSize);
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "RowComponentBase.h"
+#include "JUCE8_CODING_STANDARDS.h"
+#include "UI/Layout/BreakpointManager.h"
 #include "UtilityComponents.h"
 #include "ComponentState.h"
 #include "INIConfig.h"
@@ -11,7 +12,7 @@ class Mixer;
 class MidiFileManager;
 class SpectrumAnalyzer;
 
-class Row5Component : public RowComponentBase {
+class Row5Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row5Component(MidiEngine& midiEngine,
                  Mixer& mixer,
@@ -24,11 +25,19 @@ public:
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void saveStates(ComponentState& state) override;
-    void loadStates(const ComponentState& state) override;
-    void updateFromState(const ComponentState& state) override;
-    juce::String getRowName() const override { return "InteractiveControls"; }
-    juce::Rectangle<int> getRowBounds() const override;
+    void saveStates(ComponentState& state);
+    void loadStates(const ComponentState& state);
+    void updateFromState(const ComponentState& state);
+    juce::String getRowName() const { return "InteractiveControls"; }
+    juce::Rectangle<int> getRowBounds() const;
+    
+    // ResponsiveComponent overrides
+    void updateResponsiveLayout() override;
+    
+    // Responsive calculations
+    int getResponsiveButtonSize() const;
+    int getResponsiveSpacing() const;
+    float getResponsiveFontSize(float baseSize) const;
     
     // Interactive control access methods
     float getSwingValue() const { return static_cast<float>(swingSlider.getValue()); }
@@ -144,8 +153,11 @@ public:
 private:
     MidiEngine& midiEngine;
     Mixer& mixer;
-    AnimationManager* animationManager = nullptr;
     juce::AudioProcessorValueTreeState& valueTreeState;
+    ResponsiveLayoutManager& layoutManager;
+    FontManager& fontManager;
+    ColorScheme& colorScheme;
+    AnimationManager* animationManager = nullptr;
     
     // LEFT SECTION: 4x4 Drum Pattern Grid (60% width)
     juce::TextButton drumButtons[INIConfig::Audio::NUM_DRUM_PADS];

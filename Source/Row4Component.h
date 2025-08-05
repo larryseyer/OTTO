@@ -1,14 +1,14 @@
 #pragma once
-#include "RowComponentBase.h"
-#include "UtilityComponents.h"
 #include "JUCE8_CODING_STANDARDS.h"
+#include "UI/Layout/BreakpointManager.h"
+#include "UtilityComponents.h"
 #include "Animation/AnimationManager.h"
 #include "DragDrop/DragDropManager.h"
 
 class MidiEngine;
 class INIDataManager;
 
-class Row4Component : public RowComponentBase {
+class Row4Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row4Component(MidiEngine& midiEngine,
                  ResponsiveLayoutManager& layoutManager,
@@ -19,11 +19,19 @@ public:
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void saveStates(ComponentState& state) override;
-    void loadStates(const ComponentState& state) override;
-    void updateFromState(const ComponentState& state) override;
-    juce::String getRowName() const override { return "PatternGroupControls"; }
-    juce::Rectangle<int> getRowBounds() const override;
+    void saveStates(ComponentState& state);
+    void loadStates(const ComponentState& state);
+    void updateFromState(const ComponentState& state);
+    juce::String getRowName() const { return "PatternGroupControls"; }
+    juce::Rectangle<int> getRowBounds() const;
+    
+    // ResponsiveComponent overrides
+    void updateResponsiveLayout() override;
+    
+    // Responsive calculations
+    int getResponsiveButtonSize() const;
+    int getResponsiveSpacing() const;
+    float getResponsiveFontSize(float baseSize) const;
     
     void setINIDataManager(INIDataManager* manager) { iniDataManager = manager; }
     
@@ -49,6 +57,9 @@ public:
     
 private:
     MidiEngine& midiEngine;
+    ResponsiveLayoutManager& layoutManager;
+    FontManager& fontManager;
+    ColorScheme& colorScheme;
     AnimationManager* animationManager = nullptr;
     INIDataManager* iniDataManager = nullptr;
     

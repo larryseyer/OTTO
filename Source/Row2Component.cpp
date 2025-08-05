@@ -1,3 +1,4 @@
+#include "JUCE8_CODING_STANDARDS.h"
 #include "Row2Component.h"
 #include "MidiEngine.h"
 #include "INIConfig.h"
@@ -8,9 +9,12 @@ Row2Component::Row2Component(MidiEngine& midiEngine,
                            ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
-    : RowComponentBase(2, layoutManager, fontManager, colorScheme)
+    : ResponsiveComponent()
     , midiEngine(midiEngine)
     , valueTreeState(valueTreeState)
+    , layoutManager(layoutManager)
+    , fontManager(fontManager)
+    , colorScheme(colorScheme)
     , bottomSeparator(colorScheme) {
     
     setupPlayerTabsComponents();
@@ -49,6 +53,7 @@ void Row2Component::paint(juce::Graphics& g) {
 }
 
 void Row2Component::resized() {
+    ResponsiveComponent::resized(); // Call parent first
     updatePlayerTabsLayout();
 }
 
@@ -258,43 +263,125 @@ void Row2Component::updateTabText(int tabIndex, const PlayerSettings& player) {
 void Row2Component::updatePlayerTabsLayout() {
     auto bounds = getLocalBounds();
     
-    // Use Row2 namespace constants for positioning  
+    // Use responsive calculations instead of hardcoded values
     using namespace INIConfig::LayoutConstants;
-    int tabWidth = layoutManager.scaled(Row2::tabWidth);
+    int tabWidth = getResponsiveButtonSize();
+    int tabSpacing = getResponsiveSpacing();
+    
     // Calculate dynamic horizontal centering based on actual component width
-    int totalTabsWidth = (Row2::tabsCount * layoutManager.scaled(Row2::tabWidth)) + ((Row2::tabsCount - 1) * layoutManager.scaled(Row2::tabSpacing));
+    int totalTabsWidth = (Row2::tabsCount * tabWidth) + ((Row2::tabsCount - 1) * tabSpacing);
     int leftMargin = (bounds.getWidth() - totalTabsWidth) / 2;
-    int tabSpacing = layoutManager.scaled(Row2::tabSpacing);
-    int tabTopOffset = layoutManager.scaled(Row2::tabTopOffset);
-    int tabContentHeight = layoutManager.scaled(Row2::tabContentHeight);
+    
+    int tabTopOffset = static_cast<int>(bounds.getHeight() * 0.1f); // 10% from top
+    int tabContentHeight = static_cast<int>(bounds.getHeight() * 0.8f); // 80% of row height
 
-    // Position each player tab using percentage-based layout
+    // Position each player tab using responsive layout
     int currentX = leftMargin;
     for (int i = 0; i < Row2::tabsCount; ++i) {
-        tabs[i].setBounds(currentX, 
-                         tabTopOffset, 
-                         tabWidth, 
-                         tabContentHeight);
+        tabs[i].setBounds(currentX, tabTopOffset, tabWidth, tabContentHeight);
         
-        // Move to next button position using percentage-based spacing
+        // Update font size responsively
+        float fontSize = getResponsiveFontSize(14.0f);
+        tabs[i].setFont(JUCE8_FONT(fontSize));
+        
+        // Move to next button position using responsive spacing
         currentX += tabWidth;
         if (i < Row2::tabsCount - 1) {
-            currentX += tabSpacing; // Add spacing before next tab
+            currentX += tabSpacing;
         }
     }
 
-    bottomSeparator.setBounds(0, bounds.getBottom() - layoutManager.scaled(separatorThickness),
-                             bounds.getWidth(), layoutManager.scaled(separatorThickness));
+    // Bottom separator using responsive thickness
+    int separatorThickness = juce::jmax(1, static_cast<int>(bounds.getHeight() * 0.05f));
+    bottomSeparator.setBounds(0, bounds.getBottom() - separatorThickness,
+                             bounds.getWidth(), separatorThickness);
     
-    // Position player number display in the center of the area to the left of the first tab
-    int availableLeftSpace = leftMargin;  // Space from 0 to first tab
-    int playerNumWidth = static_cast<int>(availableLeftSpace * 0.8f);  // Use 80% of available space
-    int playerNumHeight = layoutManager.scaled(Row2::height);  // Use FULL Row2 height
-    int playerNumX = (availableLeftSpace - playerNumWidth) / 2;  // Center in available space
-    int playerNumY = 0;  // Start at top of Row2
+    // Position player number display responsively
+    int availableLeftSpace = leftMargin;
+    int playerNumWidth = static_cast<int>(availableLeftSpace * 0.8f);
+    int playerNumHeight = bounds.getHeight();
+    int playerNumX = (availableLeftSpace - playerNumWidth) / 2;
+    int playerNumY = 0;
     
-    // Position the player number - font will be handled by CustomLookAndFeel
     playerNumber.setBounds(playerNumX, playerNumY, playerNumWidth, playerNumHeight);
+    
+    // Update player number font size responsively
+    float playerFontSize = getResponsiveFontSize(16.0f);
+    playerNumber.setFont(JUCE8_FONT(playerFontSize));
 }
 
-// Duplicate methods removed - using the ones defined earlier in the file
+//==============================================================================
+// ResponsiveComponent Implementation
+//==============================================================================
+
+void Row2Component::updateResponsiveLayout() {
+    auto category = getCurrentDeviceCategory();
+    
+    // Device-specific adjustments for player tabs
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            // Mobile: Larger touch targets, simplified layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            // Tablet: Medium touch targets, balanced layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            // Desktop: Standard layout with mouse precision
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            // Large Desktop: Expanded layout, more information density
+            break;
+        default:
+            break;
+    }
+    
+    resized();
+}
+
+int Row2Component::getResponsiveButtonSize() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base size from INI config - tabs should be wider than tall
+    int baseWidth = static_cast<int>(getWidth() / INIConfig::LayoutConstants::Row2::tabsCount * 0.8f);
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget), baseWidth);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget * 0.9f), baseWidth);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(60, baseWidth);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(70, static_cast<int>(baseWidth * 1.1f));
+        default:
+            return juce::jmax(60, baseWidth);
+    }
+}
+
+int Row2Component::getResponsiveSpacing() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base spacing
+    int baseSpacing = rules.spacing.defaultSpacing;
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(6, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(4, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(3, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(4, baseSpacing);
+        default:
+            return baseSpacing;
+    }
+}
+
+float Row2Component::getResponsiveFontSize(float baseSize) const {
+    return ResponsiveComponent::getResponsiveFontSize(baseSize);
+}

@@ -1,8 +1,9 @@
 #pragma once
-#include "RowComponentBase.h"
+#include "JUCE8_CODING_STANDARDS.h"
+#include "UI/Layout/BreakpointManager.h"
 #include "UtilityComponents.h"
 
-class Row6Component : public RowComponentBase {
+class Row6Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row6Component(ResponsiveLayoutManager& layoutManager,
                  FontManager& fontManager,
@@ -12,12 +13,20 @@ public:
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void saveStates(ComponentState& state) override;
-    void loadStates(const ComponentState& state) override;
-    void updateFromState(const ComponentState& state) override;
+    void saveStates(ComponentState& state);
+    void loadStates(const ComponentState& state);
+    void updateFromState(const ComponentState& state);
     void lookAndFeelChanged() override;
-    juce::String getRowName() const override { return "LoopControls"; }
-    juce::Rectangle<int> getRowBounds() const override;
+    juce::String getRowName() const { return "LoopControls"; }
+    juce::Rectangle<int> getRowBounds() const;
+    
+    // ResponsiveComponent overrides
+    void updateResponsiveLayout() override;
+    
+    // Responsive calculations
+    int getResponsiveButtonSize() const;
+    int getResponsiveSpacing() const;
+    float getResponsiveFontSize(float baseSize) const;
     
     // Loop control interface methods
     float getLoopPosition() const { return static_cast<float>(loopSlider.getValue()); }
@@ -26,6 +35,10 @@ public:
     std::function<void(float)> onLoopPositionChanged;
     
 private:
+    ResponsiveLayoutManager& layoutManager;
+    FontManager& fontManager;
+    ColorScheme& colorScheme;
+    
     void setupLoopComponents();
     void updateLoopLayout();
     

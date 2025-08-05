@@ -1,10 +1,14 @@
+#include "JUCE8_CODING_STANDARDS.h"
 #include "Row6Component.h"
 #include "INIConfig.h"
 
 Row6Component::Row6Component(ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
-    : RowComponentBase(6, layoutManager, fontManager, colorScheme),
+    : ResponsiveComponent(),
+      layoutManager(layoutManager),
+      fontManager(fontManager),
+      colorScheme(colorScheme),
       loopSlider(layoutManager) {
     
     setupLoopComponents();
@@ -15,6 +19,7 @@ void Row6Component::paint(juce::Graphics& g) {
 }
 
 void Row6Component::resized() {
+    ResponsiveComponent::resized(); // Call parent first
     updateLoopLayout();
 }
 
@@ -79,36 +84,120 @@ void Row6Component::setupLoopComponents() {
 }
 
 void Row6Component::updateLoopLayout() {
-    using namespace INIConfig::LayoutConstants;
-    
     auto bounds = getLocalBounds();
     
-    // Calculate scaled dimensions using Row6 constants
-    int labelWidth = layoutManager.scaled(Row6::labelWidth);
-    int labelMargin = layoutManager.scaled(Row6::labelMargin);
-    int sliderMargin = layoutManager.scaled(Row6::sliderMargin);
-    int labelHeight = layoutManager.scaled(Row6::labelHeight);
-    int sliderHeight = layoutManager.scaled(Row6::sliderHeight);
+    // Use responsive calculations instead of hardcoded values
+    int spacing = getResponsiveSpacing();
+    int margin = getResponsiveMargin(10);
+    
+    // Calculate responsive dimensions
+    int labelWidth = static_cast<int>(bounds.getWidth() * 0.15f); // 15% of width for labels
+    int labelHeight = static_cast<int>(bounds.getHeight() * 0.4f); // 40% of row height
+    int sliderHeight = static_cast<int>(bounds.getHeight() * 0.6f); // 60% of row height
+    
+    // Center everything vertically
+    int labelY = (bounds.getHeight() - labelHeight) / 2;
+    int sliderY = (bounds.getHeight() - sliderHeight) / 2;
+    
+    // Update label font size responsively
+    float labelFontSize = getResponsiveFontSize(10.0f);
+    startLabel.setFont(JUCE8_FONT(labelFontSize));
+    endLabel.setFont(JUCE8_FONT(labelFontSize));
     
     // Position start label (left side)
-    int startLabelX = layoutManager.scaled(Row6::startLabelX);
-    int labelY = layoutManager.scaled(Row6::labelY);
+    int startLabelX = margin;
     startLabel.setBounds(startLabelX, labelY, labelWidth, labelHeight);
     
     // Position end label (right side)
-    int endLabelX = bounds.getWidth() - labelWidth - labelMargin;
+    int endLabelX = bounds.getWidth() - labelWidth - margin;
     endLabel.setBounds(endLabelX, labelY, labelWidth, labelHeight);
     
     // Position slider (center, between labels)
-    int sliderX = startLabelX + labelWidth + sliderMargin;
-    int sliderWidth = endLabelX - sliderX - sliderMargin;
-    int sliderY = layoutManager.scaled(Row6::sliderY);
+    int sliderX = startLabelX + labelWidth + spacing;
+    int sliderWidth = endLabelX - sliderX - spacing;
     
     // Ensure minimum slider width for usability
-    if (sliderWidth < layoutManager.scaled(200)) {
-        sliderWidth = layoutManager.scaled(200);
+    int minSliderWidth = static_cast<int>(bounds.getWidth() * 0.3f); // At least 30% of width
+    if (sliderWidth < minSliderWidth) {
+        sliderWidth = minSliderWidth;
         sliderX = (bounds.getWidth() - sliderWidth) / 2;
     }
     
     loopSlider.setBounds(sliderX, sliderY, sliderWidth, sliderHeight);
+}
+
+//==============================================================================
+// ResponsiveComponent Implementation
+//==============================================================================
+
+void Row6Component::updateResponsiveLayout() {
+    auto category = getCurrentDeviceCategory();
+    
+    // Device-specific adjustments for loop controls
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            // Mobile: Larger touch targets, simplified layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            // Tablet: Medium touch targets, balanced layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            // Desktop: Standard layout with mouse precision
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            // Large Desktop: Expanded layout, more information density
+            break;
+        default:
+            break;
+    }
+    
+    resized();
+}
+
+int Row6Component::getResponsiveButtonSize() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base size from row height - this is a smaller row
+    int baseSize = static_cast<int>(getHeight() * 0.8f); // 80% of row height
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget * 0.9f), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(24, baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(28, static_cast<int>(baseSize * 1.1f));
+        default:
+            return juce::jmax(24, baseSize);
+    }
+}
+
+int Row6Component::getResponsiveSpacing() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base spacing
+    int baseSpacing = rules.spacing.defaultSpacing;
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(6, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(4, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(3, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(4, baseSpacing);
+        default:
+            return baseSpacing;
+    }
+}
+
+float Row6Component::getResponsiveFontSize(float baseSize) const {
+    return ResponsiveComponent::getResponsiveFontSize(baseSize);
 }

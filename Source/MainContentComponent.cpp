@@ -496,12 +496,12 @@ void MainContentComponent::broadcastThemeChangeToComponents() {
     if (spectrumAnalyzer) spectrumAnalyzer->updateColorsFromTheme();
     if (waveformDisplay) waveformDisplay->updateColorsFromTheme();
     
-    // Update separators
-    row1Separator.updateColorsFromTheme();
-    row2Separator.updateColorsFromTheme();
-    row3Separator.updateColorsFromTheme();
-    row4Separator.updateColorsFromTheme();
-    row5Separator.updateColorsFromTheme();
+    // Update separators - SeparatorComponent uses repaint() for theme updates
+    row1Separator.repaint();
+    row2Separator.repaint();
+    row3Separator.repaint();
+    row4Separator.repaint();
+    row5Separator.repaint();
 }
 
 void MainContentComponent::handleGestureInput(const GestureRecognizer::GestureInfo& gesture) {
@@ -509,18 +509,27 @@ void MainContentComponent::handleGestureInput(const GestureRecognizer::GestureIn
         case GestureRecognizer::GestureType::Swipe:
             // Handle swipe navigation between players/patterns
             if (gesture.swipeDirection == GestureRecognizer::SwipeDirection::Left && row2Component) {
-                row2Component->selectNextPlayer();
+                // Navigate to next player (wrap around at max)
+                int currentTab = row2Component->getSelectedTab();
+                int nextTab = (currentTab + 1) % INIConfig::Defaults::MAX_PLAYERS;
+                row2Component->setSelectedTab(nextTab);
             } else if (gesture.swipeDirection == GestureRecognizer::SwipeDirection::Right && row2Component) {
-                row2Component->selectPreviousPlayer();
+                // Navigate to previous player (wrap around at 0)
+                int currentTab = row2Component->getSelectedTab();
+                int prevTab = (currentTab - 1 + INIConfig::Defaults::MAX_PLAYERS) % INIConfig::Defaults::MAX_PLAYERS;
+                row2Component->setSelectedTab(prevTab);
             }
             break;
             
         case GestureRecognizer::GestureType::Pinch:
             // Handle pinch-to-zoom for visualizations
-            if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
-                float zoomFactor = gesture.scale;
-                spectrumAnalyzer->setZoomFactor(zoomFactor);
+            if (waveformDisplay && waveformDisplay->isVisible()) {
+                // WaveformDisplay supports zoom functionality
+                double currentZoom = waveformDisplay->getZoomLevel();
+                double newZoom = currentZoom * gesture.scale;
+                waveformDisplay->setZoomLevel(newZoom);
             }
+            // Note: SpectrumAnalyzer doesn't have zoom functionality in current implementation
             break;
             
         case GestureRecognizer::GestureType::LongPress:
@@ -535,8 +544,12 @@ void MainContentComponent::handleGestureInput(const GestureRecognizer::GestureIn
         case GestureRecognizer::GestureType::TwoFingerPan:
             // Handle two-finger pan for timeline navigation
             if (row6Component) {
-                float deltaX = data.delta.x;
-                row6Component->adjustLoopPosition(deltaX);
+                // Adjust loop position based on gesture translation
+                float currentPosition = row6Component->getLoopPosition();
+                float deltaX = gesture.translation.x;
+                float sensitivity = 0.01f; // Adjust sensitivity as needed
+                float newPosition = juce::jlimit(0.0f, 1.0f, currentPosition + (deltaX * sensitivity));
+                row6Component->setLoopPosition(newPosition);
             }
             break;
             

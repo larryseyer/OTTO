@@ -54,6 +54,7 @@
  */
 
 #include "MainContentComponent.h"
+#include "JUCE8_CODING_STANDARDS.h"
 
 #include "SceneLauncherComponent.h"
 #include "LoopSectionComponent.h"
@@ -995,42 +996,44 @@ void MainContentComponent::paint(juce::Graphics& g) {
 }
 
 void MainContentComponent::resized() {
-    // PHASE 9D: Enhanced resized method with adaptive layout integration
-    auto bounds = getLocalBounds();
+    // Call parent ResponsiveComponent::resized() first
+    ResponsiveComponent::resized();
     
-    // PHASE 9D: Apply adaptive layout calculations
-    if (adaptiveLayoutManager) {
-        adaptiveLayoutManager->updateLayout(bounds.getWidth(), bounds.getHeight());
-        optimizeLayoutForDevice();
-        updateTouchTargetsForPlatform();
-    }
+    auto area = getLocalBounds();
     
-    // Row components automatically position themselves using getRowBounds()
+    // Use responsive row heights instead of hardcoded percentages
     if (row1Component) {
-        row1Component->setBounds(row1Component->getRowBounds());
+        auto row1Area = area.removeFromTop(getResponsiveRowHeight(1));
+        row1Component->setBounds(row1Area);
     }
     if (row2Component) {
-        row2Component->setBounds(row2Component->getRowBounds());
+        auto row2Area = area.removeFromTop(getResponsiveRowHeight(2));
+        row2Component->setBounds(row2Area);
     }
     if (row3Component) {
-        row3Component->setBounds(row3Component->getRowBounds());
+        auto row3Area = area.removeFromTop(getResponsiveRowHeight(3));
+        row3Component->setBounds(row3Area);
     }
     if (row4Component) {
-        row4Component->setBounds(row4Component->getRowBounds());
+        auto row4Area = area.removeFromTop(getResponsiveRowHeight(4));
+        row4Component->setBounds(row4Area);
     }
     if (row5Component) {
-        row5Component->setBounds(row5Component->getRowBounds());
+        auto row5Area = area.removeFromTop(getResponsiveRowHeight(5));
+        row5Component->setBounds(row5Area);
     }
     if (row6Component) {
-        row6Component->setBounds(row6Component->getRowBounds());
+        auto row6Area = area.removeFromTop(getResponsiveRowHeight(6));
+        row6Component->setBounds(row6Area);
     }
     
-    // Legacy loop section positioning
+    // Legacy loop section positioning with responsive calculations
     if (loopSection) {
-        using namespace INIConfig::LayoutConstants;
-        int row6Y = layoutManager.scaled(ROW_1_HEIGHT + ROW_2_HEIGHT + ROW_3_HEIGHT + ROW_4_HEIGHT + ROW_5_HEIGHT);
-        int row6Height = layoutManager.scaled(ROW_6_HEIGHT);
-        loopSection->setBounds(0, row6Y, bounds.getWidth(), row6Height);
+        int row6Y = getResponsiveRowHeight(1) + getResponsiveRowHeight(2) + 
+                   getResponsiveRowHeight(3) + getResponsiveRowHeight(4) + 
+                   getResponsiveRowHeight(5);
+        int row6Height = getResponsiveRowHeight(6);
+        loopSection->setBounds(0, row6Y, getLocalBounds().getWidth(), row6Height);
     }
     
     // PHASE 9D: Update visualization bounds
@@ -1038,7 +1041,7 @@ void MainContentComponent::resized() {
     
     // PHASE 9D: Update gesture recognizer bounds
     if (gestureRecognizer) {
-        gestureRecognizer->setBounds(bounds);
+        gestureRecognizer->setBounds(getLocalBounds());
     }
     
     // Position row separators
@@ -1501,6 +1504,71 @@ void MainContentComponent::setupAnimationManagers() {
     if (row5Component && animationManager) {
         row5Component->setAnimationManager(animationManager.get());
     }
+}
+
+//==============================================================================
+// RESPONSIVE COMPONENT INTEGRATION
+//==============================================================================
+
+void MainContentComponent::updateResponsiveLayout() {
+    // Custom responsive behavior for MainContentComponent
+    // Called automatically when breakpoints change
+    
+    auto category = getCurrentDeviceCategory();
+    auto orientation = getCurrentOrientation();
+    
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            // Mobile-specific layout adjustments
+            // Larger touch targets, simplified layout
+            break;
+            
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            // Medium touch targets, balanced layout
+            break;
+            
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            // Standard layout with mouse precision
+            break;
+            
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            // Expanded layout with more information density
+            break;
+            
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Unknown:
+            // Fallback to desktop layout
+            break;
+    }
+    
+    if (orientation == OTTO::UI::Layout::BreakpointManager::Orientation::Portrait) {
+        // Adjust for portrait orientation
+        // Could adjust row heights or component arrangements
+    }
+    
+    // Trigger layout update
+    resized();
+}
+
+int MainContentComponent::getResponsiveRowHeight(int rowNumber) const {
+    auto totalHeight = getHeight();
+    float basePercent = 0.0f;
+    
+    // Use INI constants for base percentages
+    using namespace INIConfig::LayoutConstants;
+    switch (rowNumber) {
+        case 1: basePercent = ROW_1_HEIGHT_PERCENT; break;
+        case 2: basePercent = ROW_2_HEIGHT_PERCENT; break;
+        case 3: basePercent = ROW_3_HEIGHT_PERCENT; break;
+        case 4: basePercent = ROW_4_HEIGHT_PERCENT; break;
+        case 5: basePercent = ROW_5_HEIGHT_PERCENT; break;
+        case 6: basePercent = ROW_6_HEIGHT_PERCENT; break;
+        default: return 0;
+    }
+    
+    int baseHeight = static_cast<int>(totalHeight * basePercent / 100.0f);
+    
+    // Apply responsive scaling using BreakpointManager
+    return OTTO::UI::Layout::BreakpointManager::getInstance().calculateResponsiveSize(baseHeight, const_cast<MainContentComponent*>(this));
 }
 
 #ifdef JUCE_DEBUG

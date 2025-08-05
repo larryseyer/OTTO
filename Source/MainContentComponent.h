@@ -8,6 +8,10 @@
 #include "ComponentState.h"
 #include "INIConfig.h"
 #include "PlatformResponsiveManager.h"
+#include "UI/Layout/BreakpointManager.h"
+
+// JUCE 8 Compliance
+#include "JUCE8_CODING_STANDARDS.h"
 
 // Phase 9D Component Includes
 #include "UI/Themes/ThemeManager.h"
@@ -45,7 +49,7 @@ struct PatternGroupCache {
     bool cacheValid = false;
 };
 
-class MainContentComponent : public juce::Component,
+class MainContentComponent : public OTTO::UI::Layout::ResponsiveComponent,
                               public juce::Button::Listener,
                               public juce::ComboBox::Listener,
                               public ThemeManager::Listener,
@@ -64,6 +68,12 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
     void lookAndFeelChanged() override;
+    
+    // ResponsiveComponent overrides
+    void updateResponsiveLayout() override;
+    
+    // Responsive row height calculations
+    int getResponsiveRowHeight(int rowNumber) const;
     
     // PHASE 9D: Mouse event handling for gesture recognition
     void mouseDown(const juce::MouseEvent& e) override;

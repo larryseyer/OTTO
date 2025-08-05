@@ -1098,7 +1098,7 @@ juce::Colour ThemeManager::adjustColorForAccessibility(const juce::Colour& color
     }
 }
 
-float ThemeManager::calculateContrastRatio(const juce::Colour& foreground, const juce::Colour& background) {
+float ThemeManager::calculateContrastRatio(const juce::Colour& foreground, const juce::Colour& background) const {
     float fgLuminance = foreground.getPerceivedBrightness();
     float bgLuminance = background.getPerceivedBrightness();
     

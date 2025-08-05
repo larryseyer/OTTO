@@ -147,15 +147,16 @@ void GestureRecognizer::processMouseEvent(const juce::MouseEvent& e, juce::Compo
 }
 
 void GestureRecognizer::processTouchEvent(const juce::MouseEvent& e, juce::Component* component) {
-    // Process native touch events (iOS, Android, Windows Touch)
-    for (const auto& touch : e.touches) {
-        if (touch.isTouchStart()) {
-            addTouchPoint(touch.touchId, touch.position, component);
-        } else if (touch.isTouchMove()) {
-            updateTouchPoint(touch.touchId, touch.position);
-        } else if (touch.isTouchEnd()) {
-            removeTouchPoint(touch.touchId);
-        }
+    // In JUCE 8, multitouch is handled through separate MouseEvent instances
+    // Each touch generates its own MouseEvent with a unique MouseInputSource
+    int touchId = e.source.getIndex(); // Use source index as touch ID
+    
+    if (e.mouseWasClicked()) {
+        addTouchPoint(touchId, e.position, component);
+    } else if (e.mouseWasDraggedSinceMouseDown()) {
+        updateTouchPoint(touchId, e.position);
+    } else if (e.mouseWasClicked()) { // Mouse up
+        removeTouchPoint(touchId);
     }
     
     updateGestureRecognition();

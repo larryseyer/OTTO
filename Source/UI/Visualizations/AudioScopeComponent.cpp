@@ -43,9 +43,9 @@ AudioScopeComponent::AudioScopeComponent(const ScopeSettings& initialSettings)
     // Start timer for updates
     startTimer(1000 / settings.refreshRate);
     
-    // Set initial size using INI constants
-    setSize(static_cast<int>(getWidth() * INIConfig::LayoutConstants::Row5::patternMatrixWidthPercent / 100.0f),
-            static_cast<int>(getHeight() * INIConfig::LayoutConstants::Row5::patternMatrixHeightPercent / 100.0f));
+    // Set initial size using default percentages
+    setSize(static_cast<int>(getWidth() * 80.0f / 100.0f),  // Default 80% width
+            static_cast<int>(getHeight() * 60.0f / 100.0f)); // Default 60% height
 }
 
 AudioScopeComponent::~AudioScopeComponent()
@@ -159,7 +159,7 @@ void AudioScopeComponent::mouseDown(const juce::MouseEvent& event)
     
     // Check if clicking on trigger level
     auto triggerY = displayArea.getCentreY() - (settings.triggerLevel / voltsPerPixel);
-    if (std::abs(event.getY() - triggerY) < 5) {
+    if (std::abs(event.getPosition().y - triggerY) < 5) {
         isDraggingTrigger = true;
         return;
     }
@@ -584,7 +584,15 @@ bool AudioScopeComponent::exportWaveform(const juce::File& file, int width, int 
     // Restore original bounds
     setBounds(originalBounds);
     
-    return image.writeTo(file);
+    // Use JUCE 8 API for saving images
+    auto format = juce::ImageFileFormat::findImageFormatForFileExtension(file);
+    if (format != nullptr) {
+        juce::FileOutputStream stream(file);
+        if (stream.openedOk()) {
+            return format->writeImageToStream(image, stream);
+        }
+    }
+    return false;
 }
 
 bool AudioScopeComponent::exportData(const juce::File& file, int channel)

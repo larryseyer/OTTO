@@ -278,13 +278,13 @@ void AdaptiveLayoutManager::updateLayout(int width, int height) {
     // Check if we can use cached layout
     if (isLayoutCacheValid(constraints)) {
         // Use cached layout
-        ResponsiveLayoutManager::updateLayout(width, height);
+        updateLayout(width, height);
     } else {
         // Calculate new adaptive layout
         calculateAdaptiveLayout(constraints);
         
         // Update base layout manager
-        ResponsiveLayoutManager::updateLayout(width, height);
+        updateLayout(width, height);
         
         // Update cache
         updateLayoutCache(constraints);

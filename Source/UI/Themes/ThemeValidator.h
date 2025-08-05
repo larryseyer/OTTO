@@ -458,7 +458,12 @@ private:
     bool accessibilityValidationEnabled;
     bool performanceValidationEnabled;
     
-    juce::HashMap<ValidationCategory, bool> categoryEnabled;
+    // Category enabled states - using Array instead of HashMap for enum compatibility
+    struct CategoryEnabledState {
+        ValidationCategory category;
+        bool enabled;
+    };
+    juce::Array<CategoryEnabledState> categoryEnabled;
     juce::Array<MigrationRule> migrationRules;
     
     // Custom validation rules
@@ -467,7 +472,11 @@ private:
         std::function<ValidationIssue(const ThemePresets::ThemePreset&)> function;
     };
     
-    juce::HashMap<ValidationCategory, juce::Array<CustomValidationRule>> customRules;
+    struct CategoryCustomRules {
+        ValidationCategory category;
+        juce::Array<CustomValidationRule> rules;
+    };
+    juce::Array<CategoryCustomRules> customRules;
     
     // Required color properties
     juce::StringArray requiredColors;

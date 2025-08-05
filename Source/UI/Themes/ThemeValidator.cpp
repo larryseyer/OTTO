@@ -48,12 +48,12 @@ ThemeValidator::ThemeValidator()
     , performanceValidationEnabled(true)
 {
     // Initialize category enabled states
-    categoryEnabled.set(ValidationCategory::Colors, true);
-    categoryEnabled.set(ValidationCategory::Gradients, true);
-    categoryEnabled.set(ValidationCategory::Fonts, true);
-    categoryEnabled.set(ValidationCategory::Accessibility, true);
-    categoryEnabled.set(ValidationCategory::Performance, true);
-    categoryEnabled.set(ValidationCategory::Compatibility, true);
+    categoryEnabled.add({ValidationCategory::Colors, true});
+    categoryEnabled.add({ValidationCategory::Gradients, true});
+    categoryEnabled.add({ValidationCategory::Fonts, true});
+    categoryEnabled.add({ValidationCategory::Accessibility, true});
+    categoryEnabled.add({ValidationCategory::Performance, true});
+    categoryEnabled.add({ValidationCategory::Compatibility, true});
     
     // Initialize required colors
     requiredColors.add("WindowBackground");
@@ -208,12 +208,15 @@ ThemeValidator::validateCategory(const ThemePresets::ThemePreset& preset, Valida
     }
     
     // Apply custom validation rules
-    if (customRules.contains(category)) {
-        for (const auto& rule : customRules[category]) {
-            auto issue = rule.function(preset);
-            if (!issue.message.isEmpty()) {
-                issues.add(issue);
+    for (const auto& categoryRules : customRules) {
+        if (categoryRules.category == category) {
+            for (const auto& rule : categoryRules.rules) {
+                auto issue = rule.function(preset);
+                if (!issue.message.isEmpty()) {
+                    issues.add(issue);
+                }
             }
+            break;
         }
     }
     
@@ -706,34 +709,56 @@ void ThemeValidator::addValidationRule(ValidationCategory category,
     rule.name = ruleName;
     rule.function = ruleFunction;
     
-    if (!customRules.contains(category)) {
-        customRules.set(category, juce::Array<CustomValidationRule>());
+    // Find existing category or create new one
+    for (auto& categoryRules : customRules) {
+        if (categoryRules.category == category) {
+            categoryRules.rules.add(rule);
+            return;
+        }
     }
     
-    customRules.getReference(category).add(rule);
+    // Category not found, create new entry
+    CategoryCustomRules newCategoryRules;
+    newCategoryRules.category = category;
+    newCategoryRules.rules.add(rule);
+    customRules.add(newCategoryRules);
 }
 
 void ThemeValidator::removeValidationRule(ValidationCategory category, const juce::String& ruleName)
 {
-    if (customRules.contains(category)) {
-        auto& rules = customRules.getReference(category);
-        for (int i = rules.size() - 1; i >= 0; --i) {
-            if (rules[i].name == ruleName) {
-                rules.remove(i);
-                break;
+    for (auto& categoryRules : customRules) {
+        if (categoryRules.category == category) {
+            for (int i = categoryRules.rules.size() - 1; i >= 0; --i) {
+                if (categoryRules.rules[i].name == ruleName) {
+                    categoryRules.rules.remove(i);
+                    break;
+                }
             }
+            break;
         }
     }
 }
 
 void ThemeValidator::setCategoryEnabled(ValidationCategory category, bool enabled)
 {
-    categoryEnabled.set(category, enabled);
+    for (auto& state : categoryEnabled) {
+        if (state.category == category) {
+            state.enabled = enabled;
+            return;
+        }
+    }
+    // If not found, add new entry
+    categoryEnabled.add({category, enabled});
 }
 
 bool ThemeValidator::isCategoryEnabled(ValidationCategory category) const
 {
-    return categoryEnabled[category];
+    for (const auto& state : categoryEnabled) {
+        if (state.category == category) {
+            return state.enabled;
+        }
+    }
+    return true; // Default to enabled if not found
 }
 
 //==============================================================================
@@ -828,12 +853,12 @@ bool ThemeValidator::saveToINI() const
         state.setValue("PerformanceValidationEnabled", performanceValidationEnabled);
         
         // Save category enabled states
-        state.setValue("ColorsEnabled", categoryEnabled[ValidationCategory::Colors]);
-        state.setValue("GradientsEnabled", categoryEnabled[ValidationCategory::Gradients]);
-        state.setValue("FontsEnabled", categoryEnabled[ValidationCategory::Fonts]);
-        state.setValue("AccessibilityEnabled", categoryEnabled[ValidationCategory::Accessibility]);
-        state.setValue("PerformanceEnabled", categoryEnabled[ValidationCategory::Performance]);
-        state.setValue("CompatibilityEnabled", categoryEnabled[ValidationCategory::Compatibility]);
+        state.setValue("ColorsEnabled", isCategoryEnabled(ValidationCategory::Colors));
+        state.setValue("GradientsEnabled", isCategoryEnabled(ValidationCategory::Gradients));
+        state.setValue("FontsEnabled", isCategoryEnabled(ValidationCategory::Fonts));
+        state.setValue("AccessibilityEnabled", isCategoryEnabled(ValidationCategory::Accessibility));
+        state.setValue("PerformanceEnabled", isCategoryEnabled(ValidationCategory::Performance));
+        state.setValue("CompatibilityEnabled", isCategoryEnabled(ValidationCategory::Compatibility));
         
         return INIDataManager::saveComponentState("ThemeValidator", state);
     } catch (...) {
@@ -854,12 +879,12 @@ bool ThemeValidator::loadFromINI()
         performanceValidationEnabled = state.getBoolValue("PerformanceValidationEnabled", true);
         
         // Load category enabled states
-        categoryEnabled.set(ValidationCategory::Colors, state.getBoolValue("ColorsEnabled", true));
-        categoryEnabled.set(ValidationCategory::Gradients, state.getBoolValue("GradientsEnabled", true));
-        categoryEnabled.set(ValidationCategory::Fonts, state.getBoolValue("FontsEnabled", true));
-        categoryEnabled.set(ValidationCategory::Accessibility, state.getBoolValue("AccessibilityEnabled", true));
-        categoryEnabled.set(ValidationCategory::Performance, state.getBoolValue("PerformanceEnabled", true));
-        categoryEnabled.set(ValidationCategory::Compatibility, state.getBoolValue("CompatibilityEnabled", true));
+        setCategoryEnabled(ValidationCategory::Colors, state.getBoolValue("ColorsEnabled", true));
+        setCategoryEnabled(ValidationCategory::Gradients, state.getBoolValue("GradientsEnabled", true));
+        setCategoryEnabled(ValidationCategory::Fonts, state.getBoolValue("FontsEnabled", true));
+        setCategoryEnabled(ValidationCategory::Accessibility, state.getBoolValue("AccessibilityEnabled", true));
+        setCategoryEnabled(ValidationCategory::Performance, state.getBoolValue("PerformanceEnabled", true));
+        setCategoryEnabled(ValidationCategory::Compatibility, state.getBoolValue("CompatibilityEnabled", true));
         
         return true;
     } catch (...) {
@@ -874,12 +899,12 @@ void ThemeValidator::resetToDefaults()
     performanceValidationEnabled = true;
     
     // Reset all categories to enabled
-    categoryEnabled.set(ValidationCategory::Colors, true);
-    categoryEnabled.set(ValidationCategory::Gradients, true);
-    categoryEnabled.set(ValidationCategory::Fonts, true);
-    categoryEnabled.set(ValidationCategory::Accessibility, true);
-    categoryEnabled.set(ValidationCategory::Performance, true);
-    categoryEnabled.set(ValidationCategory::Compatibility, true);
+    setCategoryEnabled(ValidationCategory::Colors, true);
+    setCategoryEnabled(ValidationCategory::Gradients, true);
+    setCategoryEnabled(ValidationCategory::Fonts, true);
+    setCategoryEnabled(ValidationCategory::Accessibility, true);
+    setCategoryEnabled(ValidationCategory::Performance, true);
+    setCategoryEnabled(ValidationCategory::Compatibility, true);
     
     customRules.clear();
 }
@@ -1133,8 +1158,16 @@ ThemePresets::ThemePreset ThemeValidator::applyMigrationRules(const ThemePresets
             // Migrate color property
             if (migratedPreset.colorValues.containsKey(rule.oldName)) {
                 auto value = migratedPreset.colorValues[rule.oldName];
-                migratedPreset.colorValues.removeValue(rule.oldName);
-                migratedPreset.colorValues.set(rule.newName, value);
+                // Create new StringPairArray without the old key
+                juce::StringPairArray newColorValues;
+                for (int i = 0; i < migratedPreset.colorValues.size(); ++i) {
+                    auto key = migratedPreset.colorValues.getAllKeys()[i];
+                    if (key != rule.oldName) {
+                        newColorValues.set(key, migratedPreset.colorValues[key]);
+                    }
+                }
+                newColorValues.set(rule.newName, value);
+                migratedPreset.colorValues = newColorValues;
             } else if (rule.required && !migratedPreset.colorValues.containsKey(rule.newName)) {
                 migratedPreset.colorValues.set(rule.newName, rule.defaultValue);
             }

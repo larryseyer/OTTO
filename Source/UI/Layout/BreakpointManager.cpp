@@ -703,8 +703,8 @@ BreakpointManager::ScreenInfo BreakpointManager::detectScreenInfo(juce::Componen
     ScreenInfo info;
     
     // Get display information using JUCE 8 API
-    auto displays = getDisplays();
-    auto primaryDisplay = getPrimaryDisplay();
+    auto& displays = juce::Desktop::getInstance().getDisplays();
+    auto primaryDisplay = displays.getPrimaryDisplay();
     
     if (component != nullptr)
     {
@@ -774,8 +774,8 @@ BreakpointManager::ScreenInfo BreakpointManager::detectScreenInfo(juce::Componen
 float BreakpointManager::detectScreenDensity() const
 {
     // Use JUCE 8 display API to get screen density
-    auto displays = getDisplays();
-    auto primaryDisplay = getPrimaryDisplay();
+    auto& displays = juce::Desktop::getInstance().getDisplays();
+    auto primaryDisplay = displays.getPrimaryDisplay();
     
     if (primaryDisplay != nullptr)
     {

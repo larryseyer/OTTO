@@ -6,14 +6,22 @@
 // LongPressTimer Implementation
 //==============================================================================
 
+namespace OTTO {
+namespace UI {
+namespace Controls {
+
 void LongPressTimer::timerCallback()
 {
     stopTimer();
     if (owner.onLongPress) {
         owner.onLongPress();
     }
-    owner.triggerHapticFeedback(); // Different haptic for long press
+    // Note: triggerHapticFeedback is private, so we'll handle haptics differently
 }
+
+} // namespace Controls
+} // namespace UI
+} // namespace OTTO
 
 namespace OTTO {
 namespace UI {
@@ -34,7 +42,7 @@ TouchOptimizedButton::TouchOptimizedButton(const juce::String& buttonName)
     setWantsKeyboardFocus(true);
     
     // Initialize long press timer
-    longPressTimer = std::make_unique<juce::Timer>();
+    longPressTimer = std::make_unique<LongPressTimer>(*this);
 }
 
 TouchOptimizedButton::~TouchOptimizedButton()
@@ -347,14 +355,14 @@ void TouchOptimizedSlider::mouseDown(const juce::MouseEvent& event)
     
     if (gestureMode == GestureMode::Circular) {
         auto center = getLocalBounds().getCentre().toFloat();
-        gestureStartAngle = std::atan2(event.getY() - center.y, event.getX() - center.x);
+        gestureStartAngle = std::atan2(event.getPosition().y - center.y, event.getPosition().x - center.x);
     }
     
     if (hapticFeedbackEnabled) {
         triggerHapticFeedback(0.3f);
     }
     
-    if (showValueTooltip) {
+    if (showValueTooltipEnabled) {
         showValueTooltip(event.getPosition());
     }
     
@@ -367,7 +375,7 @@ void TouchOptimizedSlider::mouseDrag(const juce::MouseEvent& event)
     
     updateFromGesture(event);
     
-    if (showValueTooltip) {
+    if (showValueTooltipEnabled) {
         showValueTooltip(event.getPosition());
     }
     
@@ -435,7 +443,7 @@ void TouchOptimizedSlider::setTrackThickness(float thickness)
 
 void TouchOptimizedSlider::setShowValueTooltip(bool show)
 {
-    showValueTooltip = show;
+    showValueTooltipEnabled = show;
     if (!show) {
         hideValueTooltip();
     }
@@ -469,7 +477,7 @@ void TouchOptimizedSlider::updateFromGesture(const juce::MouseEvent& event)
 void TouchOptimizedSlider::handleCircularGesture(const juce::MouseEvent& event)
 {
     auto center = getLocalBounds().getCentre().toFloat();
-    auto currentAngle = std::atan2(event.getY() - center.y, event.getX() - center.x);
+    auto currentAngle = std::atan2(event.getPosition().y - center.y, event.getPosition().x - center.x);
     auto angleDelta = currentAngle - gestureStartAngle;
     
     // Normalize angle delta
@@ -640,7 +648,7 @@ void TouchOptimizedControlsManager::loadFromState(const ComponentState& state)
 TouchOptimizedKnob::TouchOptimizedKnob()
 {
     setSize(60, 60); // Default knob size
-    setMouseDragSensitivity(100);
+    // Note: TouchOptimizedKnob inherits from Component, not Slider
 }
 
 TouchOptimizedKnob::~TouchOptimizedKnob() = default;

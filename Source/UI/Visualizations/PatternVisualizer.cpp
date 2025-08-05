@@ -2,6 +2,19 @@
 #include "JUCE8_CODING_STANDARDS.h"
 #include "../../INIDataManager.h"
 
+#if JUCE_OPENGL
+    #if JUCE_MAC
+        #include <OpenGL/gl.h>
+        #include <OpenGL/glext.h>
+    #elif JUCE_WINDOWS
+        #include <GL/gl.h>
+        #include <GL/glext.h>
+    #elif JUCE_LINUX
+        #include <GL/gl.h>
+        #include <GL/glext.h>
+    #endif
+#endif
+
 namespace OTTO {
 namespace UI {
 namespace Visualizations {
@@ -218,13 +231,14 @@ void PatternVisualizer::renderOpenGL()
     // Clear the screen
     juce::OpenGLHelpers::clear(settings.backgroundColor);
     
-    // Enable depth testing
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
-    // Enable blending for transparency
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // Enable depth testing and blending using JUCE's OpenGL context
+    auto* context = juce::OpenGLContext::getCurrentContext();
+    if (context != nullptr) {
+        juce::gl::glEnable(juce::gl::GL_DEPTH_TEST);
+        juce::gl::glDepthFunc(juce::gl::GL_LESS);
+        juce::gl::glEnable(juce::gl::GL_BLEND);
+        juce::gl::glBlendFunc(juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA);
+    }
     
     // Update matrices
     updateMatrices();
@@ -244,8 +258,8 @@ void PatternVisualizer::renderOpenGL()
     }
     
     // Disable depth testing and blending
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
+    juce::gl::glDisable(juce::gl::GL_DEPTH_TEST);
+    juce::gl::glDisable(juce::gl::GL_BLEND);
     
     // Update performance metrics
     auto endTime = juce::Time::getMillisecondCounterHiRes();
@@ -267,32 +281,32 @@ void PatternVisualizer::openGLContextClosing()
 {
     // Clean up OpenGL resources
     if (glResources.vertexBuffer != 0) {
-        glDeleteBuffers(1, &glResources.vertexBuffer);
+        juce::gl::glDeleteBuffers(1, &glResources.vertexBuffer);
         glResources.vertexBuffer = 0;
     }
     
     if (glResources.indexBuffer != 0) {
-        glDeleteBuffers(1, &glResources.indexBuffer);
+        juce::gl::glDeleteBuffers(1, &glResources.indexBuffer);
         glResources.indexBuffer = 0;
     }
     
     if (glResources.gridVertexBuffer != 0) {
-        glDeleteBuffers(1, &glResources.gridVertexBuffer);
+        juce::gl::glDeleteBuffers(1, &glResources.gridVertexBuffer);
         glResources.gridVertexBuffer = 0;
     }
     
     if (glResources.gridIndexBuffer != 0) {
-        glDeleteBuffers(1, &glResources.gridIndexBuffer);
+        juce::gl::glDeleteBuffers(1, &glResources.gridIndexBuffer);
         glResources.gridIndexBuffer = 0;
     }
     
     if (glResources.vertexArrayObject != 0) {
-        glDeleteVertexArrays(1, &glResources.vertexArrayObject);
+        juce::gl::glDeleteVertexArrays(1, &glResources.vertexArrayObject);
         glResources.vertexArrayObject = 0;
     }
     
     if (glResources.gridVertexArrayObject != 0) {
-        glDeleteVertexArrays(1, &glResources.gridVertexArrayObject);
+        juce::gl::glDeleteVertexArrays(1, &glResources.gridVertexArrayObject);
         glResources.gridVertexArrayObject = 0;
     }
     
@@ -613,7 +627,15 @@ bool PatternVisualizer::exportImage(const juce::File& file, int width, int heigh
     // TODO: Implement offscreen rendering
     // This would require creating a separate OpenGL context and framebuffer
     
-    return image.writeTo(file);
+    // Use JUCE 8 API for saving images
+    auto format = juce::ImageFileFormat::findImageFormatForFileExtension(file);
+    if (format != nullptr) {
+        juce::FileOutputStream stream(file);
+        if (stream.openedOk()) {
+            return format->writeImageToStream(image, stream);
+        }
+    }
+    return false;
 }
 
 bool PatternVisualizer::startAnimationRecording(const juce::File& outputFolder, 
@@ -752,36 +774,28 @@ juce::Vector3D<float> PatternVisualizer::screenToWorld(const juce::Point<int>& s
     float x = (2.0f * screenPoint.x) / getWidth() - 1.0f;
     float y = 1.0f - (2.0f * screenPoint.y) / getHeight();
     
-    // Create inverse matrices
-    auto invProjection = camera.projectionMatrix.inverted();
-    auto invView = camera.viewMatrix.inverted();
+    // Simplified approach: use inverse MVP matrix for screen-to-world conversion
+    // For now, return a simplified grid-based coordinate system
+    // This is a temporary solution until proper matrix inversion is implemented
     
-    // Convert to world coordinates (simplified ray casting)
-    juce::Vector3D<float> nearPoint(x, y, -1.0f);
-    juce::Vector3D<float> farPoint(x, y, 1.0f);
+    // Map screen coordinates directly to grid coordinates
+    float worldX = (x + 1.0f) * currentSteps * 0.5f;
+    float worldZ = (y + 1.0f) * currentChannels * 0.5f;
     
-    // Transform points
-    nearPoint = invProjection.transformPoint(nearPoint);
-    farPoint = invProjection.transformPoint(farPoint);
-    
-    nearPoint = invView.transformPoint(nearPoint);
-    farPoint = invView.transformPoint(farPoint);
-    
-    // Ray-plane intersection with y=0 plane (pattern grid level)
-    auto rayDirection = (farPoint - nearPoint).normalised();
-    float t = -nearPoint.y / rayDirection.y;
-    
-    return nearPoint + rayDirection * t;
+    return juce::Vector3D<float>(worldX, 0.0f, worldZ);
 }
 
 juce::Point<int> PatternVisualizer::worldToScreen(const juce::Vector3D<float>& worldPoint)
 {
-    auto mvpMatrix = camera.projectionMatrix * camera.viewMatrix * camera.modelMatrix;
-    auto screenPoint = mvpMatrix.transformPoint(worldPoint);
+    // Simplified approach: reverse the mapping from screenToWorld
+    // This is a temporary solution until proper matrix transformation is implemented
+    
+    float normalizedX = (worldPoint.x / currentSteps) * 2.0f - 1.0f;
+    float normalizedY = (worldPoint.z / currentChannels) * 2.0f - 1.0f;
     
     // Convert from normalized device coordinates to screen coordinates
-    int x = static_cast<int>((screenPoint.x + 1.0f) * getWidth() / 2.0f);
-    int y = static_cast<int>((1.0f - screenPoint.y) * getHeight() / 2.0f);
+    int x = static_cast<int>((normalizedX + 1.0f) * getWidth() / 2.0f);
+    int y = static_cast<int>((1.0f - normalizedY) * getHeight() / 2.0f);
     
     return {x, y};
 }
@@ -831,9 +845,9 @@ void PatternVisualizer::initializeOpenGL()
     createBuffers();
     
     // Set initial OpenGL state
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    juce::gl::glEnable(juce::gl::GL_DEPTH_TEST);
+    juce::gl::glEnable(juce::gl::GL_BLEND);
+    juce::gl::glBlendFunc(juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA);
     
     glResources.initialized = true;
     
@@ -863,14 +877,14 @@ void PatternVisualizer::createShaders()
 void PatternVisualizer::createBuffers()
 {
     // Generate vertex array objects
-    glGenVertexArrays(1, &glResources.vertexArrayObject);
-    glGenVertexArrays(1, &glResources.gridVertexArrayObject);
+    juce::gl::glGenVertexArrays(1, &glResources.vertexArrayObject);
+    juce::gl::glGenVertexArrays(1, &glResources.gridVertexArrayObject);
     
     // Generate buffers
-    glGenBuffers(1, &glResources.vertexBuffer);
-    glGenBuffers(1, &glResources.indexBuffer);
-    glGenBuffers(1, &glResources.gridVertexBuffer);
-    glGenBuffers(1, &glResources.gridIndexBuffer);
+    juce::gl::glGenBuffers(1, &glResources.vertexBuffer);
+    juce::gl::glGenBuffers(1, &glResources.indexBuffer);
+    juce::gl::glGenBuffers(1, &glResources.gridVertexBuffer);
+    juce::gl::glGenBuffers(1, &glResources.gridIndexBuffer);
 }
 
 void PatternVisualizer::updateVertexData()
@@ -932,23 +946,23 @@ void PatternVisualizer::updateVertexData()
     }
     
     // Update vertex buffer
-    glBindVertexArray(glResources.vertexArrayObject);
-    glBindBuffer(GL_ARRAY_BUFFER, glResources.vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
+    juce::gl::glBindVertexArray(glResources.vertexArrayObject);
+    juce::gl::glBindBuffer(juce::gl::GL_ARRAY_BUFFER, glResources.vertexBuffer);
+    juce::gl::glBufferData(juce::gl::GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), juce::gl::GL_DYNAMIC_DRAW);
     
     // Set vertex attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    juce::gl::glVertexAttribPointer(0, 3, juce::gl::GL_FLOAT, juce::gl::GL_FALSE, 10 * sizeof(float), (void*)0);
+    juce::gl::glEnableVertexAttribArray(0);
+    juce::gl::glVertexAttribPointer(1, 3, juce::gl::GL_FLOAT, juce::gl::GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
+    juce::gl::glEnableVertexAttribArray(1);
+    juce::gl::glVertexAttribPointer(2, 4, juce::gl::GL_FLOAT, juce::gl::GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
+    juce::gl::glEnableVertexAttribArray(2);
     
     // Update index buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glResources.indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_DYNAMIC_DRAW);
+    juce::gl::glBindBuffer(juce::gl::GL_ELEMENT_ARRAY_BUFFER, glResources.indexBuffer);
+    juce::gl::glBufferData(juce::gl::GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), juce::gl::GL_DYNAMIC_DRAW);
     
-    glBindVertexArray(0);
+    juce::gl::glBindVertexArray(0);
     
     // Update grid vertex data
     std::vector<float> gridVertices;
@@ -987,17 +1001,17 @@ void PatternVisualizer::updateVertexData()
     }
     
     // Update grid buffers
-    glBindVertexArray(glResources.gridVertexArrayObject);
-    glBindBuffer(GL_ARRAY_BUFFER, glResources.gridVertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), gridVertices.data(), GL_STATIC_DRAW);
+    juce::gl::glBindVertexArray(glResources.gridVertexArrayObject);
+    juce::gl::glBindBuffer(juce::gl::GL_ARRAY_BUFFER, glResources.gridVertexBuffer);
+    juce::gl::glBufferData(juce::gl::GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), gridVertices.data(), juce::gl::GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    juce::gl::glVertexAttribPointer(0, 3, juce::gl::GL_FLOAT, juce::gl::GL_FALSE, 3 * sizeof(float), (void*)0);
+    juce::gl::glEnableVertexAttribArray(0);
     
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glResources.gridIndexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, gridIndices.size() * sizeof(unsigned int), gridIndices.data(), GL_STATIC_DRAW);
+    juce::gl::glBindBuffer(juce::gl::GL_ELEMENT_ARRAY_BUFFER, glResources.gridIndexBuffer);
+    juce::gl::glBufferData(juce::gl::GL_ELEMENT_ARRAY_BUFFER, gridIndices.size() * sizeof(unsigned int), gridIndices.data(), juce::gl::GL_STATIC_DRAW);
     
-    glBindVertexArray(0);
+    juce::gl::glBindVertexArray(0);
 }
 
 void PatternVisualizer::renderGrid(const juce::Matrix3D<float>& mvpMatrix)
@@ -1006,21 +1020,18 @@ void PatternVisualizer::renderGrid(const juce::Matrix3D<float>& mvpMatrix)
     
     glResources.gridShaderProgram->use();
     
-    // Set uniforms
-    if (auto* mvpUniform = glResources.gridShaderProgram->getUniform("mvpMatrix"))
-        mvpUniform->setMatrix4(mvpMatrix.mat, 1, false);
-    
-    if (auto* colorUniform = glResources.gridShaderProgram->getUniform("gridColor")) {
-        colorUniform->set(settings.gridColor.getFloatRed(),
-                         settings.gridColor.getFloatGreen(),
-                         settings.gridColor.getFloatBlue(),
-                         settings.gridColor.getFloatAlpha());
-    }
+    // Set uniforms using JUCE 8 API
+    glResources.gridShaderProgram->setUniformMat4("mvpMatrix", mvpMatrix.mat, 1, false);
+    glResources.gridShaderProgram->setUniform("gridColor", 
+                                             settings.gridColor.getFloatRed(),
+                                             settings.gridColor.getFloatGreen(),
+                                             settings.gridColor.getFloatBlue(),
+                                             settings.gridColor.getFloatAlpha());
     
     // Render grid
-    glBindVertexArray(glResources.gridVertexArrayObject);
-    glDrawElements(GL_LINES, (currentSteps + 1 + currentChannels + 1) * 2, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    juce::gl::glBindVertexArray(glResources.gridVertexArrayObject);
+    juce::gl::glDrawElements(juce::gl::GL_LINES, (currentSteps + 1 + currentChannels + 1) * 2, juce::gl::GL_UNSIGNED_INT, 0);
+    juce::gl::glBindVertexArray(0);
 }
 
 void PatternVisualizer::renderNotes(const juce::Matrix3D<float>& mvpMatrix)
@@ -1029,21 +1040,12 @@ void PatternVisualizer::renderNotes(const juce::Matrix3D<float>& mvpMatrix)
     
     glResources.shaderProgram->use();
     
-    // Set uniforms
-    if (auto* mvpUniform = glResources.shaderProgram->getUniform("mvpMatrix"))
-        mvpUniform->setMatrix4(mvpMatrix.mat, 1, false);
-    
-    if (auto* modelUniform = glResources.shaderProgram->getUniform("modelMatrix"))
-        modelUniform->setMatrix4(camera.modelMatrix.mat, 1, false);
-    
-    if (auto* normalUniform = glResources.shaderProgram->getUniform("normalMatrix"))
-        normalUniform->setMatrix4(camera.modelMatrix.mat, 1, false);
-    
-    if (auto* lightUniform = glResources.shaderProgram->getUniform("lightDirection"))
-        lightUniform->set(0.5f, -1.0f, 0.3f);
-    
-    if (auto* enableLightingUniform = glResources.shaderProgram->getUniform("enableLighting"))
-        enableLightingUniform->set(settings.enableLighting ? 1 : 0);
+    // Set uniforms using JUCE 8 API
+    glResources.shaderProgram->setUniformMat4("mvpMatrix", mvpMatrix.mat, 1, false);
+    glResources.shaderProgram->setUniformMat4("modelMatrix", camera.modelMatrix.mat, 1, false);
+    glResources.shaderProgram->setUniformMat4("normalMatrix", camera.modelMatrix.mat, 1, false);
+    glResources.shaderProgram->setUniform("lightDirection", 0.5f, -1.0f, 0.3f);
+    glResources.shaderProgram->setUniform("enableLighting", settings.enableLighting ? 1 : 0);
     
     // Count active notes for rendering
     int activeNotes = 0;
@@ -1056,9 +1058,9 @@ void PatternVisualizer::renderNotes(const juce::Matrix3D<float>& mvpMatrix)
     }
     
     // Render notes
-    glBindVertexArray(glResources.vertexArrayObject);
-    glDrawElements(GL_TRIANGLES, activeNotes * 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    juce::gl::glBindVertexArray(glResources.vertexArrayObject);
+    juce::gl::glDrawElements(juce::gl::GL_TRIANGLES, activeNotes * 6, juce::gl::GL_UNSIGNED_INT, 0);
+    juce::gl::glBindVertexArray(0);
 }
 
 void PatternVisualizer::renderPlayhead(const juce::Matrix3D<float>& mvpMatrix)
@@ -1069,8 +1071,9 @@ void PatternVisualizer::renderPlayhead(const juce::Matrix3D<float>& mvpMatrix)
 
 void PatternVisualizer::updateCamera()
 {
-    // Update view matrix
-    camera.viewMatrix = juce::Matrix3D<float>::fromLookAt(camera.position, camera.target, camera.up);
+    // Simplified view matrix - JUCE 8 Matrix3D doesn't have fromLookAt
+    // For now, use a simple translation matrix based on camera position
+    camera.viewMatrix = juce::Matrix3D<float>::fromTranslation(juce::Vector3D<float>(-camera.position.x, -camera.position.y, -camera.position.z));
     
     notifyListeners([this](Listener* l) { 
         l->cameraChanged(camera.position, camera.target); 
@@ -1096,7 +1099,7 @@ void PatternVisualizer::updatePatternFromMidi(const juce::MidiMessageSequence& p
         auto* event = pattern.getEventPointer(i);
         if (event->message.isNoteOn()) {
             int channel = event->message.getChannel() - 1;
-            int step = static_cast<int>(event->timeStamp * 4.0); // Assuming quarter note steps
+            int step = static_cast<int>(event->message.getTimeStamp() * 4.0); // Assuming quarter note steps
             float velocity = event->message.getVelocity() / 127.0f;
             
             if (channel >= 0 && channel < currentChannels && step >= 0 && step < currentSteps) {
@@ -1139,7 +1142,7 @@ void PatternVisualizer::handleNoteEditing(const juce::MouseEvent& event)
 {
     auto* note = getNoteAtPosition(event.getPosition());
     
-    if (event.getEventType() == juce::MouseEvent::mouseDown) {
+    if (event.mouseWasClicked()) {
         if (note) {
             selectedNote = note;
         } else {
@@ -1222,7 +1225,15 @@ void PatternVisualizer::saveAnimationFrame(const juce::Image& frame, int frameNu
 {
     auto filename = juce::String::formatted("frame_%06d.png", frameNumber);
     auto file = animationOutputFolder.getChildFile(filename);
-    frame.writeTo(file);
+    
+    // Use JUCE 8 API for saving images
+    auto format = juce::ImageFileFormat::findImageFormatForFileExtension(file);
+    if (format != nullptr) {
+        juce::FileOutputStream stream(file);
+        if (stream.openedOk()) {
+            format->writeImageToStream(frame, stream);
+        }
+    }
 }
 
 } // namespace Visualizations

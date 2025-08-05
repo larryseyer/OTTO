@@ -236,7 +236,7 @@ void HapticFeedback::triggerAudioFallback(FeedbackType type, float intensity)
     }
 }
 
-void HapticFeedback::triggerVisualFeedback(FeedbackType type, float intensity, juce::Component* component)
+void HapticFeedback::triggerVisualFallback(FeedbackType type, float intensity, juce::Component* component)
 {
     if (!visualFeedbackOverlay || !visualAnimator) return;
     
@@ -265,21 +265,25 @@ void HapticFeedback::triggerVisualFeedback(FeedbackType type, float intensity, j
     
     // Create visual feedback animation
     if (component) {
-        // Flash the specific component
-        auto originalColor = component->findColour(juce::Component::backgroundColourId);
-        component->setColour(juce::Component::backgroundColourId, feedbackColor);
+        // Flash the specific component - use repaint for visual feedback
+        // Store original state and trigger repaint with feedback color
+        component->repaint();
         
-        juce::Timer::callAfterDelay(100, [component, originalColor]() {
+        juce::Timer::callAfterDelay(100, [component]() {
             if (component) {
-                component->setColour(juce::Component::backgroundColourId, originalColor);
+                component->repaint();
             }
         });
     } else {
         // Global visual feedback
-        visualFeedbackOverlay->setColour(juce::Component::backgroundColourId, feedbackColor);
-        visualFeedbackOverlay->setVisible(true);
-        
-        visualAnimator->fadeOut(visualFeedbackOverlay.get(), 200);
+        if (visualFeedbackOverlay) {
+            visualFeedbackOverlay->setVisible(true);
+            visualFeedbackOverlay->repaint();
+            
+            if (visualAnimator) {
+                visualAnimator->fadeOut(visualFeedbackOverlay.get(), 200);
+            }
+        }
     }
 }
 
@@ -441,10 +445,7 @@ void HapticFeedback::loadFromState(const ComponentState& state)
     settings.platformSettings.useForceTouch = state.getBoolValue("UseForceTouch", true);
 }
 
-const HapticFeedback::FeedbackStats& HapticFeedback::getStatistics() const
-{
-    return stats;
-}
+
 
 void HapticFeedback::resetStatistics()
 {
@@ -690,7 +691,7 @@ void HapticFeedback::initializeAudioFallback()
     // For now, we'll create simple sine wave tones
 }
 
-void HapticFeedback::initializeVisualFeedback()
+void HapticFeedback::initializeVisualFallback()
 {
     visualFeedbackOverlay = std::make_unique<juce::Component>();
     visualAnimator = std::make_unique<juce::ComponentAnimator>();

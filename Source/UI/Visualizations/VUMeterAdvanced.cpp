@@ -104,7 +104,7 @@ void VUMeterAdvanced::mouseDown(const juce::MouseEvent& event)
 void VUMeterAdvanced::mouseDoubleClick(const juce::MouseEvent& event)
 {
     // Double-click to open settings (could trigger a callback)
-    notifyListeners([&](Listener* l) { l->meterSettingsChanged(settings); });
+    notifyListeners([&](Listener& l) { l.meterSettingsChanged(settings); });
 }
 
 //==============================================================================
@@ -153,7 +153,7 @@ void VUMeterAdvanced::setLevel(int channel, float level)
         // Check for clipping
         if (level > CLIP_THRESHOLD && !channelData.getReference(channel).isClipping) {
             channelData.getReference(channel).isClipping = true;
-            notifyListeners([=](Listener* l) { l->meterClippingDetected(channel); });
+            notifyListeners([=](Listener& l) { l.meterClippingDetected(channel); });
         } else if (level <= CLIP_THRESHOLD) {
             channelData.getReference(channel).isClipping = false;
         }
@@ -237,7 +237,7 @@ void VUMeterAdvanced::setSettings(const MeterSettings& newSettings)
     backgroundNeedsUpdate = true;
     needsRepaint = true;
     
-    notifyListeners([&](Listener* l) { l->meterSettingsChanged(settings); });
+    notifyListeners([&](Listener& l) { l.meterSettingsChanged(settings); });
 }
 
 void VUMeterAdvanced::setMeterType(MeterType type)
@@ -999,11 +999,9 @@ float VUMeterAdvanced::calculatePeak(const float* samples, int numSamples) const
 // Private Methods - Notification
 //==============================================================================
 
-void VUMeterAdvanced::notifyListeners(std::function<void(Listener*)> notification)
+void VUMeterAdvanced::notifyListeners(std::function<void(Listener&)> notification)
 {
-    listeners.call([&notification](Listener& listener) {
-        notification(&listener);
-    });
+    listeners.call(notification);
 }
 
 } // namespace Visualizations

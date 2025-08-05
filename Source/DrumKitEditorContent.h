@@ -8,13 +8,13 @@
 #include "ComponentState.h"
 #include "INIConfig.h"
 
-class WaveformDisplay : public juce::Component,
-                       public juce::FileDragAndDropTarget,
-                       public juce::ChangeListener
+class DrumKitWaveformDisplay : public juce::Component,
+                              public juce::FileDragAndDropTarget,
+                              public juce::ChangeListener
 {
 public:
-    WaveformDisplay();
-    ~WaveformDisplay() override;
+    DrumKitWaveformDisplay();
+    ~DrumKitWaveformDisplay() override;
 
     void paint(juce::Graphics& g) override;
     void resized() override;
@@ -52,7 +52,7 @@ private:
     float getPositionFromX(int x) const;
     int getXFromPosition(float position) const;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveformDisplay)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DrumKitWaveformDisplay)
 };
 
 class VelocityCurveEditor : public juce::Component
@@ -223,7 +223,7 @@ private:
     INIDataManager& iniManager;
 
     std::unique_ptr<SampleBrowser> sampleBrowser;
-    std::unique_ptr<WaveformDisplay> waveformDisplay;
+    std::unique_ptr<DrumKitWaveformDisplay> waveformDisplay;
     std::unique_ptr<VelocityCurveEditor> velocityCurveEditor;
     std::unique_ptr<SampleEditControls> sampleEditControls;
     juce::OwnedArray<PadEditor> padEditors;

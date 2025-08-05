@@ -1,7 +1,7 @@
 #include "DrumKitEditorContent.h"
 #include "INIConfig.h"
 
-WaveformDisplay::WaveformDisplay()
+DrumKitWaveformDisplay::DrumKitWaveformDisplay()
     : thumbnailCache(INIConfig::LayoutConstants::waveformThumbnailCache),
       thumbnail(std::make_unique<juce::AudioThumbnail>(INIConfig::LayoutConstants::waveformThumbnailCache, formatManager, thumbnailCache))
 {
@@ -9,18 +9,18 @@ WaveformDisplay::WaveformDisplay()
     thumbnail->addChangeListener(this);
 }
 
-WaveformDisplay::~WaveformDisplay()
+DrumKitWaveformDisplay::~DrumKitWaveformDisplay()
 {
     thumbnail->removeChangeListener(this);
 }
 
-void WaveformDisplay::changeListenerCallback(juce::ChangeBroadcaster* source)
+void DrumKitWaveformDisplay::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
     if (source == thumbnail.get())
         repaint();
 }
 
-void WaveformDisplay::paint(juce::Graphics& g)
+void DrumKitWaveformDisplay::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colour(0xFF2A2A2A));
 
@@ -49,7 +49,7 @@ void WaveformDisplay::paint(juce::Graphics& g)
     g.drawRect(getLocalBounds());
 }
 
-void WaveformDisplay::resized()
+void DrumKitWaveformDisplay::resized()
 {
 }
 
@@ -62,7 +62,7 @@ void PadEditor::resized()
 {
 }
 
-void WaveformDisplay::loadAudioFile(const juce::File& file)
+void DrumKitWaveformDisplay::loadAudioFile(const juce::File& file)
 {
     if (file.existsAsFile())
     {
@@ -73,13 +73,13 @@ void WaveformDisplay::loadAudioFile(const juce::File& file)
     }
 }
 
-void WaveformDisplay::clearWaveform()
+void DrumKitWaveformDisplay::clearWaveform()
 {
     thumbnail->setSource(nullptr);
     repaint();
 }
 
-bool WaveformDisplay::isInterestedInFileDrag(const juce::StringArray& files)
+bool DrumKitWaveformDisplay::isInterestedInFileDrag(const juce::StringArray& files)
 {
     for (const auto& file : files)
     {
@@ -92,7 +92,7 @@ bool WaveformDisplay::isInterestedInFileDrag(const juce::StringArray& files)
     return false;
 }
 
-void WaveformDisplay::filesDropped(const juce::StringArray& files, int x, int y)
+void DrumKitWaveformDisplay::filesDropped(const juce::StringArray& files, int x, int y)
 {
     juce::ignoreUnused(x, y);
 
@@ -109,7 +109,7 @@ void WaveformDisplay::filesDropped(const juce::StringArray& files, int x, int y)
     }
 }
 
-void WaveformDisplay::setStartPosition(float position)
+void DrumKitWaveformDisplay::setStartPosition(float position)
 {
     startPosition = juce::jlimit(0.0f, endPosition - INIConfig::LayoutConstants::waveformMinSelectionSize, position);
     repaint();
@@ -117,7 +117,7 @@ void WaveformDisplay::setStartPosition(float position)
         onSelectionChanged(startPosition, endPosition);
 }
 
-void WaveformDisplay::setEndPosition(float position)
+void DrumKitWaveformDisplay::setEndPosition(float position)
 {
     endPosition = juce::jlimit(startPosition + INIConfig::LayoutConstants::waveformMinSelectionSize, 1.0f, position);
     repaint();
@@ -125,7 +125,7 @@ void WaveformDisplay::setEndPosition(float position)
         onSelectionChanged(startPosition, endPosition);
 }
 
-void WaveformDisplay::mouseDown(const juce::MouseEvent& e)
+void DrumKitWaveformDisplay::mouseDown(const juce::MouseEvent& e)
 {
     if (thumbnail->getTotalLength() > 0.0)
     {
@@ -144,7 +144,7 @@ void WaveformDisplay::mouseDown(const juce::MouseEvent& e)
     }
 }
 
-void WaveformDisplay::mouseDrag(const juce::MouseEvent& e)
+void DrumKitWaveformDisplay::mouseDrag(const juce::MouseEvent& e)
 {
     if (isDraggingStart)
     {
@@ -156,19 +156,19 @@ void WaveformDisplay::mouseDrag(const juce::MouseEvent& e)
     }
 }
 
-void WaveformDisplay::mouseUp(const juce::MouseEvent& e)
+void DrumKitWaveformDisplay::mouseUp(const juce::MouseEvent& e)
 {
     juce::ignoreUnused(e);
     isDraggingStart = false;
     isDraggingEnd = false;
 }
 
-float WaveformDisplay::getPositionFromX(int x) const
+float DrumKitWaveformDisplay::getPositionFromX(int x) const
 {
     return juce::jlimit(0.0f, 1.0f, static_cast<float>(x) / static_cast<float>(getWidth()));
 }
 
-int WaveformDisplay::getXFromPosition(float position) const
+int DrumKitWaveformDisplay::getXFromPosition(float position) const
 {
     return juce::roundToInt(position * getWidth());
 }
@@ -622,7 +622,7 @@ void DrumKitEditorContent::setupComponents()
     sampleBrowser = std::make_unique<SampleBrowser>();
     addAndMakeVisible(sampleBrowser.get());
 
-    waveformDisplay = std::make_unique<WaveformDisplay>();
+    waveformDisplay = std::make_unique<DrumKitWaveformDisplay>();
     addAndMakeVisible(waveformDisplay.get());
 
     velocityCurveEditor = std::make_unique<VelocityCurveEditor>();

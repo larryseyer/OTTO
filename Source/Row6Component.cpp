@@ -1,6 +1,7 @@
 #include "JUCE8_CODING_STANDARDS.h"
 #include "Row6Component.h"
 #include "INIConfig.h"
+#include "ResponsiveLayoutManager.h"
 
 Row6Component::Row6Component(ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
@@ -50,9 +51,12 @@ void Row6Component::lookAndFeelChanged() {
 
 juce::Rectangle<int> Row6Component::getRowBounds() const {
     using namespace INIConfig::LayoutConstants;
-    return getScaledBounds(0, Row6::yPosition, 
-                          INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH, 
-                          Row6::height);
+    return juce::Rectangle<int>(
+        layoutManager.scaled(0),
+        layoutManager.scaled(Row6::yPosition),
+        layoutManager.scaled(INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH),
+        layoutManager.scaled(Row6::height)
+    );
 }
 
 void Row6Component::setupLoopComponents() {

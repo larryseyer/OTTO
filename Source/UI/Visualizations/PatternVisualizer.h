@@ -492,7 +492,7 @@ private:
     // Pattern Management
     void updatePatternFromMidi(const juce::MidiMessageSequence& pattern);
     void notifyPatternChanged(int step, int channel, const PatternNote* note);
-    void notifyListeners(std::function<void(Listener*)> callback);
+    void notifyListeners(std::function<void(Listener&)> callback);
     
     // Interaction Handling
     void handleMouseInteraction(const juce::MouseEvent& event);

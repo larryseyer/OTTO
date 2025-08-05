@@ -429,7 +429,7 @@ private:
     float calculatePeak(const float* samples, int numSamples) const;
     
     // Notification
-    void notifyListeners(std::function<void(Listener*)> notification);
+    void notifyListeners(std::function<void(Listener&)> notification);
     
     // Member Variables
     MeterSettings settings;

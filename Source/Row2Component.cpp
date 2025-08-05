@@ -3,6 +3,7 @@
 #include "MidiEngine.h"
 #include "INIConfig.h"
 #include "ComponentState.h"
+#include "ResponsiveLayoutManager.h"
 
 Row2Component::Row2Component(MidiEngine& midiEngine,
                            juce::AudioProcessorValueTreeState& valueTreeState,
@@ -282,7 +283,7 @@ void Row2Component::updatePlayerTabsLayout() {
         
         // Update font size responsively
         float fontSize = getResponsiveFontSize(14.0f);
-        tabs[i].setFont(JUCE8_FONT(fontSize));
+        // Note: setFont() removed from TextButton in JUCE 8 - font styling handled by LookAndFeel
         
         // Move to next button position using responsive spacing
         currentX += tabWidth;

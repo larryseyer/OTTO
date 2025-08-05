@@ -605,7 +605,7 @@ private:
     // Utility Methods
     void initializeBuffers();
     void resizeBuffers();
-    void notifyListeners(std::function<void(Listener*)> callback);
+    void notifyListeners(std::function<void(Listener&)> callback);
     float interpolateSample(const std::vector<float>& buffer, float index) const;
     int findTriggerPoint(const std::vector<float>& buffer, int startIndex) const;
     void performFFT(int channel);

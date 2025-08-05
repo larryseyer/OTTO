@@ -4,6 +4,7 @@
 #include "INIConfig.h"
 #include "Animation/AnimationManager.h"
 #include "DragDrop/DragDropManager.h"
+#include "ResponsiveLayoutManager.h"
 
 Row4Component::Row4Component(MidiEngine& midiEngine,
                            ResponsiveLayoutManager& layoutManager,
@@ -134,9 +135,12 @@ void Row4Component::updatePatternGroupButtonStates() {
 
 juce::Rectangle<int> Row4Component::getRowBounds() const {
     using namespace INIConfig::LayoutConstants;
-    return getScaledBounds(0, Row4::yPosition, 
-                          INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH, 
-                          Row4::height);
+    return juce::Rectangle<int>(
+        layoutManager.scaled(0),
+        layoutManager.scaled(Row4::yPosition),
+        layoutManager.scaled(INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH),
+        layoutManager.scaled(Row4::height)
+    );
 }
 
 void Row4Component::setupPatternGroupComponents() {
@@ -237,9 +241,8 @@ void Row4Component::updatePatternGroupLayout() {
     int dropdownWidth = static_cast<int>(bounds.getWidth() * 0.15f); // 15% of width
     patternGroupDropdown.setBounds(currentX, buttonY, dropdownWidth, buttonSize);
     
-    // Update dropdown font size responsively
-    float dropdownFontSize = getResponsiveFontSize(12.0f);
-    patternGroupDropdown.setFont(JUCE8_FONT(dropdownFontSize));
+    // Note: Font styling handled by LookAndFeel in JUCE 8
+    // float dropdownFontSize = getResponsiveFontSize(12.0f);
     
     currentX += dropdownWidth + spacing;
     

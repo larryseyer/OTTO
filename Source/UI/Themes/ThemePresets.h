@@ -417,7 +417,7 @@ private:
     float calculateContrastRatio(const juce::Colour& foreground, const juce::Colour& background) const;
     bool meetsAccessibilityStandards(const ThemePreset& preset) const;
     
-    void notifyListeners(std::function<void(Listener*)> notification);
+    void notifyListeners(std::function<void(Listener&)> notification);
 
     // Member Variables
     juce::Array<ThemePreset> factoryPresets;

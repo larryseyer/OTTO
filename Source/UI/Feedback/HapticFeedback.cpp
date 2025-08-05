@@ -68,8 +68,8 @@ bool HapticFeedback::triggerFeedback(FeedbackType type, float intensity)
         }
         success = true;
         
-        notifyListeners([type, this](Listener* l) { 
-            l->fallbackUsed(type, settings.fallbackMode); 
+        notifyListeners([type, this](Listener& l) { 
+            l.fallbackUsed(type, settings.fallbackMode); 
         });
     }
     
@@ -79,8 +79,8 @@ bool HapticFeedback::triggerFeedback(FeedbackType type, float intensity)
     updateStatistics(success, latency);
     
     // Notify listeners
-    notifyListeners([type, effectiveIntensity, success](Listener* l) { 
-        l->feedbackTriggered(type, effectiveIntensity, success); 
+    notifyListeners([type, effectiveIntensity, success](Listener& l) { 
+        l.feedbackTriggered(type, effectiveIntensity, success); 
     });
     
     return success;
@@ -155,8 +155,8 @@ void HapticFeedback::setSettings(const FeedbackSettings& newSettings)
     // Update Force Touch settings
     #endif
     
-    notifyListeners([this](Listener* l) { 
-        l->settingsChanged(settings); 
+    notifyListeners([this](Listener& l) { 
+        l.settingsChanged(settings); 
     });
 }
 
@@ -644,7 +644,7 @@ void HapticFeedback::loadPredefinedPatterns()
     }
 }
 
-void HapticFeedback::notifyListeners(std::function<void(Listener*)> callback)
+void HapticFeedback::notifyListeners(std::function<void(Listener&)> callback)
 {
     listeners.call(callback);
 }

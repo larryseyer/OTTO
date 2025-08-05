@@ -272,7 +272,7 @@ bool ThemePresets::addCustomPreset(const ThemePreset& preset)
     customPreset.modifiedTime = customPreset.createdTime;
     
     customPresets.add(customPreset);
-    notifyListeners([&](Listener* l) { l->presetAdded(customPreset); });
+    notifyListeners([&](Listener& l) { l.presetAdded(customPreset); });
     
     return true;
 }
@@ -282,7 +282,7 @@ bool ThemePresets::removeCustomPreset(const juce::String& presetName)
     for (int i = 0; i < customPresets.size(); ++i) {
         if (customPresets[i].name == presetName) {
             customPresets.remove(i);
-            notifyListeners([&](Listener* l) { l->presetRemoved(presetName); });
+            notifyListeners([&](Listener& l) { l.presetRemoved(presetName); });
             return true;
         }
     }
@@ -297,7 +297,7 @@ bool ThemePresets::updateCustomPreset(const ThemePreset& preset)
             auto updatedPreset = preset;
             updatedPreset.modifiedTime = juce::Time::getCurrentTime();
             customPresets.set(i, updatedPreset);
-            notifyListeners([&](Listener* l) { l->presetUpdated(updatedPreset); });
+            notifyListeners([&](Listener& l) { l.presetUpdated(updatedPreset); });
             return true;
         }
     }
@@ -688,7 +688,7 @@ void ThemePresets::resetToFactoryPresets()
 {
     customPresets.clear();
     initializeFactoryPresets();
-    notifyListeners([](Listener* l) { l->presetsReset(); });
+    notifyListeners([](Listener& l) { l.presetsReset(); });
 }
 
 //==============================================================================
@@ -1028,7 +1028,7 @@ bool ThemePresets::meetsAccessibilityStandards(const ThemePreset& preset) const
     return contrastRatio >= MIN_CONTRAST_RATIO;
 }
 
-void ThemePresets::notifyListeners(std::function<void(Listener*)> notification)
+void ThemePresets::notifyListeners(std::function<void(Listener&)> notification)
 {
     listeners.call(notification);
 }

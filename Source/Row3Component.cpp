@@ -110,7 +110,7 @@ juce::Rectangle<int> Row3Component::getRowBounds() const {
 }
 
 void Row3Component::lookAndFeelChanged() {
-    RowComponentBase::lookAndFeelChanged();
+    ResponsiveComponent::lookAndFeelChanged();
     
     // Update all component colors
     drumKitEditButton.setColorScheme(&colorScheme);
@@ -296,7 +296,7 @@ void Row3Component::updateDrumKitLayout() {
     
     // Update dropdown font size responsively
     float dropdownFontSize = getResponsiveFontSize(14.0f);
-    drumKitDropdown.setFont(JUCE8_FONT(dropdownFontSize));
+    // Note: setFont() removed from HierarchicalComboBox in JUCE 8 - font styling handled by LookAndFeel
     drumKitSelectedLabel.setFont(JUCE8_FONT(dropdownFontSize));
     
     // Right chevron
@@ -457,16 +457,16 @@ void Row3Component::setupWaveformIntegration() {
     if (!waveformDisplay) return;
     
     // Configure waveform display for drum sample visualization
-    WaveformDisplay::Settings waveformSettings;
+    WaveformDisplay::WaveformSettings waveformSettings;
     waveformSettings.backgroundColor = colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground);
     waveformSettings.waveformColor = colorScheme.getColor(ColorScheme::ColorRole::Accent);
     waveformSettings.gridColor = colorScheme.getColor(ColorScheme::ColorRole::GridLine);
     waveformSettings.showGrid = true;
-    waveformSettings.showLabels = true;
-    waveformSettings.enableZoom = true;
-    waveformSettings.enableSelection = true;
+    waveformSettings.showRuler = true;
+    waveformSettings.showSelection = true;
+    waveformSettings.showPlayhead = true;
     
-    waveformDisplay->setSettings(waveformSettings);
+    waveformDisplay->setWaveformSettings(waveformSettings);
     
     // Load current sample if available
     updateWaveformForCurrentSample();
@@ -485,7 +485,7 @@ void Row3Component::loadSampleIntoWaveform(const juce::String& samplePath) {
     // Load audio file into waveform display
     juce::File sampleFile(samplePath);
     if (sampleFile.existsAsFile()) {
-        waveformDisplay->loadAudioFile(sampleFile);
+        waveformDisplay->setAudioFile(sampleFile);
     }
 }
 

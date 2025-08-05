@@ -393,7 +393,7 @@ void PatternVisualizer::clearPattern()
     }
     
     updateVertexData();
-    notifyListeners([](Listener* l) { l->patternCleared(); });
+    notifyListeners([](Listener& l) { l.patternCleared(); });
 }
 
 juce::MidiMessageSequence PatternVisualizer::getCurrentPattern() const
@@ -461,7 +461,7 @@ void PatternVisualizer::setViewMode(ViewMode mode)
 {
     settings.viewMode = mode;
     resetCamera();
-    notifyListeners([mode](Listener* l) { l->viewModeChanged(mode); });
+    notifyListeners([mode](Listener& l) { l.viewModeChanged(mode); });
 }
 
 void PatternVisualizer::setRenderQuality(RenderQuality quality)
@@ -534,8 +534,8 @@ void PatternVisualizer::setCameraPosition(const juce::Vector3D<float>& position,
     camera.target = target;
     updateCamera();
     
-    notifyListeners([position, target](Listener* l) { 
-        l->cameraChanged(position, target); 
+    notifyListeners([position, target](Listener& l) { 
+        l.cameraChanged(position, target); 
     });
 }
 
@@ -1075,8 +1075,8 @@ void PatternVisualizer::updateCamera()
     // For now, use a simple translation matrix based on camera position
     camera.viewMatrix = juce::Matrix3D<float>::fromTranslation(juce::Vector3D<float>(-camera.position.x, -camera.position.y, -camera.position.z));
     
-    notifyListeners([this](Listener* l) { 
-        l->cameraChanged(camera.position, camera.target); 
+    notifyListeners([this](Listener& l) { 
+        l.cameraChanged(camera.position, camera.target); 
     });
 }
 
@@ -1111,12 +1111,12 @@ void PatternVisualizer::updatePatternFromMidi(const juce::MidiMessageSequence& p
 
 void PatternVisualizer::notifyPatternChanged(int step, int channel, const PatternNote* note)
 {
-    notifyListeners([step, channel, note](Listener* l) { 
-        l->patternNoteChanged(step, channel, note); 
+    notifyListeners([step, channel, note](Listener& l) { 
+        l.patternNoteChanged(step, channel, note); 
     });
 }
 
-void PatternVisualizer::notifyListeners(std::function<void(Listener*)> callback)
+void PatternVisualizer::notifyListeners(std::function<void(Listener&)> callback)
 {
     listeners.call(callback);
 }

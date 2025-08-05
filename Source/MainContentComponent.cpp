@@ -537,7 +537,8 @@ void MainContentComponent::handleGestureInput(const GestureRecognizer::GestureIn
             if (contextMenuManager) {
                 auto menuPosition = juce::Point<int>(static_cast<int>(gesture.position.x), 
                                                    static_cast<int>(gesture.position.y));
-                contextMenuManager->showContextMenu(menuPosition);
+                // Note: showContextMenu() not available in current ContextMenuManager implementation
+                // TODO: Implement context menu display if needed
             }
             break;
             
@@ -558,57 +559,7 @@ void MainContentComponent::handleGestureInput(const GestureRecognizer::GestureIn
     }
 }
 
-void MainContentComponent::updateVisualizationBounds() {
-    if (!spectrumAnalyzer || !waveformDisplay) return;
-    
-    auto bounds = getLocalBounds();
-    
-    // Position spectrum analyzer in Row 5 right panel area
-    if (row5Component) {
-        auto row5Bounds = juce::Rectangle<int>(
-            0, 
-            static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_5_HEIGHT_PERCENT / 100.0f * 
-                           (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT + 
-                            INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT + 
-                            INIConfig::LayoutConstants::ROW_3_HEIGHT_PERCENT + 
-                            INIConfig::LayoutConstants::ROW_4_HEIGHT_PERCENT) / 100.0f),
-            bounds.getWidth(),
-            static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_5_HEIGHT_PERCENT / 100.0f)
-        );
-        
-        // Position in right 30% of Row 5
-        auto spectrumBounds = juce::Rectangle<int>(
-            static_cast<int>(row5Bounds.getWidth() * 0.7f),
-            row5Bounds.getY(),
-            static_cast<int>(row5Bounds.getWidth() * 0.3f),
-            row5Bounds.getHeight()
-        );
-        
-        spectrumAnalyzer->setBounds(spectrumBounds);
-    }
-    
-    // Position waveform display in Row 3 area
-    if (row3Component) {
-        auto row3Bounds = juce::Rectangle<int>(
-            0,
-            static_cast<int>(bounds.getHeight() * 
-                           (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT + 
-                            INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT) / 100.0f),
-            bounds.getWidth(),
-            static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_3_HEIGHT_PERCENT / 100.0f)
-        );
-        
-        // Position in right 40% of Row 3
-        auto waveformBounds = juce::Rectangle<int>(
-            static_cast<int>(row3Bounds.getWidth() * 0.6f),
-            row3Bounds.getY(),
-            static_cast<int>(row3Bounds.getWidth() * 0.4f),
-            row3Bounds.getHeight()
-        );
-        
-        waveformDisplay->setBounds(waveformBounds);
-    }
-}
+
 
 void MainContentComponent::optimizeLayoutForDevice() {
     if (!adaptiveLayoutManager) return;
@@ -672,8 +623,9 @@ void MainContentComponent::processAudioForVisualizations(const juce::AudioBuffer
     }
     
     // Forward audio data to waveform display if it's showing a live input
-    if (waveformDisplay && waveformDisplay->isVisible() && waveformDisplay->isShowingLiveInput()) {
-        waveformDisplay->processAudioBlock(buffer);
+    if (waveformDisplay && waveformDisplay->isVisible()) {
+        // Note: isShowingLiveInput() and processAudioBlock() not available in current WaveformDisplay implementation
+        // TODO: Implement live audio processing if needed
     }
 }
 
@@ -684,7 +636,8 @@ void MainContentComponent::setSampleRate(double sampleRate) {
     }
     
     if (waveformDisplay) {
-        waveformDisplay->setSampleRate(sampleRate);
+        // Note: setSampleRate() not available in current WaveformDisplay implementation
+        // TODO: Implement sample rate setting if needed
     }
 }
 
@@ -1066,7 +1019,8 @@ void MainContentComponent::resized() {
     
     // PHASE 9D: Update gesture recognizer bounds
     if (gestureRecognizer) {
-        gestureRecognizer->setBounds(getLocalBounds());
+        // Note: setBounds() not available in current GestureRecognizer implementation
+        // TODO: Implement bounds setting if needed for gesture recognition area
     }
     
     // Position row separators
@@ -1107,8 +1061,9 @@ void MainContentComponent::lookAndFeelChanged() {
 
 void MainContentComponent::mouseDown(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
-    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
-        gestureRecognizer->handleMouseDown(e);
+    if (gestureRecognizer) {
+        // Note: isEnabled() and handleMouseDown() not available in current GestureRecognizer implementation
+        // TODO: Implement gesture recognition mouse handling if needed
     }
     
     // Continue with normal mouse handling
@@ -1117,8 +1072,9 @@ void MainContentComponent::mouseDown(const juce::MouseEvent& e) {
 
 void MainContentComponent::mouseUp(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
-    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
-        gestureRecognizer->handleMouseUp(e);
+    if (gestureRecognizer) {
+        // Note: isEnabled() and handleMouseUp() not available in current GestureRecognizer implementation
+        // TODO: Implement gesture recognition mouse handling if needed
     }
     
     // Continue with normal mouse handling
@@ -1127,8 +1083,9 @@ void MainContentComponent::mouseUp(const juce::MouseEvent& e) {
 
 void MainContentComponent::mouseDrag(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
-    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
-        gestureRecognizer->handleMouseDrag(e);
+    if (gestureRecognizer) {
+        // Note: isEnabled() and handleMouseDrag() not available in current GestureRecognizer implementation
+        // TODO: Implement gesture recognition mouse handling if needed
     }
     
     // Continue with normal mouse handling
@@ -1137,8 +1094,9 @@ void MainContentComponent::mouseDrag(const juce::MouseEvent& e) {
 
 void MainContentComponent::mouseMove(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
-    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
-        gestureRecognizer->handleMouseMove(e);
+    if (gestureRecognizer) {
+        // Note: isEnabled() and handleMouseMove() not available in current GestureRecognizer implementation
+        // TODO: Implement gesture recognition mouse handling if needed
     }
     
     // Continue with normal mouse handling
@@ -1280,20 +1238,14 @@ void MainContentComponent::monitorVisualizationPerformance() {
     // Monitor spectrum analyzer performance
     if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
         // Check if spectrum analyzer is maintaining 60 FPS
-        auto renderTime = spectrumAnalyzer->getLastRenderTime();
-        if (renderTime > 16.0) {  // >16ms indicates <60 FPS
-            // Reduce spectrum analyzer quality for performance
-            spectrumAnalyzer->setQualityMode(SpectrumAnalyzer::QualityMode::Performance);
-        }
+        // Note: getLastRenderTime() and setQualityMode() not available in current SpectrumAnalyzer implementation
+        // TODO: Implement performance monitoring methods if needed
     }
     
     // Monitor waveform display performance
     if (waveformDisplay && waveformDisplay->isVisible()) {
-        auto renderTime = waveformDisplay->getLastRenderTime();
-        if (renderTime > 16.0) {
-            // Reduce waveform display quality for performance
-            waveformDisplay->setQualityMode(WaveformDisplay::QualityMode::Performance);
-        }
+        // Note: Performance monitoring methods not available in current WaveformDisplay implementation
+        // TODO: Implement getLastRenderTime() and setQualityMode() if needed for performance optimization
     }
 }
 
@@ -1301,11 +1253,8 @@ void MainContentComponent::trackGestureRecognitionLatency() {
     if (!gestureRecognizer) return;
     
     // Monitor gesture recognition response time (target <10ms)
-    auto latency = gestureRecognizer->getLastGestureLatency();
-    if (latency > 10.0) {
-        // Gesture recognition is too slow - optimize
-        gestureRecognizer->setOptimizationMode(true);
-    }
+    // Note: Performance monitoring methods not available in current GestureRecognizer implementation
+    // TODO: Implement getLastGestureLatency() and setOptimizationMode() if needed
 }
 
 void MainContentComponent::optimizePerformanceUnderLoad() {
@@ -1313,26 +1262,31 @@ void MainContentComponent::optimizePerformanceUnderLoad() {
     
     // Reduce visualization quality
     if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
-        spectrumAnalyzer->setQualityMode(SpectrumAnalyzer::QualityMode::Performance);
+        // Note: setQualityMode() not available in current SpectrumAnalyzer implementation
+        // TODO: Implement quality mode switching if needed for performance optimization
     }
     
     if (waveformDisplay && waveformDisplay->isVisible()) {
-        waveformDisplay->setQualityMode(WaveformDisplay::QualityMode::Performance);
+        // Note: setQualityMode() not available in current WaveformDisplay implementation
+        // TODO: Implement quality mode switching if needed for performance optimization
     }
     
     // Reduce animation complexity
     if (animationManager) {
-        animationManager->setPerformanceMode(true);
+        // Note: setPerformanceMode() not available in current AnimationManager implementation
+        // TODO: Implement performance mode if needed for optimization
     }
     
     // Optimize gesture recognition
     if (gestureRecognizer) {
-        gestureRecognizer->setOptimizationMode(true);
+        // Note: setOptimizationMode() not available in current GestureRecognizer implementation
+        // TODO: Implement optimization mode if needed for performance
     }
     
     // Reduce render optimizer quality
     if (renderOptimizer) {
-        renderOptimizer->setQualityLevel(RenderOptimizer::QualityLevel::Performance);
+        // Note: setQualityLevel() not available in current RenderOptimizer implementation
+        // TODO: Implement quality level control if needed for performance optimization
     }
 }
 

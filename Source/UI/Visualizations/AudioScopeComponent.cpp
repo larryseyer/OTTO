@@ -344,7 +344,7 @@ void AudioScopeComponent::forceTrigger()
     triggerHoldoff = true;
     triggerHoldoffCounter = TRIGGER_HOLDOFF_SAMPLES;
     
-    notifyListeners([](Listener* l) { l->scopeTriggered(0, 0.0f); });
+    notifyListeners([](Listener& l) { l.scopeTriggered(0, 0.0f); });
 }
 
 //==============================================================================
@@ -366,7 +366,7 @@ void AudioScopeComponent::setSettings(const ScopeSettings& newSettings)
     startTimer(1000 / settings.refreshRate);
     
     needsUpdate = true;
-    notifyListeners([this](Listener* l) { l->scopeSettingsChanged(settings); });
+    notifyListeners([this](Listener& l) { l.scopeSettingsChanged(settings); });
 }
 
 void AudioScopeComponent::setTriggerMode(TriggerMode mode)
@@ -562,7 +562,7 @@ void AudioScopeComponent::setCursorPositions(float timeA, float timeB, float vol
     cursorData.voltageB = voltageB;
     
     needsUpdate = true;
-    notifyListeners([this](Listener* l) { l->cursorsChanged(cursorData); });
+    notifyListeners([this](Listener& l) { l.cursorsChanged(cursorData); });
 }
 
 //==============================================================================
@@ -1178,8 +1178,8 @@ void AudioScopeComponent::detectTrigger(int channel)
         triggerHoldoff = true;
         triggerHoldoffCounter = TRIGGER_HOLDOFF_SAMPLES;
         
-        notifyListeners([channel, this](Listener* l) { 
-            l->scopeTriggered(channel, settings.triggerLevel); 
+        notifyListeners([channel, this](Listener& l) { 
+            l.scopeTriggered(channel, settings.triggerLevel); 
         });
     }
 }
@@ -1221,8 +1221,8 @@ void AudioScopeComponent::calculateMeasurements(int channel)
     
     measurement.valid = true;
     
-    notifyListeners([channel, &measurement](Listener* l) { 
-        l->measurementsUpdated(channel, measurement); 
+    notifyListeners([channel, &measurement](Listener& l) { 
+        l.measurementsUpdated(channel, measurement); 
     });
 }
 
@@ -1253,7 +1253,7 @@ void AudioScopeComponent::handleCursorDrag(const juce::MouseEvent& event)
         case 3: cursorData.voltageB = scopePoint.y; break;
     }
     
-    notifyListeners([this](Listener* l) { l->cursorsChanged(cursorData); });
+    notifyListeners([this](Listener& l) { l.cursorsChanged(cursorData); });
 }
 
 void AudioScopeComponent::handlePositionDrag(const juce::MouseEvent& event)
@@ -1311,7 +1311,7 @@ void AudioScopeComponent::resizeBuffers()
     }
 }
 
-void AudioScopeComponent::notifyListeners(std::function<void(Listener*)> callback)
+void AudioScopeComponent::notifyListeners(std::function<void(Listener&)> callback)
 {
     listeners.call(callback);
 }

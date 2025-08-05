@@ -16,7 +16,8 @@
 #include "MidiEngine.h"
 #include "INIConfig.h"
 #include "INIDataManager.h"
-#include "UI/Theme/ThemeManager.h"
+#include "UI/Themes/ThemeManager.h"
+#include "ResponsiveLayoutManager.h"
 
 Row1Component::Row1Component(MidiEngine& midiEngine,
                            juce::AudioProcessorValueTreeState& valueTreeState,
@@ -41,7 +42,7 @@ Row1Component::Row1Component(MidiEngine& midiEngine,
       
       // PHASE 9D: Theme selector components
       themeButton("palette", FontManager::PhosphorWeight::Regular),
-      themeSelector(colorScheme, fontManager),
+      themeSelector(),
       
       bpmLabel("bpm_label", INIConfig::Validation::MIN_TEMPO, INIConfig::Validation::MAX_TEMPO),
       bottomSeparator(colorScheme) {

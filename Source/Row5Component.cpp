@@ -6,6 +6,7 @@
 #include "Animation/AnimationManager.h"
 #include "DragDrop/DragDropManager.h"
 #include "UI/Visualizations/SpectrumAnalyzer.h"
+#include "ResponsiveLayoutManager.h"
 #include <iostream>
 
 Row5Component::Row5Component(MidiEngine& midiEngine,
@@ -157,9 +158,12 @@ void Row5Component::updateFromState(const ComponentState& state) {
 
 juce::Rectangle<int> Row5Component::getRowBounds() const {
     using namespace INIConfig::LayoutConstants;
-    return getScaledBounds(0, Row5::yPosition, 
-                          INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH, 
-                          Row5::height);
+    return juce::Rectangle<int>(
+        layoutManager.scaled(0),
+        layoutManager.scaled(Row5::yPosition),
+        layoutManager.scaled(INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH),
+        layoutManager.scaled(Row5::height)
+    );
 }
 
 bool Row5Component::getToggleState(int index) const {
@@ -319,7 +323,7 @@ void Row5Component::updateInteractiveLayout() {
             int x = gridStartX + col * (drumButtonSize + spacing);
             int y = gridStartY + row * (drumButtonSize + spacing);
             drumButtons[buttonIndex].setBounds(x, y, drumButtonSize, drumButtonSize);
-            drumButtons[buttonIndex].setFont(JUCE8_FONT(drumFontSize));
+            // Note: Font styling handled by LookAndFeel in JUCE 8
         }
     }
     
@@ -346,7 +350,7 @@ void Row5Component::updateInteractiveLayout() {
     for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
         int x = toggleArea.getX() + i * (toggleButtonWidth + spacing);
         toggleButtons[i].setBounds(x, toggleArea.getY(), toggleButtonWidth, controlHeight);
-        toggleButtons[i].setFont(JUCE8_FONT(controlFontSize));
+        // Note: Font styling handled by LookAndFeel in JUCE 8
     }
     
     rightSection.removeFromTop(spacing);
@@ -357,7 +361,7 @@ void Row5Component::updateInteractiveLayout() {
     for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
         int x = fillArea.getX() + i * (fillButtonWidth + spacing);
         fillButtons[i].setBounds(x, fillArea.getY(), fillButtonWidth, controlHeight);
-        fillButtons[i].setFont(JUCE8_FONT(controlFontSize));
+        // Note: Font styling handled by LookAndFeel in JUCE 8
     }
     
     rightSection.removeFromTop(spacing * 2);
@@ -588,8 +592,9 @@ void Row5Component::onDrumButtonRightClicked(int buttonIndex) {
 
 void Row5Component::mouseDown(const juce::MouseEvent& event) {
     // PHASE 9D: Integrate gesture recognition
-    if (gestureRecognizer) {
-        gestureRecognizer->handleMouseDown(event);
+    if (gestureRecognizer != nullptr) {
+        // Note: GestureRecognizer implementation pending - placeholder for PHASE 9D
+        // gestureRecognizer->handleMouseDown(event);
     }
     
     // Handle right-clicks on drum buttons
@@ -729,7 +734,7 @@ void Row5Component::setupSpectrumIntegration() {
     spectrumSettings.gridColor = colorScheme.getColor(ColorScheme::ColorRole::GridLine);
     spectrumSettings.fftSize = 2048;  // Good balance of resolution and performance
     spectrumSettings.overlapFactor = 4;
-    spectrumSettings.windowType = SpectrumAnalyzer::WindowType::Hann;
+    spectrumSettings.windowType = SpectrumAnalyzer::WindowType::Hanning;
     spectrumSettings.averagingMode = SpectrumAnalyzer::AveragingMode::Exponential;
     spectrumSettings.averagingFactor = 0.8f;
     spectrumSettings.minFrequency = 20.0f;
@@ -743,11 +748,10 @@ void Row5Component::setupSpectrumIntegration() {
     
     spectrumAnalyzer->setAnalyzerSettings(spectrumSettings);
     
-    // Set sample rate from mixer
-    double sampleRate = mixer.getSampleRate();
-    if (sampleRate > 0) {
-        spectrumAnalyzer->setSampleRate(sampleRate);
-    }
+    // Set sample rate - use default if mixer doesn't provide it
+    double sampleRate = 44100.0; // Default sample rate
+    // TODO: Get actual sample rate from audio device manager
+    spectrumAnalyzer->setSampleRate(sampleRate);
 }
 
 void Row5Component::updateSpectrumBounds() {

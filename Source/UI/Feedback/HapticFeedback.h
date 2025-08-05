@@ -451,7 +451,7 @@ private:
     void loadPredefinedPatterns();
 
     // Utility methods
-    void notifyListeners(std::function<void(Listener*)> callback);
+    void notifyListeners(std::function<void(Listener&)> callback);
     float calculateEffectiveIntensity(float requestedIntensity) const;
     bool shouldUseFallback() const;
     void updateStatistics(bool success, float latency);

@@ -170,6 +170,7 @@ public:
         float magnitude;
         float bandwidth;
         
+        Peak() : frequency(0.0f), magnitude(-80.0f), bandwidth(0.0f) {}
         Peak(float freq, float mag, float bw = 0) : frequency(freq), magnitude(mag), bandwidth(bw) {}
     };
     

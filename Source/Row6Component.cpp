@@ -155,7 +155,8 @@ void Row6Component::updateResponsiveLayout() {
             break;
     }
     
-    resized();
+    // Layout update will happen naturally through component hierarchy
+    // Do not call resized() here as it creates infinite recursion
 }
 
 int Row6Component::getResponsiveButtonSize() const {

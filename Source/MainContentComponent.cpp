@@ -1524,8 +1524,8 @@ void MainContentComponent::updateResponsiveLayout() {
         // Could adjust row heights or component arrangements
     }
     
-    // Trigger layout update
-    resized();
+    // Layout update will happen naturally through component hierarchy
+    // Do not call resized() here as it creates infinite recursion
 }
 
 int MainContentComponent::getResponsiveRowHeight(int rowNumber) const {

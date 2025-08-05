@@ -11,6 +11,7 @@
  * @date 2024
  */
 
+#include "JUCE8_CODING_STANDARDS.h"
 #include "Row1Component.h"
 #include "MidiEngine.h"
 #include "INIConfig.h"
@@ -22,8 +23,9 @@ Row1Component::Row1Component(MidiEngine& midiEngine,
                            ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
-    : RowComponentBase(1, layoutManager, fontManager, colorScheme),
+    : ResponsiveComponent(),
       midiEngine(midiEngine), valueTreeState(valueTreeState),
+      layoutManager(layoutManager), fontManager(fontManager), colorScheme(colorScheme),
       
       gearButton("gear"),
       linkButton("link"),
@@ -193,89 +195,55 @@ void Row1Component::paint(juce::Graphics& g) {
 }
 
 void Row1Component::resized() {
+    ResponsiveComponent::resized(); // Call parent first
+    
     auto bounds = getRowBounds();
-
     int currentWidth = bounds.getWidth();
     int currentHeight = bounds.getHeight();
 
-    int actualInterfaceWidth = layoutManager.getWindowWidth();
-    int actualInterfaceHeight = layoutManager.getWindowHeight();
-
-    float widthScale = static_cast<float>(actualInterfaceWidth) / 1000.0f;
-    float heightScale = static_cast<float>(actualInterfaceHeight) / 750.0f;
-    float responsiveScale = juce::jmin(widthScale, heightScale);
-
-    responsiveScale = juce::jlimit(0.6f, 2.0f, responsiveScale);
-
-    int baseIconSize = 45;
-    int iconSize = static_cast<int>(baseIconSize * responsiveScale);
-    iconSize = juce::jlimit(28, 70, iconSize);
+    // Use responsive calculations instead of hardcoded values
+    int iconSize = getResponsiveButtonSize();
+    int spacing = getResponsiveSpacing();
+    int margin = getResponsiveMargin(static_cast<int>(currentWidth * 0.015f));
+    
     int iconY = (currentHeight - iconSize) / 2;
 
-    float tempoFontScale = responsiveScale < 0.8f ? 0.25f : 0.3f;
-    bpmLabel.setFont(fontManager.getFont(FontManager::FontRole::Version,
-                     layoutManager.scaled(static_cast<float>(iconSize) * tempoFontScale)));
+    // Update font sizes using responsive calculations
+    float tempoFontSize = getResponsiveFontSize(static_cast<float>(iconSize) * 0.3f);
+    bpmLabel.setFont(JUCE8_FONT(tempoFontSize));
 
-    int margin = static_cast<int>(actualInterfaceWidth * 0.015f);
-    margin = juce::jlimit(4, 40, margin);
-
-    int estimatedSpacing = 2;
-    int allIconCount = 10;
-    int totalAllIconsWidth = allIconCount * iconSize;
-    int totalAllSpacingWidth = (allIconCount + 2) * estimatedSpacing;
-
-    int estimatedPresetsMenuWidth = static_cast<int>(actualInterfaceWidth * 0.11f);
-    int estimatedBmpWidth = static_cast<int>(actualInterfaceWidth * 0.053f);
-    int estimatedOttoWidth = static_cast<int>(actualInterfaceWidth * 0.08f);
-
-    int totalRequiredWidth = totalAllIconsWidth + totalAllSpacingWidth +
-                            estimatedPresetsMenuWidth + estimatedBmpWidth + estimatedOttoWidth + (2 * margin);
-
-    if (totalRequiredWidth > currentWidth) {
-        float reductionFactor = static_cast<float>(currentWidth) / static_cast<float>(totalRequiredWidth);
-        reductionFactor = juce::jmax(0.65f, reductionFactor);
-
-        iconSize = static_cast<int>(iconSize * reductionFactor);
-        iconSize = juce::jmax(24, iconSize);
-        iconY = (currentHeight - iconSize) / 2;
-    }
-
-    int iconSpacing = 2;
-
+    // Layout components using responsive spacing
     int gearX = margin;
-    int linkX = gearX + iconSize + iconSpacing;
-    int cloudX = linkX + iconSize + iconSpacing;
+    int linkX = gearX + iconSize + spacing;
+    int cloudX = linkX + iconSize + spacing;
 
     gearButton.setBounds(gearX, iconY, iconSize, iconSize);
     linkButton.setBounds(linkX, iconY, iconSize, iconSize);
     cloudButton.setBounds(cloudX, iconY, iconSize, iconSize);
 
     int playX = (currentWidth - iconSize) / 2;
+    int leftChevronX = cloudX + iconSize + spacing;
 
-    int leftChevronX = cloudX + iconSize + iconSpacing;
-
-    int totalPresetAreaSpace = playX - leftChevronX - iconSpacing;
-
-    int minPresetMenuWidth = static_cast<int>(actualInterfaceWidth * 0.11f);
-    int maxPresetMenuWidth = static_cast<int>(actualInterfaceWidth * 0.16f);
-
-    int chevronSpacing = static_cast<int>(actualInterfaceWidth * 0.0005f);
-    int chevronSpacing2 = juce::jmax(1, chevronSpacing);
-
-    int availableMenuSpace = totalPresetAreaSpace - (2 * iconSize) - (2 * chevronSpacing2);
+    // Preset menu area calculations using responsive sizing
+    int totalPresetAreaSpace = playX - leftChevronX - spacing;
+    int minPresetMenuWidth = static_cast<int>(currentWidth * 0.11f);
+    int maxPresetMenuWidth = static_cast<int>(currentWidth * 0.16f);
+    
+    int chevronSpacing = getResponsiveSpacing();
+    int availableMenuSpace = totalPresetAreaSpace - (2 * iconSize) - (2 * chevronSpacing);
     int presetMenuWidth = juce::jmax(minPresetMenuWidth, juce::jmin(maxPresetMenuWidth, availableMenuSpace));
 
-    int totalPresetGroupWidth = iconSize + chevronSpacing2 + presetMenuWidth + chevronSpacing2 + iconSize;
+    int totalPresetGroupWidth = iconSize + chevronSpacing + presetMenuWidth + chevronSpacing + iconSize;
     int presetGroupStartX = leftChevronX + (totalPresetAreaSpace - totalPresetGroupWidth) / 2;
 
     int centeredLeftChevronX = presetGroupStartX;
-    int presetsMenuX = centeredLeftChevronX + iconSize + chevronSpacing2;
-    int rightChevronX = presetsMenuX + presetMenuWidth + chevronSpacing2;
+    int presetsMenuX = centeredLeftChevronX + iconSize + chevronSpacing;
+    int rightChevronX = presetsMenuX + presetMenuWidth + chevronSpacing;
 
-    if (rightChevronX + iconSize + iconSpacing > playX) {
-        rightChevronX = playX - iconSpacing - iconSize;
-        presetsMenuX = rightChevronX - chevronSpacing2 - presetMenuWidth;
-        centeredLeftChevronX = presetsMenuX - chevronSpacing2 - iconSize;
+    if (rightChevronX + iconSize + spacing > playX) {
+        rightChevronX = playX - spacing - iconSize;
+        presetsMenuX = rightChevronX - chevronSpacing - presetMenuWidth;
+        centeredLeftChevronX = presetsMenuX - chevronSpacing - iconSize;
     }
 
     leftChevronButton.setBounds(centeredLeftChevronX, iconY, iconSize, iconSize);
@@ -285,7 +253,8 @@ void Row1Component::resized() {
     playButton.setBounds(playX, iconY, iconSize, iconSize);
     pauseButton.setBounds(playX, iconY, iconSize, iconSize);
 
-    int ottoWidth = static_cast<int>(actualInterfaceWidth * 0.1f);
+    // Right side components using responsive sizing
+    int ottoWidth = static_cast<int>(currentWidth * 0.1f);
     int ottoX = currentWidth - ottoWidth - margin;
     int ottoHeight = static_cast<int>(currentHeight * 0.6f);
     int versionHeight = static_cast<int>(currentHeight * 0.25f);
@@ -293,40 +262,34 @@ void Row1Component::resized() {
     ottoLabel.setBounds(ottoX, iconY, ottoWidth, ottoHeight);
     versionLabel.setBounds(ottoX, iconY + ottoHeight, ottoWidth, versionHeight);
 
-    int bmpX = playX + iconSize + iconSpacing;
-    int bmpHeight = iconSize;
+    // BPM label positioning
+    int bmpX = playX + iconSize + spacing;
+    int bmpWidth = static_cast<int>(currentWidth * 0.08f);
+    bmpWidth = juce::jmax(static_cast<int>(iconSize * 2.6f), bmpWidth);
 
-    int absoluteMinBmpWidth = static_cast<int>(iconSize * 2.6f);
-    int preferredMinBmpWidth = static_cast<int>(actualInterfaceWidth * 0.08f);
-    int maxBmpWidth = static_cast<int>(actualInterfaceWidth * 0.133f);
+    bpmLabel.setBounds(bmpX, iconY, bmpWidth, iconSize);
+    clockSyncLabel.setBounds(bmpX, iconY + iconSize - static_cast<int>(currentHeight * 0.02f),
+                           bmpWidth, static_cast<int>(currentHeight * 0.02f));
 
-    int bmpWidth = juce::jmax(absoluteMinBmpWidth, preferredMinBmpWidth);
-    bmpWidth = juce::jmin(bmpWidth, maxBmpWidth);
-    bmpWidth = juce::jmax(bmpWidth, absoluteMinBmpWidth);
-
-    bpmLabel.setBounds(bmpX, iconY, bmpWidth, bmpHeight);
-    clockSyncLabel.setBounds(bmpX, iconY + iconSize - static_cast<int>(currentHeight * 0.01875f),
-                           bmpWidth, static_cast<int>(currentHeight * 0.01875f));
-
+    // Right side buttons using responsive spacing
     int loopX = ottoX - margin - iconSize;
-    int overdubX = loopX - iconSize - iconSpacing;
-    int recordX = overdubX - iconSize - iconSpacing;
-    int themeX = recordX - iconSize - iconSpacing;  // PHASE 9D: Theme button position
-    int tapTempoX = themeX - iconSize - iconSpacing;
+    int overdubX = loopX - iconSize - spacing;
+    int recordX = overdubX - iconSize - spacing;
+    int themeX = recordX - iconSize - spacing;
+    int tapTempoX = themeX - iconSize - spacing;
 
     tapTempoButton.setBounds(tapTempoX, iconY, iconSize, iconSize);
-    tapTempoLabel.setBounds(tapTempoX, iconY + iconSize - static_cast<int>(currentHeight * 0.01875f),
-                          iconSize, static_cast<int>(currentHeight * 0.01875f));
+    tapTempoLabel.setBounds(tapTempoX, iconY + iconSize - static_cast<int>(currentHeight * 0.02f),
+                          iconSize, static_cast<int>(currentHeight * 0.02f));
     
-    // PHASE 9D: Theme button and selector positioning
     themeButton.setBounds(themeX, iconY, iconSize, iconSize);
     
-    // Position theme selector below theme button when visible
+    // Theme selector positioning
     if (themeSelectorVisible) {
-        int selectorWidth = static_cast<int>(actualInterfaceWidth * 0.12f);  // 12% of interface width
+        int selectorWidth = static_cast<int>(currentWidth * 0.12f);
         int selectorHeight = iconSize;
-        int selectorX = themeX - (selectorWidth - iconSize) / 2;  // Center under button
-        int selectorY = iconY + iconSize + iconSpacing;
+        int selectorX = themeX - (selectorWidth - iconSize) / 2;
+        int selectorY = iconY + iconSize + spacing;
         
         themeSelector.setBounds(selectorX, selectorY, selectorWidth, selectorHeight);
     }
@@ -335,6 +298,7 @@ void Row1Component::resized() {
     overdubButton.setBounds(overdubX, iconY, iconSize, iconSize);
     loopButton.setBounds(loopX, iconY, iconSize, iconSize);
 
+    // Bottom separator using responsive thickness
     int separatorThickness = juce::jmax(1, static_cast<int>(currentHeight * 0.05f));
     bottomSeparator.setBounds(0, currentHeight - separatorThickness, bounds.getWidth(), separatorThickness);
 }
@@ -1175,4 +1139,80 @@ void Row1Component::populateThemeSelector() {
     
     // Set current selection
     updateThemeSelector();
+}
+
+//==============================================================================
+// ResponsiveComponent Implementation
+//==============================================================================
+
+void Row1Component::updateResponsiveLayout() {
+    auto category = getCurrentDeviceCategory();
+    
+    // Device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            // Mobile: Larger touch targets, simplified layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            // Tablet: Medium touch targets, balanced layout
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            // Desktop: Standard layout with mouse precision
+            break;
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            // Large Desktop: Expanded layout, more information density
+            break;
+        default:
+            break;
+    }
+    
+    resized();
+}
+
+int Row1Component::getResponsiveButtonSize() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base size from INI config
+    int baseSize = static_cast<int>(getHeight() * 0.6f); // 60% of row height
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(static_cast<int>(rules.sizing.minTouchTarget * 0.9f), baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(30, baseSize);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(35, static_cast<int>(baseSize * 1.1f));
+        default:
+            return juce::jmax(30, baseSize);
+    }
+}
+
+int Row1Component::getResponsiveSpacing() const {
+    auto category = getCurrentDeviceCategory();
+    auto rules = getCurrentLayoutRules();
+    
+    // Base spacing
+    int baseSpacing = rules.spacing.defaultSpacing;
+    
+    // Apply device-specific adjustments
+    switch (category) {
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Mobile:
+            return juce::jmax(8, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Tablet:
+            return juce::jmax(6, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::Desktop:
+            return juce::jmax(4, baseSpacing);
+        case OTTO::UI::Layout::BreakpointManager::DeviceCategory::LargeDesktop:
+            return juce::jmax(5, baseSpacing);
+        default:
+            return baseSpacing;
+    }
+}
+
+float Row1Component::getResponsiveFontSize(float baseSize) const {
+    return ResponsiveComponent::getResponsiveFontSize(baseSize);
 }

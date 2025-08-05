@@ -1,5 +1,6 @@
 #pragma once
-#include "RowComponentBase.h"
+#include "JUCE8_CODING_STANDARDS.h"
+#include "UI/Layout/BreakpointManager.h"
 #include "UtilityComponents.h"
 
 class MidiEngine;
@@ -11,7 +12,7 @@ struct PresetMenuMapping {
     int menuId;
 };
 
-class Row1Component : public RowComponentBase {
+class Row1Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row1Component(MidiEngine& midiEngine,
                  juce::AudioProcessorValueTreeState& valueTreeState,
@@ -23,13 +24,21 @@ public:
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void saveStates(ComponentState& state) override;
-    void loadStates(const ComponentState& state) override;
-    void updateFromState(const ComponentState& state) override;
-    juce::String getRowName() const override { return "TopBar"; }
-    juce::Rectangle<int> getRowBounds() const override;
+    void saveStates(ComponentState& state);
+    void loadStates(const ComponentState& state);
+    void updateFromState(const ComponentState& state);
+    juce::String getRowName() const { return "TopBar"; }
+    juce::Rectangle<int> getRowBounds() const;
     void lookAndFeelChanged() override;
     void mouseDown(const juce::MouseEvent& event) override;
+    
+    // ResponsiveComponent overrides
+    void updateResponsiveLayout() override;
+    
+    // Responsive calculations
+    int getResponsiveButtonSize() const;
+    int getResponsiveSpacing() const;
+    float getResponsiveFontSize(float baseSize) const;
 
     std::function<void()> onGearButtonClicked;
     std::function<void(bool)> onPlayStateChanged;
@@ -72,6 +81,9 @@ public:
 private:
     MidiEngine& midiEngine;
     juce::AudioProcessorValueTreeState& valueTreeState;
+    ResponsiveLayoutManager& layoutManager;
+    FontManager& fontManager;
+    ColorScheme& colorScheme;
     
     PhosphorIconButton gearButton;
     PhosphorIconButton linkButton;

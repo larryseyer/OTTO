@@ -5,6 +5,7 @@
 
 class MidiEngine;
 class Mixer;
+class WaveformDisplay;
 
 class Row3Component : public RowComponentBase {
 public:
@@ -42,6 +43,15 @@ public:
     void setMuteState(bool muted);
     bool isMuted() const;
     
+    // PHASE 9D: WaveformDisplay integration
+    void setWaveformDisplay(WaveformDisplay* waveformDisplay);
+    void updateWaveformForCurrentSample();
+    void showWaveformVisualization(bool show);
+    bool isWaveformVisible() const;
+    
+    // PHASE 9D: Touch optimization
+    void optimizeForTouch();
+    
 private:
     MidiEngine& midiEngine;
     Mixer& mixer;
@@ -64,6 +74,10 @@ private:
     bool showingDrumKitLabel = true;             // Toggle state: true = show label, false = show menu
     juce::String currentDrumKitName = "808 Classic";
     
+    // PHASE 9D: Visualization integration
+    WaveformDisplay* waveformDisplay = nullptr;  // Non-owning pointer to visualization
+    bool waveformVisible = false;
+    
     // Setup and update methods
     void setupDrumKitComponents();
     void updateDrumKitLayout();
@@ -77,6 +91,13 @@ private:
     void handleMixerButtonClick();
     void handleDrumKitDropdownChange();
     void populateDrumKitDropdown();
+    
+    // PHASE 9D: Visualization helper methods
+    void setupWaveformIntegration();
+    void updateWaveformBounds();
+    void loadSampleIntoWaveform(const juce::String& samplePath);
+    juce::Rectangle<int> getWaveformArea() const;
+    juce::String getCurrentDrumKitSamplePath() const;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Row3Component)
 };

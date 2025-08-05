@@ -63,6 +63,11 @@ public:
     void setLoopRecordingEnabled(bool enabled);
 
     void refreshPresetLabelFont();
+    
+    // PHASE 9D: Theme management integration
+    void setThemeManager(class ThemeManager* themeManager);
+    void showThemeSelector(bool show);
+    bool isThemeSelectorVisible() const;
 
 private:
     MidiEngine& midiEngine;
@@ -88,6 +93,12 @@ private:
     juce::Label clockSyncLabel;
     juce::Label tapTempoLabel;
     SeparatorComponent bottomSeparator;
+    
+    // PHASE 9D: Theme selector components
+    PhosphorIconButton themeButton;
+    HierarchicalComboBox themeSelector;
+    class ThemeManager* themeManager = nullptr;  // Non-owning pointer
+    bool themeSelectorVisible = false;
 
     bool isPlaying = false;
     bool liveRecording = false;
@@ -146,6 +157,13 @@ private:
     void showCollaborationCode();
     juce::String generateShareCode();
     void notifyStateChanged();
+    
+    // PHASE 9D: Theme management helper methods
+    void setupThemeSelector();
+    void updateThemeSelector();
+    void handleThemeSelection(int themeId);
+    void toggleThemeSelector();
+    void populateThemeSelector();
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Row1Component)
 };

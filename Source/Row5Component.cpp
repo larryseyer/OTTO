@@ -5,6 +5,7 @@
 #include "ErrorHandling.h"
 #include "Animation/AnimationManager.h"
 #include "DragDrop/DragDropManager.h"
+#include "UI/Visualizations/SpectrumAnalyzer.h"
 #include <iostream>
 
 Row5Component::Row5Component(MidiEngine& midiEngine,
@@ -33,6 +34,11 @@ void Row5Component::paint(juce::Graphics& g) {
 
 void Row5Component::resized() {
     updateInteractiveLayout();
+    
+    // PHASE 9D: Update spectrum analyzer bounds when component is resized
+    if (spectrumAnalyzer && spectrumVisible) {
+        updateSpectrumBounds();
+    }
 }
 
 void Row5Component::triggerDrumPad(int padIndex) {
@@ -560,6 +566,11 @@ void Row5Component::onDrumButtonRightClicked(int buttonIndex) {
 }
 
 void Row5Component::mouseDown(const juce::MouseEvent& event) {
+    // PHASE 9D: Integrate gesture recognition
+    if (gestureRecognizer) {
+        gestureRecognizer->handleMouseDown(event);
+    }
+    
     // Handle right-clicks on drum buttons
     if (event.mods.isRightButtonDown()) {
         for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
@@ -571,4 +582,169 @@ void Row5Component::mouseDown(const juce::MouseEvent& event) {
     }
     
     Component::mouseDown(event);
+}
+
+//==============================================================================
+// PHASE 9D: SpectrumAnalyzer Integration Implementation
+//==============================================================================
+
+void Row5Component::setSpectrumAnalyzer(SpectrumAnalyzer* analyzer) {
+    spectrumAnalyzer = analyzer;
+    if (spectrumAnalyzer) {
+        setupSpectrumIntegration();
+    }
+}
+
+void Row5Component::updateSpectrumAnalyzer(const juce::AudioBuffer<float>& buffer) {
+    if (spectrumAnalyzer && spectrumVisible) {
+        spectrumAnalyzer->processAudioBlock(buffer);
+    }
+}
+
+void Row5Component::showSpectrumVisualization(bool show) {
+    spectrumVisible = show;
+    if (spectrumAnalyzer) {
+        spectrumAnalyzer->setVisible(show);
+        if (show) {
+            updateSpectrumBounds();
+        }
+    }
+}
+
+bool Row5Component::isSpectrumVisible() const {
+    return spectrumVisible && spectrumAnalyzer && spectrumAnalyzer->isVisible();
+}
+
+void Row5Component::setGestureRecognizer(GestureRecognizer* recognizer) {
+    gestureRecognizer = recognizer;
+}
+
+void Row5Component::handleGestureInput(int gestureType, const juce::Point<float>& position, float velocity) {
+    // Handle different gesture types for Row 5 interactions
+    switch (gestureType) {
+        case 0: // Swipe gesture
+            if (velocity > 0.5f) {
+                // Swipe right - next player
+                if (currentPlayerIndex < 3) {
+                    setCurrentPlayerIndex(currentPlayerIndex + 1);
+                }
+            } else if (velocity < -0.5f) {
+                // Swipe left - previous player
+                if (currentPlayerIndex > 0) {
+                    setCurrentPlayerIndex(currentPlayerIndex - 1);
+                }
+            }
+            break;
+            
+        case 1: // Long press gesture
+            // Toggle edit mode on long press
+            setEditModeVisuals(!isEditMode);
+            break;
+            
+        case 2: // Pinch gesture
+            // Scale drum pad sensitivity based on pinch
+            if (velocity > 1.0f) {
+                // Pinch out - increase sensitivity
+                energySlider.setValue(juce::jmin(1.0, energySlider.getValue() + 0.1));
+            } else if (velocity < 1.0f) {
+                // Pinch in - decrease sensitivity
+                energySlider.setValue(juce::jmax(0.0, energySlider.getValue() - 0.1));
+            }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+void Row5Component::optimizeForTouch() {
+    // Increase button and slider sizes for touch interfaces
+    #if JUCE_IOS || JUCE_ANDROID
+    auto bounds = getLocalBounds();
+    
+    // Ensure minimum touch target size (44px) using INI-driven calculations
+    int minTouchSize = static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::MIN_TOUCH_TARGET_HEIGHT_PERCENT / 100.0f);
+    
+    // Apply touch optimizations to drum buttons
+    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
+        auto currentBounds = drumButtons[i].getBounds();
+        drumButtons[i].setSize(juce::jmax(currentBounds.getWidth(), minTouchSize),
+                              juce::jmax(currentBounds.getHeight(), minTouchSize));
+    }
+    
+    // Apply touch optimizations to toggle buttons
+    for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
+        auto currentBounds = toggleButtons[i].getBounds();
+        toggleButtons[i].setSize(juce::jmax(currentBounds.getWidth(), minTouchSize),
+                                juce::jmax(currentBounds.getHeight(), minTouchSize));
+    }
+    
+    // Apply touch optimizations to fill buttons
+    for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
+        auto currentBounds = fillButtons[i].getBounds();
+        fillButtons[i].setSize(juce::jmax(currentBounds.getWidth(), minTouchSize),
+                              juce::jmax(currentBounds.getHeight(), minTouchSize));
+    }
+    
+    // Increase slider thumb sizes for touch
+    swingSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    energySlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    volumeSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    #endif
+}
+
+//==============================================================================
+// PHASE 9D: Spectrum Analyzer Helper Methods
+//==============================================================================
+
+void Row5Component::setupSpectrumIntegration() {
+    if (!spectrumAnalyzer) return;
+    
+    // Configure spectrum analyzer for real-time audio analysis
+    SpectrumAnalyzer::AnalyzerSettings spectrumSettings;
+    spectrumSettings.backgroundColor = colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground);
+    spectrumSettings.spectrumColor = colorScheme.getColor(ColorScheme::ColorRole::Accent);
+    spectrumSettings.peakHoldColor = colorScheme.getColor(ColorScheme::ColorRole::Error);
+    spectrumSettings.gridColor = colorScheme.getColor(ColorScheme::ColorRole::GridLine);
+    spectrumSettings.fftSize = 2048;  // Good balance of resolution and performance
+    spectrumSettings.overlapFactor = 4;
+    spectrumSettings.windowType = SpectrumAnalyzer::WindowType::Hann;
+    spectrumSettings.averagingMode = SpectrumAnalyzer::AveragingMode::Exponential;
+    spectrumSettings.averagingFactor = 0.8f;
+    spectrumSettings.minFrequency = 20.0f;
+    spectrumSettings.maxFrequency = 20000.0f;
+    spectrumSettings.minDecibels = -80.0f;
+    spectrumSettings.maxDecibels = 0.0f;
+    spectrumSettings.showGrid = true;
+    spectrumSettings.showLabels = true;
+    spectrumSettings.showPeakHold = true;
+    spectrumSettings.showCursor = true;
+    
+    spectrumAnalyzer->setAnalyzerSettings(spectrumSettings);
+    
+    // Set sample rate from mixer
+    double sampleRate = mixer.getSampleRate();
+    if (sampleRate > 0) {
+        spectrumAnalyzer->setSampleRate(sampleRate);
+    }
+}
+
+void Row5Component::updateSpectrumBounds() {
+    if (!spectrumAnalyzer) return;
+    
+    auto spectrumArea = getSpectrumArea();
+    spectrumAnalyzer->setBounds(spectrumArea);
+}
+
+juce::Rectangle<int> Row5Component::getSpectrumArea() const {
+    auto bounds = getLocalBounds();
+    
+    // Position spectrum analyzer in right 30% of Row 5, using INI-driven calculations
+    // This leaves 70% for the drum grid and controls
+    int spectrumX = static_cast<int>(bounds.getWidth() * INIConfig::LayoutConstants::ROW_5_SPECTRUM_X_PERCENT / 100.0f);
+    int spectrumY = static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_5_SPECTRUM_Y_PERCENT / 100.0f);
+    int spectrumWidth = static_cast<int>(bounds.getWidth() * INIConfig::LayoutConstants::ROW_5_SPECTRUM_WIDTH_PERCENT / 100.0f);
+    int spectrumHeight = static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_5_SPECTRUM_HEIGHT_PERCENT / 100.0f);
+    
+    return juce::Rectangle<int>(spectrumX, spectrumY, spectrumWidth, spectrumHeight);
 }

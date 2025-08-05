@@ -49,6 +49,7 @@ class MainContentComponent : public juce::Component,
                               public juce::Button::Listener,
                               public juce::ComboBox::Listener,
                               public ThemeManager::Listener,
+                              public juce::Timer,
                               public GestureRecognizer::Listener {
 public:
     MainContentComponent(MidiEngine& midiEngine,
@@ -64,11 +65,20 @@ public:
     void resized() override;
     void lookAndFeelChanged() override;
     
+    // PHASE 9D: Mouse event handling for gesture recognition
+    void mouseDown(const juce::MouseEvent& e) override;
+    void mouseUp(const juce::MouseEvent& e) override;
+    void mouseDrag(const juce::MouseEvent& e) override;
+    void mouseMove(const juce::MouseEvent& e) override;
+    
     // juce::Button::Listener
     void buttonClicked(juce::Button* button) override;
     
     // juce::ComboBox::Listener
     void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override;
+    
+    // juce::Timer
+    void timerCallback() override;
     
     // ThemeManager::Listener
     void themeChanged(const juce::String& newThemeName) override;
@@ -256,6 +266,13 @@ private:
     void updateRow4LabelStates();
     void refreshPatternGroupUI();
     
+    // PHASE 9D: Performance monitoring integration
+    void updatePhase9DPerformanceMetrics();
+    void monitorVisualizationPerformance();
+    void trackGestureRecognitionLatency();
+    void optimizePerformanceUnderLoad();
+    void updateVisualizationBounds();
+    
     // PHASE 5: Enhanced Row 4 Visual Polish Methods
     void setupRow4Label(juce::Label& label, const juce::String& componentId, 
                        const juce::String& text, const juce::String& tooltip);
@@ -306,6 +323,10 @@ private:
     void broadcastThemeChangeToComponents();
     void optimizeLayoutForDevice();
     void updateTouchTargetsForPlatform();
+    
+    // PHASE 9D: Audio processing integration
+    void processAudioForVisualizations(const juce::AudioBuffer<float>& buffer);
+    void setSampleRate(double sampleRate);
     
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);

@@ -15,6 +15,7 @@
 #include "MidiEngine.h"
 #include "INIConfig.h"
 #include "INIDataManager.h"
+#include "UI/Theme/ThemeManager.h"
 
 Row1Component::Row1Component(MidiEngine& midiEngine,
                            juce::AudioProcessorValueTreeState& valueTreeState,
@@ -36,10 +37,17 @@ Row1Component::Row1Component(MidiEngine& midiEngine,
       overdubButton("stack-plus"),
       loopButton("repeat"),
       
+      // PHASE 9D: Theme selector components
+      themeButton("palette", FontManager::PhosphorWeight::Regular),
+      themeSelector(colorScheme, fontManager),
+      
       bpmLabel("bpm_label", INIConfig::Validation::MIN_TEMPO, INIConfig::Validation::MAX_TEMPO),
       bottomSeparator(colorScheme) {
     
     setupTopBarComponents();
+    
+    // PHASE 9D: Initialize theme selector
+    setupThemeSelector();
 }
 
 void Row1Component::setupTopBarComponents() {
@@ -61,6 +69,10 @@ void Row1Component::setupTopBarComponents() {
     addAndMakeVisible(tapTempoButton);
     addAndMakeVisible(overdubButton);
     addAndMakeVisible(loopButton);
+    
+    // PHASE 9D: Theme selector components
+    addAndMakeVisible(themeButton);
+    addChildComponent(themeSelector);  // Hidden initially
     addAndMakeVisible(tapTempoLabel);
 
     gearButton.onClick = [this] {
@@ -95,6 +107,11 @@ void Row1Component::setupTopBarComponents() {
 
     overdubButton.onClick = [this] {
         setOverdubEnabled(!overdubEnabled);
+    };
+
+    // PHASE 9D: Theme button callback
+    themeButton.onClick = [this] {
+        toggleThemeSelector();
     };
 
     loopButton.onClick = [this] {
@@ -294,11 +311,26 @@ void Row1Component::resized() {
     int loopX = ottoX - margin - iconSize;
     int overdubX = loopX - iconSize - iconSpacing;
     int recordX = overdubX - iconSize - iconSpacing;
-    int tapTempoX = recordX - iconSize - iconSpacing;
+    int themeX = recordX - iconSize - iconSpacing;  // PHASE 9D: Theme button position
+    int tapTempoX = themeX - iconSize - iconSpacing;
 
     tapTempoButton.setBounds(tapTempoX, iconY, iconSize, iconSize);
     tapTempoLabel.setBounds(tapTempoX, iconY + iconSize - static_cast<int>(currentHeight * 0.01875f),
                           iconSize, static_cast<int>(currentHeight * 0.01875f));
+    
+    // PHASE 9D: Theme button and selector positioning
+    themeButton.setBounds(themeX, iconY, iconSize, iconSize);
+    
+    // Position theme selector below theme button when visible
+    if (themeSelectorVisible) {
+        int selectorWidth = static_cast<int>(actualInterfaceWidth * 0.12f);  // 12% of interface width
+        int selectorHeight = iconSize;
+        int selectorX = themeX - (selectorWidth - iconSize) / 2;  // Center under button
+        int selectorY = iconY + iconSize + iconSpacing;
+        
+        themeSelector.setBounds(selectorX, selectorY, selectorWidth, selectorHeight);
+    }
+    
     recordButton.setBounds(recordX, iconY, iconSize, iconSize);
     overdubButton.setBounds(overdubX, iconY, iconSize, iconSize);
     loopButton.setBounds(loopX, iconY, iconSize, iconSize);
@@ -1052,4 +1084,95 @@ juce::String Row1Component::generateShareCode() {
 }
 
 void Row1Component::notifyStateChanged() {
+}
+
+//==============================================================================
+// PHASE 9D: Theme Management Implementation
+//==============================================================================
+
+void Row1Component::setThemeManager(ThemeManager* manager) {
+    themeManager = manager;
+    if (themeManager) {
+        populateThemeSelector();
+    }
+}
+
+void Row1Component::showThemeSelector(bool show) {
+    themeSelectorVisible = show;
+    themeSelector.setVisible(show);
+    if (show) {
+        updateThemeSelector();
+    }
+}
+
+bool Row1Component::isThemeSelectorVisible() const {
+    return themeSelectorVisible && themeSelector.isVisible();
+}
+
+void Row1Component::setupThemeSelector() {
+    // Configure theme selector appearance
+    themeSelector.setTextWhenNothingSelected("Select Theme");
+    themeSelector.setJustificationType(juce::Justification::centredLeft);
+    
+    // Set up theme selector callback
+    themeSelector.onChange = [this] {
+        int selectedId = themeSelector.getSelectedId();
+        if (selectedId > 0) {
+            handleThemeSelection(selectedId);
+        }
+    };
+    
+    // Initially hidden
+    themeSelector.setVisible(false);
+}
+
+void Row1Component::updateThemeSelector() {
+    if (!themeManager) return;
+    
+    // Update current selection based on active theme
+    juce::String currentTheme = themeManager->getCurrentThemeName();
+    
+    // Find and select current theme in dropdown
+    for (int i = 1; i <= themeSelector.getNumItems(); ++i) {
+        if (themeSelector.getItemText(i - 1) == currentTheme) {
+            themeSelector.setSelectedId(i, juce::dontSendNotification);
+            break;
+        }
+    }
+}
+
+void Row1Component::handleThemeSelection(int themeId) {
+    if (!themeManager || themeId <= 0) return;
+    
+    // Get theme name from selector
+    juce::String themeName = themeSelector.getItemText(themeId - 1);
+    
+    if (themeName.isNotEmpty()) {
+        // Apply theme through ThemeManager
+        themeManager->setCurrentTheme(themeName);
+        
+        // Hide selector after selection
+        showThemeSelector(false);
+    }
+}
+
+void Row1Component::toggleThemeSelector() {
+    showThemeSelector(!isThemeSelectorVisible());
+}
+
+void Row1Component::populateThemeSelector() {
+    if (!themeManager) return;
+    
+    themeSelector.clear();
+    
+    // Get available themes from ThemeManager
+    auto availableThemes = themeManager->getAvailableThemes();
+    
+    int itemId = 1;
+    for (const auto& themeName : availableThemes) {
+        themeSelector.addItem(themeName, itemId++);
+    }
+    
+    // Set current selection
+    updateThemeSelector();
 }

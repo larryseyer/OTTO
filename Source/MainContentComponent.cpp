@@ -281,9 +281,385 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     };
 
     // PHASE 8: Legacy rightSection callback removed - functionality moved to Row5Component
+    
+    // PHASE 9D: Start performance monitoring timer (60 FPS monitoring)
+    startTimer(16);  // 16ms = ~60 FPS for performance monitoring
 }
 
 MainContentComponent::~MainContentComponent() {
+    // PHASE 9D: Stop performance monitoring timer
+    stopTimer();
+    
+    // Phase 9D cleanup
+    if (themeManager) {
+        themeManager->removeListener(this);
+    }
+    if (gestureRecognizer) {
+        gestureRecognizer->removeListener(this);
+    }
+}
+
+//==============================================================================
+// PHASE 9D: Component Integration Implementation
+//==============================================================================
+
+void MainContentComponent::initializePhase9DComponents() {
+    // Initialize ThemeManager with ColorScheme integration
+    themeManager = std::make_unique<ThemeManager>(colorScheme);
+    themeManager->addListener(this);
+    
+    // Initialize AdaptiveLayoutManager with existing ResponsiveLayoutManager config
+    LayoutConfig adaptiveConfig;
+    adaptiveConfig.baseWidth = INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH;
+    adaptiveConfig.baseHeight = INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT;
+    adaptiveConfig.enableResponsiveScaling = true;
+    adaptiveConfig.enableTouchOptimization = true;
+    
+    adaptiveLayoutManager = std::make_unique<AdaptiveLayoutManager>(adaptiveConfig);
+    
+    // Initialize GestureRecognizer for touch platforms
+    gestureRecognizer = std::make_unique<GestureRecognizer>();
+    gestureRecognizer->addListener(this);
+    
+    // Initialize visualizations
+    spectrumAnalyzer = std::make_unique<SpectrumAnalyzer>(colorScheme);
+    waveformDisplay = std::make_unique<WaveformDisplay>(colorScheme);
+    
+    // Setup integrations
+    setupThemeManagerIntegration();
+    setupAdaptiveLayoutIntegration();
+    setupGestureRecognizerIntegration();
+    setupVisualizationIntegration();
+}
+
+void MainContentComponent::setupThemeManagerIntegration() {
+    if (!themeManager) return;
+    
+    // Load current theme from INI
+    ComponentState themeState;
+    if (INIDataManager::loadComponentState("ThemeManager", themeState)) {
+        themeManager->loadState(themeState);
+    }
+    
+    // Connect theme manager to Row1Component for theme selector
+    if (row1Component) {
+        row1Component->setThemeManager(themeManager.get());
+    }
+    
+    // Apply current theme to all components
+    broadcastThemeChangeToComponents();
+}
+
+void MainContentComponent::setupAdaptiveLayoutIntegration() {
+    if (!adaptiveLayoutManager) return;
+    
+    // Configure device detection
+    auto displays = juce::Desktop::getInstance().getDisplays();
+    if (!displays.displays.isEmpty()) {
+        auto primaryDisplay = displays.displays[0];
+        auto deviceType = adaptiveLayoutManager->detectDeviceType(
+            primaryDisplay.userArea.getWidth(), 
+            primaryDisplay.userArea.getHeight()
+        );
+        
+        // Set layout mode based on device type
+        switch (deviceType) {
+            case AdaptiveLayoutManager::DeviceType::Phone:
+                adaptiveLayoutManager->setLayoutMode(AdaptiveLayoutManager::LayoutMode::Compact);
+                break;
+            case AdaptiveLayoutManager::DeviceType::Tablet:
+                adaptiveLayoutManager->setLayoutMode(AdaptiveLayoutManager::LayoutMode::Touch);
+                break;
+            case AdaptiveLayoutManager::DeviceType::Desktop:
+                adaptiveLayoutManager->setLayoutMode(AdaptiveLayoutManager::LayoutMode::Full);
+                break;
+            case AdaptiveLayoutManager::DeviceType::TV:
+                adaptiveLayoutManager->setLayoutMode(AdaptiveLayoutManager::LayoutMode::Performance);
+                break;
+            default:
+                adaptiveLayoutManager->setLayoutMode(AdaptiveLayoutManager::LayoutMode::Full);
+                break;
+        }
+    }
+    
+    // Enable touch optimization for mobile platforms
+    #if JUCE_IOS || JUCE_ANDROID
+    adaptiveLayoutManager->enableTouchOptimization(true);
+    #endif
+}
+
+void MainContentComponent::setupGestureRecognizerIntegration() {
+    if (!gestureRecognizer) return;
+    
+    // Configure gesture recognition for touch platforms
+    #if JUCE_IOS || JUCE_ANDROID
+    gestureRecognizer->setEnabled(true);
+    #else
+    gestureRecognizer->setEnabled(false);
+    #endif
+    
+    // Add gesture recognizer to component hierarchy for event handling
+    addChildComponent(*gestureRecognizer);
+    
+    // Connect gesture recognizer to row components
+    if (row5Component) {
+        row5Component->setGestureRecognizer(gestureRecognizer.get());
+        row5Component->optimizeForTouch();
+    }
+}
+
+void MainContentComponent::setupVisualizationIntegration() {
+    if (!spectrumAnalyzer || !waveformDisplay) return;
+    
+    // Add visualizations to component hierarchy but keep them hidden initially
+    addChildComponent(*spectrumAnalyzer);
+    addChildComponent(*waveformDisplay);
+    
+    // Connect to audio processing
+    if (row5Component) {
+        // Connect spectrum analyzer to Row 5 audio processing
+        row5Component->setSpectrumAnalyzer(spectrumAnalyzer.get());
+    }
+    
+    if (row3Component) {
+        // Connect waveform display to Row 3 drum kit selection
+        row3Component->setWaveformDisplay(waveformDisplay.get());
+    }
+    
+    // Update visualization bounds
+    updateVisualizationBounds();
+    
+    // PHASE 9D: Update performance metrics
+    updatePhase9DPerformanceMetrics();
+}
+
+//==============================================================================
+// PHASE 9D: Listener Interface Implementations
+//==============================================================================
+
+void MainContentComponent::themeChanged(const juce::String& newThemeName) {
+    // Broadcast theme change to all child components
+    broadcastThemeChangeToComponents();
+    
+    // Save theme state to INI
+    if (themeManager) {
+        ComponentState themeState;
+        themeManager->saveState(themeState);
+        INIDataManager::saveComponentState("ThemeManager", themeState);
+    }
+    
+    // Trigger repaint
+    repaint();
+}
+
+void MainContentComponent::themePreviewStarted(const juce::String& previewThemeName) {
+    // Apply preview theme temporarily
+    broadcastThemeChangeToComponents();
+}
+
+void MainContentComponent::themePreviewStopped() {
+    // Restore original theme
+    broadcastThemeChangeToComponents();
+}
+
+void MainContentComponent::gestureDetected(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data) {
+    handleGestureInput(type, data);
+}
+
+//==============================================================================
+// PHASE 9D: Helper Method Implementations
+//==============================================================================
+
+void MainContentComponent::broadcastThemeChangeToComponents() {
+    // Update all row components
+    if (row1Component) row1Component->updateColorsFromTheme();
+    if (row2Component) row2Component->updateColorsFromTheme();
+    if (row3Component) row3Component->updateColorsFromTheme();
+    if (row4Component) row4Component->updateColorsFromTheme();
+    if (row5Component) row5Component->updateColorsFromTheme();
+    if (row6Component) row6Component->updateColorsFromTheme();
+    
+    // Update visualizations
+    if (spectrumAnalyzer) spectrumAnalyzer->updateColorsFromTheme();
+    if (waveformDisplay) waveformDisplay->updateColorsFromTheme();
+    
+    // Update separators
+    row1Separator.updateColorsFromTheme();
+    row2Separator.updateColorsFromTheme();
+    row3Separator.updateColorsFromTheme();
+    row4Separator.updateColorsFromTheme();
+    row5Separator.updateColorsFromTheme();
+}
+
+void MainContentComponent::handleGestureInput(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data) {
+    switch (type) {
+        case GestureRecognizer::GestureType::Swipe:
+            // Handle swipe navigation between players/patterns
+            if (data.direction == GestureRecognizer::SwipeDirection::Left && row2Component) {
+                row2Component->selectNextPlayer();
+            } else if (data.direction == GestureRecognizer::SwipeDirection::Right && row2Component) {
+                row2Component->selectPreviousPlayer();
+            }
+            break;
+            
+        case GestureRecognizer::GestureType::Pinch:
+            // Handle pinch-to-zoom for visualizations
+            if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
+                float zoomFactor = data.scale;
+                spectrumAnalyzer->setZoomFactor(zoomFactor);
+            }
+            break;
+            
+        case GestureRecognizer::GestureType::LongPress:
+            // Handle long-press context menus
+            if (contextMenuManager) {
+                auto menuPosition = juce::Point<int>(static_cast<int>(data.position.x), 
+                                                   static_cast<int>(data.position.y));
+                contextMenuManager->showContextMenu(menuPosition);
+            }
+            break;
+            
+        case GestureRecognizer::GestureType::TwoFingerPan:
+            // Handle two-finger pan for timeline navigation
+            if (row6Component) {
+                float deltaX = data.delta.x;
+                row6Component->adjustLoopPosition(deltaX);
+            }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+void MainContentComponent::updateVisualizationBounds() {
+    if (!spectrumAnalyzer || !waveformDisplay) return;
+    
+    auto bounds = getLocalBounds();
+    
+    // Position spectrum analyzer in Row 5 right panel area
+    if (row5Component) {
+        auto row5Bounds = juce::Rectangle<int>(
+            0, 
+            static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_5_HEIGHT_PERCENT / 100.0f * 
+                           (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT + 
+                            INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT + 
+                            INIConfig::LayoutConstants::ROW_3_HEIGHT_PERCENT + 
+                            INIConfig::LayoutConstants::ROW_4_HEIGHT_PERCENT) / 100.0f),
+            bounds.getWidth(),
+            static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_5_HEIGHT_PERCENT / 100.0f)
+        );
+        
+        // Position in right 30% of Row 5
+        auto spectrumBounds = juce::Rectangle<int>(
+            static_cast<int>(row5Bounds.getWidth() * 0.7f),
+            row5Bounds.getY(),
+            static_cast<int>(row5Bounds.getWidth() * 0.3f),
+            row5Bounds.getHeight()
+        );
+        
+        spectrumAnalyzer->setBounds(spectrumBounds);
+    }
+    
+    // Position waveform display in Row 3 area
+    if (row3Component) {
+        auto row3Bounds = juce::Rectangle<int>(
+            0,
+            static_cast<int>(bounds.getHeight() * 
+                           (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT + 
+                            INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT) / 100.0f),
+            bounds.getWidth(),
+            static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::ROW_3_HEIGHT_PERCENT / 100.0f)
+        );
+        
+        // Position in right 40% of Row 3
+        auto waveformBounds = juce::Rectangle<int>(
+            static_cast<int>(row3Bounds.getWidth() * 0.6f),
+            row3Bounds.getY(),
+            static_cast<int>(row3Bounds.getWidth() * 0.4f),
+            row3Bounds.getHeight()
+        );
+        
+        waveformDisplay->setBounds(waveformBounds);
+    }
+}
+
+void MainContentComponent::optimizeLayoutForDevice() {
+    if (!adaptiveLayoutManager) return;
+    
+    auto bounds = getLocalBounds();
+    adaptiveLayoutManager->updateLayout(bounds.getWidth(), bounds.getHeight());
+    
+    // Apply device-specific optimizations
+    auto deviceType = adaptiveLayoutManager->getCurrentDeviceType();
+    
+    switch (deviceType) {
+        case AdaptiveLayoutManager::DeviceType::Phone:
+            // Hide non-essential components for phone layout
+            if (spectrumAnalyzer) spectrumAnalyzer->setVisible(false);
+            if (waveformDisplay) waveformDisplay->setVisible(false);
+            break;
+            
+        case AdaptiveLayoutManager::DeviceType::Tablet:
+            // Show essential visualizations for tablet
+            if (spectrumAnalyzer) spectrumAnalyzer->setVisible(true);
+            if (waveformDisplay) waveformDisplay->setVisible(false);
+            break;
+            
+        case AdaptiveLayoutManager::DeviceType::Desktop:
+        case AdaptiveLayoutManager::DeviceType::TV:
+            // Show all visualizations for desktop/TV
+            if (spectrumAnalyzer) spectrumAnalyzer->setVisible(true);
+            if (waveformDisplay) waveformDisplay->setVisible(true);
+            break;
+            
+        default:
+            break;
+    }
+}
+
+void MainContentComponent::updateTouchTargetsForPlatform() {
+    if (!adaptiveLayoutManager) return;
+    
+    #if JUCE_IOS || JUCE_ANDROID
+    // Ensure minimum touch targets on mobile platforms
+    adaptiveLayoutManager->adjustForTouchTargets();
+    
+    // Update all row components for touch optimization
+    if (row1Component) row1Component->optimizeForTouch();
+    if (row2Component) row2Component->optimizeForTouch();
+    if (row3Component) row3Component->optimizeForTouch();
+    if (row4Component) row4Component->optimizeForTouch();
+    if (row5Component) row5Component->optimizeForTouch();
+    if (row6Component) row6Component->optimizeForTouch();
+    #endif
+}
+
+//==============================================================================
+// PHASE 9D: Audio Processing Integration
+//==============================================================================
+
+void MainContentComponent::processAudioForVisualizations(const juce::AudioBuffer<float>& buffer) {
+    // Forward audio data to spectrum analyzer
+    if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
+        spectrumAnalyzer->processAudioBlock(buffer);
+    }
+    
+    // Forward audio data to waveform display if it's showing a live input
+    if (waveformDisplay && waveformDisplay->isVisible() && waveformDisplay->isShowingLiveInput()) {
+        waveformDisplay->processAudioBlock(buffer);
+    }
+}
+
+void MainContentComponent::setSampleRate(double sampleRate) {
+    // Update sample rate for all visualizations
+    if (spectrumAnalyzer) {
+        spectrumAnalyzer->setSampleRate(sampleRate);
+    }
+    
+    if (waveformDisplay) {
+        waveformDisplay->setSampleRate(sampleRate);
+    }
 }
 
 void MainContentComponent::updatePlayerDisplay(int playerIndex) {
@@ -611,10 +987,7 @@ void MainContentComponent::setLoopPosition(float position) {
     }
 }
 
-void MainContentComponent::mouseDown(const juce::MouseEvent& event) {
-    // PHASE 8: Handle mouse events - delegate to appropriate Row components
-    juce::Component::mouseDown(event);
-}
+
 
 void MainContentComponent::paint(juce::Graphics& g) {
     // PHASE 8: Clean paint method - Row components handle their own painting
@@ -622,8 +995,15 @@ void MainContentComponent::paint(juce::Graphics& g) {
 }
 
 void MainContentComponent::resized() {
-    // PHASE 8: Clean resized method - Row components handle their own positioning
+    // PHASE 9D: Enhanced resized method with adaptive layout integration
     auto bounds = getLocalBounds();
+    
+    // PHASE 9D: Apply adaptive layout calculations
+    if (adaptiveLayoutManager) {
+        adaptiveLayoutManager->updateLayout(bounds.getWidth(), bounds.getHeight());
+        optimizeLayoutForDevice();
+        updateTouchTargetsForPlatform();
+    }
     
     // Row components automatically position themselves using getRowBounds()
     if (row1Component) {
@@ -651,6 +1031,14 @@ void MainContentComponent::resized() {
         int row6Y = layoutManager.scaled(ROW_1_HEIGHT + ROW_2_HEIGHT + ROW_3_HEIGHT + ROW_4_HEIGHT + ROW_5_HEIGHT);
         int row6Height = layoutManager.scaled(ROW_6_HEIGHT);
         loopSection->setBounds(0, row6Y, bounds.getWidth(), row6Height);
+    }
+    
+    // PHASE 9D: Update visualization bounds
+    updateVisualizationBounds();
+    
+    // PHASE 9D: Update gesture recognizer bounds
+    if (gestureRecognizer) {
+        gestureRecognizer->setBounds(bounds);
     }
     
     // Position row separators
@@ -683,6 +1071,50 @@ void MainContentComponent::lookAndFeelChanged() {
     if (loopSection) {
         loopSection->lookAndFeelChanged();
     }
+}
+
+//==============================================================================
+// PHASE 9D: Mouse Event Handling for Gesture Recognition
+//==============================================================================
+
+void MainContentComponent::mouseDown(const juce::MouseEvent& e) {
+    // Forward to gesture recognizer for touch platforms
+    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
+        gestureRecognizer->handleMouseDown(e);
+    }
+    
+    // Continue with normal mouse handling
+    Component::mouseDown(e);
+}
+
+void MainContentComponent::mouseUp(const juce::MouseEvent& e) {
+    // Forward to gesture recognizer for touch platforms
+    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
+        gestureRecognizer->handleMouseUp(e);
+    }
+    
+    // Continue with normal mouse handling
+    Component::mouseUp(e);
+}
+
+void MainContentComponent::mouseDrag(const juce::MouseEvent& e) {
+    // Forward to gesture recognizer for touch platforms
+    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
+        gestureRecognizer->handleMouseDrag(e);
+    }
+    
+    // Continue with normal mouse handling
+    Component::mouseDrag(e);
+}
+
+void MainContentComponent::mouseMove(const juce::MouseEvent& e) {
+    // Forward to gesture recognizer for touch platforms
+    if (gestureRecognizer && gestureRecognizer->isEnabled()) {
+        gestureRecognizer->handleMouseMove(e);
+    }
+    
+    // Continue with normal mouse handling
+    Component::mouseMove(e);
 }
 
 void MainContentComponent::buttonClicked(juce::Button* button) {
@@ -743,6 +1175,11 @@ void MainContentComponent::buttonClicked(juce::Button* button) {
     }
 }
 
+void MainContentComponent::timerCallback() {
+    // PHASE 9D: Continuous performance monitoring
+    updatePhase9DPerformanceMetrics();
+}
+
 void MainContentComponent::comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) {
     // PHASE 8: Handle legacy combo box changes - use callbacks instead of private methods
     if (comboBoxThatHasChanged == &drumKitDropdown) {
@@ -785,6 +1222,130 @@ void MainContentComponent::updateLayoutForPerformanceMode() {
 }
 
 // PHASE 8: Setup methods removed - Row components handle their own setup in constructors
+
+//==============================================================================
+// PHASE 9D: Performance Monitoring Implementation
+//==============================================================================
+
+void MainContentComponent::updatePhase9DPerformanceMetrics() {
+    // Monitor Phase 9D component performance
+    static auto lastUpdateTime = juce::Time::getCurrentTime();
+    auto currentTime = juce::Time::getCurrentTime();
+    auto deltaTime = (currentTime - lastUpdateTime).inMilliseconds();
+    
+    // Track frame time for responsive UI target (<16ms)
+    if (deltaTime > 16.0) {
+        // Frame time exceeded target - trigger optimization
+        optimizePerformanceUnderLoad();
+    }
+    
+    // Monitor visualization performance
+    monitorVisualizationPerformance();
+    
+    // Track gesture recognition latency
+    trackGestureRecognitionLatency();
+    
+    lastUpdateTime = currentTime;
+}
+
+void MainContentComponent::monitorVisualizationPerformance() {
+    // Monitor spectrum analyzer performance
+    if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
+        // Check if spectrum analyzer is maintaining 60 FPS
+        auto renderTime = spectrumAnalyzer->getLastRenderTime();
+        if (renderTime > 16.0) {  // >16ms indicates <60 FPS
+            // Reduce spectrum analyzer quality for performance
+            spectrumAnalyzer->setQualityMode(SpectrumAnalyzer::QualityMode::Performance);
+        }
+    }
+    
+    // Monitor waveform display performance
+    if (waveformDisplay && waveformDisplay->isVisible()) {
+        auto renderTime = waveformDisplay->getLastRenderTime();
+        if (renderTime > 16.0) {
+            // Reduce waveform display quality for performance
+            waveformDisplay->setQualityMode(WaveformDisplay::QualityMode::Performance);
+        }
+    }
+}
+
+void MainContentComponent::trackGestureRecognitionLatency() {
+    if (!gestureRecognizer) return;
+    
+    // Monitor gesture recognition response time (target <10ms)
+    auto latency = gestureRecognizer->getLastGestureLatency();
+    if (latency > 10.0) {
+        // Gesture recognition is too slow - optimize
+        gestureRecognizer->setOptimizationMode(true);
+    }
+}
+
+void MainContentComponent::optimizePerformanceUnderLoad() {
+    // Automatic quality reduction under load
+    
+    // Reduce visualization quality
+    if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
+        spectrumAnalyzer->setQualityMode(SpectrumAnalyzer::QualityMode::Performance);
+    }
+    
+    if (waveformDisplay && waveformDisplay->isVisible()) {
+        waveformDisplay->setQualityMode(WaveformDisplay::QualityMode::Performance);
+    }
+    
+    // Reduce animation complexity
+    if (animationManager) {
+        animationManager->setPerformanceMode(true);
+    }
+    
+    // Optimize gesture recognition
+    if (gestureRecognizer) {
+        gestureRecognizer->setOptimizationMode(true);
+    }
+    
+    // Reduce render optimizer quality
+    if (renderOptimizer) {
+        renderOptimizer->setQualityLevel(RenderOptimizer::QualityLevel::Performance);
+    }
+}
+
+void MainContentComponent::updateVisualizationBounds() {
+    // Update visualization bounds using INI-driven calculations
+    auto bounds = getLocalBounds();
+    
+    // Update spectrum analyzer bounds for Row 5
+    if (spectrumAnalyzer && row5Component) {
+        auto row5Bounds = row5Component->getBounds();
+        
+        // Calculate spectrum analyzer position using INI constants
+        int spectrumX = static_cast<int>(row5Bounds.getWidth() * 
+            INIConfig::LayoutConstants::ROW_5_SPECTRUM_X_PERCENT / 100.0f);
+        int spectrumY = static_cast<int>(row5Bounds.getHeight() * 
+            INIConfig::LayoutConstants::ROW_5_SPECTRUM_Y_PERCENT / 100.0f);
+        int spectrumWidth = static_cast<int>(row5Bounds.getWidth() * 
+            INIConfig::LayoutConstants::ROW_5_SPECTRUM_WIDTH_PERCENT / 100.0f);
+        int spectrumHeight = static_cast<int>(row5Bounds.getHeight() * 
+            INIConfig::LayoutConstants::ROW_5_SPECTRUM_HEIGHT_PERCENT / 100.0f);
+        
+        spectrumAnalyzer->setBounds(row5Bounds.getX() + spectrumX, 
+                                   row5Bounds.getY() + spectrumY,
+                                   spectrumWidth, spectrumHeight);
+    }
+    
+    // Update waveform display bounds for Row 3
+    if (waveformDisplay && row3Component) {
+        auto row3Bounds = row3Component->getBounds();
+        
+        // Position waveform display in right portion of Row 3
+        int waveformX = static_cast<int>(row3Bounds.getWidth() * 0.6f);  // Right 40%
+        int waveformY = static_cast<int>(row3Bounds.getHeight() * 0.1f); // 10% margin
+        int waveformWidth = static_cast<int>(row3Bounds.getWidth() * 0.35f);
+        int waveformHeight = static_cast<int>(row3Bounds.getHeight() * 0.8f);
+        
+        waveformDisplay->setBounds(row3Bounds.getX() + waveformX,
+                                  row3Bounds.getY() + waveformY,
+                                  waveformWidth, waveformHeight);
+    }
+}
 
 void MainContentComponent::updateRowSeparators() {
     // Position row separators between rows using correct INIConfig constants

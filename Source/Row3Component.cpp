@@ -29,6 +29,7 @@
 #include "Mixer.h"
 #include "INIConfig.h"
 #include "ErrorHandling.h"
+#include "UI/Visualizations/WaveformDisplay.h"
 
 Row3Component::Row3Component(MidiEngine& midiEngine,
                            Mixer& mixer,
@@ -61,6 +62,11 @@ void Row3Component::paint(juce::Graphics& g) {
 
 void Row3Component::resized() {
     updateDrumKitLayout();
+    
+    // PHASE 9D: Update waveform bounds when component is resized
+    if (waveformDisplay && waveformVisible) {
+        updateWaveformBounds();
+    }
 }
 
 void Row3Component::saveStates(ComponentState& state) {
@@ -360,4 +366,121 @@ void Row3Component::populateDrumKitDropdown() {
     
     // Set default selection
     drumKitDropdown.setSelectedId(1, juce::dontSendNotification);
+}
+
+//==============================================================================
+// PHASE 9D: WaveformDisplay Integration Implementation
+//==============================================================================
+
+void Row3Component::setWaveformDisplay(WaveformDisplay* display) {
+    waveformDisplay = display;
+    if (waveformDisplay) {
+        setupWaveformIntegration();
+    }
+}
+
+void Row3Component::updateWaveformForCurrentSample() {
+    if (!waveformDisplay) return;
+    
+    // Get current drum kit sample path based on current selection
+    juce::String samplePath = getCurrentDrumKitSamplePath();
+    if (samplePath.isNotEmpty()) {
+        loadSampleIntoWaveform(samplePath);
+    }
+}
+
+void Row3Component::showWaveformVisualization(bool show) {
+    waveformVisible = show;
+    if (waveformDisplay) {
+        waveformDisplay->setVisible(show);
+        if (show) {
+            updateWaveformBounds();
+            updateWaveformForCurrentSample();
+        }
+    }
+}
+
+bool Row3Component::isWaveformVisible() const {
+    return waveformVisible && waveformDisplay && waveformDisplay->isVisible();
+}
+
+void Row3Component::optimizeForTouch() {
+    // Increase button sizes for touch interfaces
+    #if JUCE_IOS || JUCE_ANDROID
+    auto bounds = getLocalBounds();
+    
+    // Ensure minimum touch target size (44px)
+    int minTouchSize = static_cast<int>(bounds.getHeight() * INIConfig::LayoutConstants::MIN_TOUCH_TARGET_HEIGHT_PERCENT / 100.0f);
+    
+    // Apply touch optimizations to all buttons
+    drumKitEditButton.setSize(juce::jmax(drumKitEditButton.getWidth(), minTouchSize),
+                             juce::jmax(drumKitEditButton.getHeight(), minTouchSize));
+    drumKitLeftChevron.setSize(juce::jmax(drumKitLeftChevron.getWidth(), minTouchSize),
+                              juce::jmax(drumKitLeftChevron.getHeight(), minTouchSize));
+    drumKitRightChevron.setSize(juce::jmax(drumKitRightChevron.getWidth(), minTouchSize),
+                               juce::jmax(drumKitRightChevron.getHeight(), minTouchSize));
+    drumKitMuteButton.setSize(juce::jmax(drumKitMuteButton.getWidth(), minTouchSize),
+                             juce::jmax(drumKitMuteButton.getHeight(), minTouchSize));
+    drumKitMixerButton.setSize(juce::jmax(drumKitMixerButton.getWidth(), minTouchSize),
+                              juce::jmax(drumKitMixerButton.getHeight(), minTouchSize));
+    #endif
+}
+
+//==============================================================================
+// PHASE 9D: Visualization Helper Methods
+//==============================================================================
+
+void Row3Component::setupWaveformIntegration() {
+    if (!waveformDisplay) return;
+    
+    // Configure waveform display for drum sample visualization
+    WaveformDisplay::Settings waveformSettings;
+    waveformSettings.backgroundColor = colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground);
+    waveformSettings.waveformColor = colorScheme.getColor(ColorScheme::ColorRole::Accent);
+    waveformSettings.gridColor = colorScheme.getColor(ColorScheme::ColorRole::GridLine);
+    waveformSettings.showGrid = true;
+    waveformSettings.showLabels = true;
+    waveformSettings.enableZoom = true;
+    waveformSettings.enableSelection = true;
+    
+    waveformDisplay->setSettings(waveformSettings);
+    
+    // Load current sample if available
+    updateWaveformForCurrentSample();
+}
+
+void Row3Component::updateWaveformBounds() {
+    if (!waveformDisplay) return;
+    
+    auto waveformArea = getWaveformArea();
+    waveformDisplay->setBounds(waveformArea);
+}
+
+void Row3Component::loadSampleIntoWaveform(const juce::String& samplePath) {
+    if (!waveformDisplay || samplePath.isEmpty()) return;
+    
+    // Load audio file into waveform display
+    juce::File sampleFile(samplePath);
+    if (sampleFile.existsAsFile()) {
+        waveformDisplay->loadAudioFile(sampleFile);
+    }
+}
+
+juce::Rectangle<int> Row3Component::getWaveformArea() const {
+    auto bounds = getLocalBounds();
+    
+    // Position waveform in right 40% of Row 3, using INI-driven calculations
+    int waveformX = static_cast<int>(bounds.getWidth() * 0.6f);
+    int waveformY = static_cast<int>(bounds.getHeight() * 0.1f);  // 10% margin from top
+    int waveformWidth = static_cast<int>(bounds.getWidth() * 0.4f);
+    int waveformHeight = static_cast<int>(bounds.getHeight() * 0.8f);  // 80% of row height
+    
+    return juce::Rectangle<int>(waveformX, waveformY, waveformWidth, waveformHeight);
+}
+
+juce::String Row3Component::getCurrentDrumKitSamplePath() const {
+    // This would typically interface with the drum kit manager to get the current sample path
+    // For now, return a placeholder path based on current drum kit name
+    juce::String basePath = "/drumkits/" + currentDrumKitName.toLowerCase().replaceCharacter(' ', '_');
+    return basePath + "/kick.wav";  // Default to kick sample
 }

@@ -1348,6 +1348,18 @@ namespace LayoutConstants {
    static_assert(ROW_5_HEIGHT >= MIN_PATTERN_MATRIX_HEIGHT,
                  "Row 5 height insufficient for pattern matrix main content");
 
+   // PHASE 9D: Spectrum analyzer positioning constants (percentage-based)
+   constexpr float ROW_5_SPECTRUM_X_PERCENT = 70.0f;        // Start at 70% from left
+   constexpr float ROW_5_SPECTRUM_Y_PERCENT = 5.0f;         // 5% margin from top
+   constexpr float ROW_5_SPECTRUM_WIDTH_PERCENT = 30.0f;    // 30% of row width
+   constexpr float ROW_5_SPECTRUM_HEIGHT_PERCENT = 90.0f;   // 90% of row height (10% margins)
+   
+   // Validate spectrum analyzer positioning
+   static_assert(ROW_5_SPECTRUM_X_PERCENT + ROW_5_SPECTRUM_WIDTH_PERCENT <= 100.0f,
+                 "Row 5 spectrum analyzer exceeds row width");
+   static_assert(ROW_5_SPECTRUM_Y_PERCENT + ROW_5_SPECTRUM_HEIGHT_PERCENT <= 100.0f,
+                 "Row 5 spectrum analyzer exceeds row height");
+
    // Row-specific namespaces for component positioning
    namespace Row1 {
        // Row 1: TopBar Component (Transport, Tempo, Gear) - 10%

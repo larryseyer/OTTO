@@ -9,6 +9,7 @@
 class MidiEngine;
 class Mixer;
 class MidiFileManager;
+class SpectrumAnalyzer;
 
 class Row5Component : public RowComponentBase {
 public:
@@ -62,6 +63,19 @@ public:
     void setCurrentPlayerIndex(int index) { currentPlayerIndex = index; }
     void loadPlayerSpecificState(int playerIndex, const ComponentState& state);
     void saveCurrentPlayerToState(ComponentState& state);
+    
+    // PHASE 9D: SpectrumAnalyzer integration
+    void setSpectrumAnalyzer(SpectrumAnalyzer* spectrumAnalyzer);
+    void updateSpectrumAnalyzer(const juce::AudioBuffer<float>& buffer);
+    void showSpectrumVisualization(bool show);
+    bool isSpectrumVisible() const;
+    
+    // PHASE 9D: Touch optimization
+    void optimizeForTouch();
+    
+    // PHASE 9D: Gesture recognition integration
+    void setGestureRecognizer(class GestureRecognizer* gestureRecognizer);
+    void handleGestureInput(int gestureType, const juce::Point<float>& position, float velocity);
     
     // Callbacks for parent component integration
     std::function<void(const juce::String&, float)> onSliderValueChanged;
@@ -158,6 +172,13 @@ private:
     class BeatVisualizationTimer;
     std::unique_ptr<juce::Timer> beatVisualizationTimer;
     
+    // PHASE 9D: Visualization integration
+    SpectrumAnalyzer* spectrumAnalyzer = nullptr;  // Non-owning pointer to visualization
+    bool spectrumVisible = false;
+    
+    // PHASE 9D: Gesture recognition integration
+    class GestureRecognizer* gestureRecognizer = nullptr;  // Non-owning pointer
+    
     void setupInteractiveComponents();
     void updateInteractiveLayout();
     void setupDrumGrid();
@@ -173,6 +194,11 @@ private:
     void onDrumButtonPressed(int buttonIndex);
     void onDrumButtonRightClicked(int buttonIndex);
     void mouseDown(const juce::MouseEvent& event) override;
+    
+    // PHASE 9D: Spectrum analyzer helper methods
+    void setupSpectrumIntegration();
+    void updateSpectrumBounds();
+    juce::Rectangle<int> getSpectrumArea() const;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Row5Component)
 };

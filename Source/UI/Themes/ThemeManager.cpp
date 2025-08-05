@@ -1,6 +1,6 @@
 #include "ThemeManager.h"
 #include "JUCE8_CODING_STANDARDS.h"
-#include "INIDataManager.h"
+#include <algorithm>
 #include <cmath>
 
 //==============================================================================
@@ -8,105 +8,115 @@
 //==============================================================================
 
 void ThemeManager::ThemeColors::setDefaults() {
-    // Base colors - Professional dark theme defaults
-    primary = juce::Colour(0xFF2196F3);      // Material Blue
-    secondary = juce::Colour(0xFF424242);    // Dark Grey
-    accent = juce::Colour(0xFFFF5722);       // Deep Orange
-    background = juce::Colour(0xFF121212);   // Dark Background
-    surface = juce::Colour(0xFF1E1E1E);      // Surface Dark
-    error = juce::Colour(0xFFF44336);        // Material Red
-    warning = juce::Colour(0xFFFF9800);      // Material Orange
-    success = juce::Colour(0xFF4CAF50);      // Material Green
+    // Default dark theme colors
+    primary = juce::Colour(0xff2196f3);
+    secondary = juce::Colour(0xff03dac6);
+    accent = juce::Colour(0xffff5722);
+    background = juce::Colour(0xff121212);
+    surface = juce::Colour(0xff1e1e1e);
+    error = juce::Colour(0xffcf6679);
+    warning = juce::Colour(0xffffc107);
+    success = juce::Colour(0xff4caf50);
     
-    // Text colors
     onPrimary = juce::Colours::white;
-    onSecondary = juce::Colours::white;
-    onBackground = juce::Colour(0xFFE0E0E0);
-    onSurface = juce::Colour(0xFFE0E0E0);
-    onError = juce::Colours::white;
+    onSecondary = juce::Colours::black;
+    onBackground = juce::Colours::white;
+    onSurface = juce::Colours::white;
+    onError = juce::Colours::black;
     
-    // State colors
-    hover = primary.withAlpha(0.1f);
-    pressed = primary.withAlpha(0.2f);
-    disabled = juce::Colour(0xFF616161);
-    selected = primary.withAlpha(0.3f);
+    hover = primary.brighter(0.2f);
+    pressed = primary.darker(0.2f);
+    disabled = juce::Colour(0xff666666);
+    selected = accent.withAlpha(0.3f);
     
     // Audio-specific colors
-    meterLow = juce::Colour(0xFF4CAF50);     // Green
-    meterMid = juce::Colour(0xFFFF9800);     // Orange
-    meterHigh = juce::Colour(0xFFF44336);    // Red
-    meterPeak = juce::Colour(0xFFFFFFFF);    // White
-    waveform = juce::Colour(0xFF03DAC6);     // Teal
-    spectrum = juce::Colour(0xFF6200EA);     // Purple
+    meterLow = juce::Colour(0xff4caf50);
+    meterMid = juce::Colour(0xffffc107);
+    meterHigh = juce::Colour(0xffff5722);
+    meterPeak = juce::Colour(0xfff44336);
+    waveform = accent;
+    spectrum = primary;
     
-    // Gradient defaults
-    backgroundGradient = juce::ColourGradient(
-        background, 0.0f, 0.0f,
-        background.brighter(0.1f), 0.0f, 1.0f,
-        false
-    );
-    accentGradient = juce::ColourGradient(
-        accent, 0.0f, 0.0f,
-        accent.brighter(0.2f), 1.0f, 0.0f,
-        false
-    );
+    // Gradients
+    backgroundGradient = juce::ColourGradient(background.darker(0.1f), 0, 0,
+                                             background.brighter(0.1f), 0, 100, false);
+    accentGradient = juce::ColourGradient(accent.darker(0.2f), 0, 0,
+                                         accent.brighter(0.2f), 0, 100, false);
     useGradients = false;
 }
 
 void ThemeManager::ThemeColors::applyAccessibilityMode(AccessibilityMode mode) {
     switch (mode) {
         case AccessibilityMode::HighContrast:
-            // Increase contrast ratios
+            // Increase contrast for all colors
             background = juce::Colours::black;
+            surface = juce::Colour(0xff000000);
             onBackground = juce::Colours::white;
-            surface = juce::Colour(0xFF000000);
             onSurface = juce::Colours::white;
             primary = juce::Colours::white;
-            onPrimary = juce::Colours::black;
+            secondary = juce::Colour(0xffffff00); // Yellow
+            accent = juce::Colour(0xff00ffff); // Cyan
             break;
             
         case AccessibilityMode::Protanopia:
-            // Red-blind friendly colors
-            error = juce::Colour(0xFF795548);    // Brown instead of red
-            meterHigh = juce::Colour(0xFF795548);
-            accent = juce::Colour(0xFF2196F3);   // Blue accent
+            // Adjust for red-blindness
+            primary = juce::Colour(0xff0066cc); // Blue
+            accent = juce::Colour(0xffffaa00); // Orange/Yellow
+            error = juce::Colour(0xff666666); // Gray instead of red
+            meterHigh = juce::Colour(0xffffaa00);
+            meterPeak = juce::Colour(0xff666666);
             break;
             
         case AccessibilityMode::Deuteranopia:
-            // Green-blind friendly colors
-            success = juce::Colour(0xFF2196F3);  // Blue instead of green
-            meterLow = juce::Colour(0xFF2196F3);
-            accent = juce::Colour(0xFFFF5722);   // Orange accent
+            // Adjust for green-blindness
+            success = juce::Colour(0xff0066cc); // Blue instead of green
+            meterLow = juce::Colour(0xff0066cc);
+            primary = juce::Colour(0xff6600cc); // Purple
             break;
             
         case AccessibilityMode::Tritanopia:
-            // Blue-blind friendly colors
-            primary = juce::Colour(0xFF4CAF50);  // Green instead of blue
-            accent = juce::Colour(0xFFFF5722);   // Orange accent
-            spectrum = juce::Colour(0xFF4CAF50); // Green spectrum
+            // Adjust for blue-blindness
+            primary = juce::Colour(0xffcc0066); // Magenta
+            secondary = juce::Colour(0xff00cc66); // Green
+            spectrum = juce::Colour(0xffcc0066);
             break;
             
         case AccessibilityMode::Monochrome:
-            // Complete grayscale
-            primary = juce::Colours::white;
-            secondary = juce::Colour(0xFF808080);
-            accent = juce::Colours::white;
-            error = juce::Colour(0xFFB0B0B0);
-            warning = juce::Colour(0xFF909090);
-            success = juce::Colour(0xFFC0C0C0);
-            meterLow = juce::Colour(0xFF404040);
-            meterMid = juce::Colour(0xFF808080);
-            meterHigh = juce::Colour(0xFFC0C0C0);
-            waveform = juce::Colour(0xFF808080);
-            spectrum = juce::Colour(0xFF606060);
+            // Convert all colors to grayscale
+            primary = juce::Colour(0xffcccccc);
+            secondary = juce::Colour(0xff999999);
+            accent = juce::Colour(0xffffffff);
+            error = juce::Colour(0xff666666);
+            warning = juce::Colour(0xffaaaaaa);
+            success = juce::Colour(0xff888888);
+            meterLow = juce::Colour(0xff888888);
+            meterMid = juce::Colour(0xffaaaaaa);
+            meterHigh = juce::Colour(0xffcccccc);
+            meterPeak = juce::Colour(0xffffffff);
+            waveform = juce::Colour(0xffcccccc);
+            spectrum = juce::Colour(0xff999999);
             break;
             
-        case AccessibilityMode::None:
         default:
-            // No changes needed
             break;
     }
 }
+
+//==============================================================================
+// Seasonal Timer Class
+//==============================================================================
+
+class SeasonalUpdateTimer : public juce::Timer {
+public:
+    SeasonalUpdateTimer(ThemeManager& manager) : themeManager(manager) {}
+    
+    void timerCallback() override {
+        themeManager.updateSeasonalTheme();
+    }
+    
+private:
+    ThemeManager& themeManager;
+};
 
 //==============================================================================
 // ThemeManager Implementation
@@ -114,20 +124,30 @@ void ThemeManager::ThemeColors::applyAccessibilityMode(AccessibilityMode mode) {
 
 ThemeManager::ThemeManager(ColorScheme& colorScheme)
     : colorScheme(colorScheme)
-    , currentThemeName("Dark")
-    , seasonalTimer(std::make_unique<juce::Timer>())
 {
     // Initialize built-in themes
     initializeBuiltInThemes();
     
-    // Load saved state
+    // Load state from INI
     ComponentState state;
     if (INIDataManager::loadComponentState("ThemeManager", state)) {
         loadState(state);
+    } else {
+        // Set default theme
+        setCurrentTheme("Dark");
     }
     
-    // Setup seasonal timer (check every hour)
-    seasonalTimer->startTimer(3600000); // 1 hour in milliseconds
+    // Initialize seasonal timer
+    seasonalTimer = std::make_unique<SeasonalUpdateTimer>(*this);
+    
+    // Start seasonal updates if enabled
+    if (seasonalSettings.enabled) {
+        seasonalTimer->startTimer(3600000); // Check every hour
+        updateSeasonalTheme();
+    }
+    
+    // Sync with existing color scheme
+    syncWithColorScheme();
 }
 
 ThemeManager::~ThemeManager() {
@@ -136,7 +156,10 @@ ThemeManager::~ThemeManager() {
     saveState(state);
     INIDataManager::saveComponentState("ThemeManager", state);
     
-    seasonalTimer->stopTimer();
+    // Stop seasonal timer
+    if (seasonalTimer) {
+        seasonalTimer->stopTimer();
+    }
 }
 
 //==============================================================================
@@ -144,14 +167,7 @@ ThemeManager::~ThemeManager() {
 //==============================================================================
 
 bool ThemeManager::createTheme(const juce::String& name, const ThemeColors& colors, const ThemeMetadata& metadata) {
-    if (!isValidThemeName(name) || themeColors.find(name) != themeColors.end()) {
-        return false;
-    }
-    
-    // Validate theme colors
-    if (!validateThemeColors(colors)) {
-        auto errors = validateThemeColorsInternal(colors);
-        notifyValidationFailed(name, errors);
+    if (!isValidThemeName(name) || !validateThemeColors(colors)) {
         return false;
     }
     
@@ -162,11 +178,18 @@ bool ThemeManager::createTheme(const juce::String& name, const ThemeColors& colo
     meta.modifiedDate = meta.createdDate;
     
     // Store theme
-    themeColors[name] = colors;
     themeMetadata[name] = meta;
+    themeColors[name] = colors;
     
     // Save to file
-    return saveThemeToFile(name, colors, meta);
+    if (!saveThemeToFile(name, colors, meta)) {
+        // Remove from memory if file save failed
+        themeMetadata.erase(name);
+        themeColors.erase(name);
+        return false;
+    }
+    
+    return true;
 }
 
 bool ThemeManager::deleteTheme(const juce::String& name) {
@@ -177,38 +200,54 @@ bool ThemeManager::deleteTheme(const juce::String& name) {
     }
     
     // Remove from memory
-    themeColors.erase(name);
     themeMetadata.erase(name);
+    themeColors.erase(name);
     themeLoadTimes.erase(name);
     
-    // Delete file
+    // Remove file
     auto themeFile = getThemeFile(name);
     if (themeFile.exists()) {
-        return themeFile.deleteFile();
+        themeFile.deleteFile();
+    }
+    
+    // Switch to default theme if current theme was deleted
+    if (currentThemeName == name) {
+        setCurrentTheme("Dark");
     }
     
     return true;
 }
 
 bool ThemeManager::duplicateTheme(const juce::String& sourceName, const juce::String& newName) {
-    auto sourceIt = themeColors.find(sourceName);
-    if (sourceIt == themeColors.end() || !isValidThemeName(newName)) {
+    if (!isValidThemeName(newName)) {
         return false;
     }
     
-    // Create new metadata
-    ThemeMetadata newMetadata = themeMetadata[sourceName];
+    // Check if source theme exists
+    auto sourceIt = themeColors.find(sourceName);
+    if (sourceIt == themeColors.end()) {
+        return false;
+    }
+    
+    // Get source metadata
+    auto metaIt = themeMetadata.find(sourceName);
+    ThemeMetadata newMetadata;
+    if (metaIt != themeMetadata.end()) {
+        newMetadata = metaIt->second;
+    }
+    
+    // Update metadata for new theme
     newMetadata.name = newName;
     newMetadata.type = ThemeType::User;
+    newMetadata.author = "User";
     newMetadata.createdDate = juce::Time::getCurrentTime();
     newMetadata.modifiedDate = newMetadata.createdDate;
-    newMetadata.author = "User";
     
     return createTheme(newName, sourceIt->second, newMetadata);
 }
 
 bool ThemeManager::renameTheme(const juce::String& oldName, const juce::String& newName) {
-    if (!isValidThemeName(newName) || themeColors.find(oldName) == themeColors.end()) {
+    if (!isValidThemeName(newName) || oldName == newName) {
         return false;
     }
     
@@ -218,12 +257,24 @@ bool ThemeManager::renameTheme(const juce::String& oldName, const juce::String& 
         return false;
     }
     
-    // Duplicate and delete old
-    if (duplicateTheme(oldName, newName)) {
-        return deleteTheme(oldName);
+    // Check if old theme exists
+    auto colorsIt = themeColors.find(oldName);
+    if (colorsIt == themeColors.end()) {
+        return false;
     }
     
-    return false;
+    // Duplicate theme with new name
+    if (!duplicateTheme(oldName, newName)) {
+        return false;
+    }
+    
+    // Update current theme name if necessary
+    if (currentThemeName == oldName) {
+        currentThemeName = newName;
+    }
+    
+    // Delete old theme
+    return deleteTheme(oldName);
 }
 
 //==============================================================================
@@ -231,18 +282,24 @@ bool ThemeManager::renameTheme(const juce::String& oldName, const juce::String& 
 //==============================================================================
 
 void ThemeManager::setCurrentTheme(const juce::String& name) {
-    auto it = themeColors.find(name);
-    if (it == themeColors.end()) {
-        // Try to load from file
+    // Load theme if not in memory
+    if (themeColors.find(name) == themeColors.end()) {
         if (!loadThemeFromFile(name)) {
-            return;
-        }
-        it = themeColors.find(name);
-        if (it == themeColors.end()) {
             return;
         }
     }
     
+    auto it = themeColors.find(name);
+    if (it == themeColors.end()) {
+        return;
+    }
+    
+    // Stop any active preview
+    if (previewActive) {
+        stopPreview();
+    }
+    
+    // Apply theme
     currentThemeName = name;
     currentThemeColors = it->second;
     
@@ -251,18 +308,23 @@ void ThemeManager::setCurrentTheme(const juce::String& name) {
         currentThemeColors.applyAccessibilityMode(currentAccessibilityMode);
     }
     
-    // Update ColorScheme integration
+    // Update color scheme
     updateColorScheme(currentThemeColors);
     
-    // Update load time
-    themeLoadTimes[name] = juce::Time::getCurrentTime();
-    
+    // Notify listeners
     notifyThemeChanged();
+    
+    // Broadcast change to all components
+    sendChangeMessage();
 }
 
 ThemeManager::ThemeMetadata ThemeManager::getCurrentThemeMetadata() const {
     auto it = themeMetadata.find(currentThemeName);
-    return it != themeMetadata.end() ? it->second : ThemeMetadata();
+    if (it != themeMetadata.end()) {
+        return it->second;
+    }
+    
+    return ThemeMetadata();
 }
 
 ThemeManager::ThemeColors ThemeManager::getCurrentThemeColors() const {
@@ -275,35 +337,45 @@ ThemeManager::ThemeColors ThemeManager::getCurrentThemeColors() const {
 
 juce::StringArray ThemeManager::getAvailableThemes() const {
     juce::StringArray themes;
+    
     for (const auto& pair : themeMetadata) {
         themes.add(pair.first);
     }
+    
     themes.sort(false);
     return themes;
 }
 
 juce::StringArray ThemeManager::getThemesByType(ThemeType type) const {
     juce::StringArray themes;
+    
     for (const auto& pair : themeMetadata) {
         if (pair.second.type == type) {
             themes.add(pair.first);
         }
     }
+    
     themes.sort(false);
     return themes;
 }
 
 juce::Array<ThemeManager::ThemeMetadata> ThemeManager::getAllThemeMetadata() const {
     juce::Array<ThemeMetadata> metadata;
+    
     for (const auto& pair : themeMetadata) {
         metadata.add(pair.second);
     }
+    
     return metadata;
 }
 
 ThemeManager::ThemeMetadata ThemeManager::getThemeMetadata(const juce::String& name) const {
     auto it = themeMetadata.find(name);
-    return it != themeMetadata.end() ? it->second : ThemeMetadata();
+    if (it != themeMetadata.end()) {
+        return it->second;
+    }
+    
+    return ThemeMetadata();
 }
 
 //==============================================================================
@@ -311,12 +383,61 @@ ThemeManager::ThemeMetadata ThemeManager::getThemeMetadata(const juce::String& n
 //==============================================================================
 
 bool ThemeManager::exportTheme(const juce::String& name, const juce::File& destination) {
-    auto themeData = exportThemeToString(name);
-    if (themeData.isEmpty()) {
+    auto colorsIt = themeColors.find(name);
+    auto metaIt = themeMetadata.find(name);
+    
+    if (colorsIt == themeColors.end() || metaIt == themeMetadata.end()) {
         return false;
     }
     
-    return destination.replaceWithText(themeData);
+    // Create JSON representation
+    juce::DynamicObject::Ptr themeObject = new juce::DynamicObject();
+    
+    // Add metadata
+    themeObject->setProperty("name", name);
+    themeObject->setProperty("author", metaIt->second.author);
+    themeObject->setProperty("description", metaIt->second.description);
+    themeObject->setProperty("version", metaIt->second.version);
+    themeObject->setProperty("type", static_cast<int>(metaIt->second.type));
+    themeObject->setProperty("accessibilityMode", static_cast<int>(metaIt->second.accessibilityMode));
+    
+    // Add colors
+    juce::DynamicObject::Ptr colorsObject = new juce::DynamicObject();
+    const auto& colors = colorsIt->second;
+    
+    colorsObject->setProperty("primary", colors.primary.toString());
+    colorsObject->setProperty("secondary", colors.secondary.toString());
+    colorsObject->setProperty("accent", colors.accent.toString());
+    colorsObject->setProperty("background", colors.background.toString());
+    colorsObject->setProperty("surface", colors.surface.toString());
+    colorsObject->setProperty("error", colors.error.toString());
+    colorsObject->setProperty("warning", colors.warning.toString());
+    colorsObject->setProperty("success", colors.success.toString());
+    colorsObject->setProperty("onPrimary", colors.onPrimary.toString());
+    colorsObject->setProperty("onSecondary", colors.onSecondary.toString());
+    colorsObject->setProperty("onBackground", colors.onBackground.toString());
+    colorsObject->setProperty("onSurface", colors.onSurface.toString());
+    colorsObject->setProperty("onError", colors.onError.toString());
+    colorsObject->setProperty("hover", colors.hover.toString());
+    colorsObject->setProperty("pressed", colors.pressed.toString());
+    colorsObject->setProperty("disabled", colors.disabled.toString());
+    colorsObject->setProperty("selected", colors.selected.toString());
+    colorsObject->setProperty("meterLow", colors.meterLow.toString());
+    colorsObject->setProperty("meterMid", colors.meterMid.toString());
+    colorsObject->setProperty("meterHigh", colors.meterHigh.toString());
+    colorsObject->setProperty("meterPeak", colors.meterPeak.toString());
+    colorsObject->setProperty("waveform", colors.waveform.toString());
+    colorsObject->setProperty("spectrum", colors.spectrum.toString());
+    colorsObject->setProperty("useGradients", colors.useGradients);
+    
+    themeObject->setProperty("colors", colorsObject.get());
+    
+    // Convert to JSON string
+    juce::var themeVar(themeObject.get());
+    juce::String jsonString = juce::JSON::toString(themeVar);
+    
+    // Write to file
+    return destination.replaceWithText(jsonString);
 }
 
 bool ThemeManager::importTheme(const juce::File& themeFile) {
@@ -324,99 +445,84 @@ bool ThemeManager::importTheme(const juce::File& themeFile) {
         return false;
     }
     
-    auto themeData = themeFile.loadFileAsString();
-    auto fileName = themeFile.getFileNameWithoutExtension();
+    juce::String themeData = themeFile.loadFileAsString();
+    juce::String themeName = themeFile.getFileNameWithoutExtension();
     
-    return importThemeFromString(themeData, fileName);
+    return importThemeFromString(themeData, themeName);
 }
 
 bool ThemeManager::importThemeFromString(const juce::String& themeData, const juce::String& name) {
-    try {
-        auto json = juce::JSON::parse(themeData);
-        if (!json.isObject()) {
-            return false;
-        }
-        
-        auto jsonObj = json.getDynamicObject();
-        if (!jsonObj) {
-            return false;
-        }
-        
-        // Parse metadata
-        ThemeMetadata metadata;
-        metadata.name = name;
-        metadata.type = ThemeType::Community;
-        metadata.author = jsonObj->getProperty("author", "Unknown").toString();
-        metadata.description = jsonObj->getProperty("description", "").toString();
-        metadata.version = jsonObj->getProperty("version", "1.0").toString();
-        
-        // Parse colors
-        ThemeColors colors;
-        auto colorsObj = jsonObj->getProperty("colors").getDynamicObject();
-        if (colorsObj) {
-            colors.primary = juce::Colour::fromString(colorsObj->getProperty("primary", "0xFF2196F3").toString());
-            colors.secondary = juce::Colour::fromString(colorsObj->getProperty("secondary", "0xFF424242").toString());
-            colors.accent = juce::Colour::fromString(colorsObj->getProperty("accent", "0xFFFF5722").toString());
-            colors.background = juce::Colour::fromString(colorsObj->getProperty("background", "0xFF121212").toString());
-            colors.surface = juce::Colour::fromString(colorsObj->getProperty("surface", "0xFF1E1E1E").toString());
-            // ... parse other colors
-        }
-        
-        return createTheme(name, colors, metadata);
-    }
-    catch (...) {
+    // Parse JSON
+    juce::var parsedJson = juce::JSON::parse(themeData);
+    if (!parsedJson.isObject()) {
         return false;
     }
+    
+    juce::DynamicObject* themeObject = parsedJson.getDynamicObject();
+    if (!themeObject) {
+        return false;
+    }
+    
+    // Extract metadata
+    ThemeMetadata metadata;
+    metadata.name = name;
+    metadata.author = themeObject->getProperty("author").toString();
+    metadata.description = themeObject->getProperty("description").toString();
+    metadata.version = themeObject->getProperty("version").toString();
+    metadata.type = static_cast<ThemeType>(static_cast<int>(themeObject->getProperty("type")));
+    metadata.accessibilityMode = static_cast<AccessibilityMode>(static_cast<int>(themeObject->getProperty("accessibilityMode")));
+    metadata.createdDate = juce::Time::getCurrentTime();
+    metadata.modifiedDate = metadata.createdDate;
+    
+    // Extract colors
+    juce::var colorsVar = themeObject->getProperty("colors");
+    if (!colorsVar.isObject()) {
+        return false;
+    }
+    
+    juce::DynamicObject* colorsObject = colorsVar.getDynamicObject();
+    if (!colorsObject) {
+        return false;
+    }
+    
+    ThemeColors colors;
+    colors.primary = juce::Colour::fromString(colorsObject->getProperty("primary").toString());
+    colors.secondary = juce::Colour::fromString(colorsObject->getProperty("secondary").toString());
+    colors.accent = juce::Colour::fromString(colorsObject->getProperty("accent").toString());
+    colors.background = juce::Colour::fromString(colorsObject->getProperty("background").toString());
+    colors.surface = juce::Colour::fromString(colorsObject->getProperty("surface").toString());
+    colors.error = juce::Colour::fromString(colorsObject->getProperty("error").toString());
+    colors.warning = juce::Colour::fromString(colorsObject->getProperty("warning").toString());
+    colors.success = juce::Colour::fromString(colorsObject->getProperty("success").toString());
+    colors.onPrimary = juce::Colour::fromString(colorsObject->getProperty("onPrimary").toString());
+    colors.onSecondary = juce::Colour::fromString(colorsObject->getProperty("onSecondary").toString());
+    colors.onBackground = juce::Colour::fromString(colorsObject->getProperty("onBackground").toString());
+    colors.onSurface = juce::Colour::fromString(colorsObject->getProperty("onSurface").toString());
+    colors.onError = juce::Colour::fromString(colorsObject->getProperty("onError").toString());
+    colors.hover = juce::Colour::fromString(colorsObject->getProperty("hover").toString());
+    colors.pressed = juce::Colour::fromString(colorsObject->getProperty("pressed").toString());
+    colors.disabled = juce::Colour::fromString(colorsObject->getProperty("disabled").toString());
+    colors.selected = juce::Colour::fromString(colorsObject->getProperty("selected").toString());
+    colors.meterLow = juce::Colour::fromString(colorsObject->getProperty("meterLow").toString());
+    colors.meterMid = juce::Colour::fromString(colorsObject->getProperty("meterMid").toString());
+    colors.meterHigh = juce::Colour::fromString(colorsObject->getProperty("meterHigh").toString());
+    colors.meterPeak = juce::Colour::fromString(colorsObject->getProperty("meterPeak").toString());
+    colors.waveform = juce::Colour::fromString(colorsObject->getProperty("waveform").toString());
+    colors.spectrum = juce::Colour::fromString(colorsObject->getProperty("spectrum").toString());
+    colors.useGradients = colorsObject->getProperty("useGradients");
+    
+    return createTheme(name, colors, metadata);
 }
 
 juce::String ThemeManager::exportThemeToString(const juce::String& name) {
-    auto colorsIt = themeColors.find(name);
-    auto metadataIt = themeMetadata.find(name);
+    // Create temporary file for export
+    juce::TemporaryFile tempFile;
     
-    if (colorsIt == themeColors.end() || metadataIt == themeMetadata.end()) {
-        return {};
+    if (exportTheme(name, tempFile.getFile())) {
+        return tempFile.getFile().loadFileAsString();
     }
     
-    auto json = std::make_unique<juce::DynamicObject>();
-    const auto& colors = colorsIt->second;
-    const auto& metadata = metadataIt->second;
-    
-    // Export metadata
-    json->setProperty("name", metadata.name);
-    json->setProperty("author", metadata.author);
-    json->setProperty("description", metadata.description);
-    json->setProperty("version", metadata.version);
-    json->setProperty("created", metadata.createdDate.toISO8601(true));
-    
-    // Export colors
-    auto colorsObj = std::make_unique<juce::DynamicObject>();
-    colorsObj->setProperty("primary", colors.primary.toString());
-    colorsObj->setProperty("secondary", colors.secondary.toString());
-    colorsObj->setProperty("accent", colors.accent.toString());
-    colorsObj->setProperty("background", colors.background.toString());
-    colorsObj->setProperty("surface", colors.surface.toString());
-    colorsObj->setProperty("error", colors.error.toString());
-    colorsObj->setProperty("warning", colors.warning.toString());
-    colorsObj->setProperty("success", colors.success.toString());
-    colorsObj->setProperty("onPrimary", colors.onPrimary.toString());
-    colorsObj->setProperty("onSecondary", colors.onSecondary.toString());
-    colorsObj->setProperty("onBackground", colors.onBackground.toString());
-    colorsObj->setProperty("onSurface", colors.onSurface.toString());
-    colorsObj->setProperty("onError", colors.onError.toString());
-    colorsObj->setProperty("hover", colors.hover.toString());
-    colorsObj->setProperty("pressed", colors.pressed.toString());
-    colorsObj->setProperty("disabled", colors.disabled.toString());
-    colorsObj->setProperty("selected", colors.selected.toString());
-    colorsObj->setProperty("meterLow", colors.meterLow.toString());
-    colorsObj->setProperty("meterMid", colors.meterMid.toString());
-    colorsObj->setProperty("meterHigh", colors.meterHigh.toString());
-    colorsObj->setProperty("meterPeak", colors.meterPeak.toString());
-    colorsObj->setProperty("waveform", colors.waveform.toString());
-    colorsObj->setProperty("spectrum", colors.spectrum.toString());
-    
-    json->setProperty("colors", juce::var(colorsObj.release()));
-    
-    return juce::JSON::toString(juce::var(json.release()), true);
+    return juce::String();
 }
 
 //==============================================================================
@@ -424,15 +530,24 @@ juce::String ThemeManager::exportThemeToString(const juce::String& name) {
 //==============================================================================
 
 void ThemeManager::startPreview(const juce::String& themeName) {
+    // Load theme if not in memory
+    if (themeColors.find(themeName) == themeColors.end()) {
+        if (!loadThemeFromFile(themeName)) {
+            return;
+        }
+    }
+    
     auto it = themeColors.find(themeName);
     if (it == themeColors.end()) {
         return;
     }
     
+    // Store original colors if not already previewing
     if (!previewActive) {
         originalThemeColors = currentThemeColors;
     }
     
+    // Apply preview theme
     previewActive = true;
     previewThemeName = themeName;
     currentThemeColors = it->second;
@@ -442,8 +557,14 @@ void ThemeManager::startPreview(const juce::String& themeName) {
         currentThemeColors.applyAccessibilityMode(currentAccessibilityMode);
     }
     
+    // Update color scheme
     updateColorScheme(currentThemeColors);
+    
+    // Notify listeners
     notifyPreviewStarted();
+    
+    // Broadcast change
+    sendChangeMessage();
 }
 
 void ThemeManager::stopPreview() {
@@ -451,12 +572,19 @@ void ThemeManager::stopPreview() {
         return;
     }
     
+    // Restore original colors
     previewActive = false;
-    previewThemeName.clear();
+    previewThemeName = juce::String();
     currentThemeColors = originalThemeColors;
     
+    // Update color scheme
     updateColorScheme(currentThemeColors);
+    
+    // Notify listeners
     notifyPreviewStopped();
+    
+    // Broadcast change
+    sendChangeMessage();
 }
 
 //==============================================================================
@@ -464,22 +592,30 @@ void ThemeManager::stopPreview() {
 //==============================================================================
 
 void ThemeManager::setAccessibilityMode(AccessibilityMode mode) {
-    if (currentAccessibilityMode == mode) {
-        return;
+    if (mode != currentAccessibilityMode) {
+        currentAccessibilityMode = mode;
+        
+        // Reapply current theme with accessibility adjustments
+        auto originalColors = currentThemeColors;
+        if (mode != AccessibilityMode::None) {
+            currentThemeColors.applyAccessibilityMode(mode);
+        } else {
+            // Restore original colors
+            auto it = themeColors.find(currentThemeName);
+            if (it != themeColors.end()) {
+                currentThemeColors = it->second;
+            }
+        }
+        
+        // Update color scheme
+        updateColorScheme(currentThemeColors);
+        
+        // Notify listeners
+        notifyAccessibilityModeChanged();
+        
+        // Broadcast change
+        sendChangeMessage();
     }
-    
-    currentAccessibilityMode = mode;
-    
-    // Reapply current theme with new accessibility mode
-    auto tempColors = themeColors[currentThemeName];
-    if (mode != AccessibilityMode::None) {
-        tempColors.applyAccessibilityMode(mode);
-    }
-    
-    currentThemeColors = tempColors;
-    updateColorScheme(currentThemeColors);
-    
-    notifyAccessibilityModeChanged();
 }
 
 juce::StringArray ThemeManager::getAccessibilityModeNames() const {
@@ -501,7 +637,12 @@ void ThemeManager::setSeasonalSettings(const SeasonalSettings& settings) {
     seasonalSettings = settings;
     
     if (settings.enabled) {
+        if (!seasonalTimer->isTimerRunning()) {
+            seasonalTimer->startTimer(3600000); // Check every hour
+        }
         updateSeasonalTheme();
+    } else {
+        seasonalTimer->stopTimer();
     }
 }
 
@@ -510,35 +651,27 @@ void ThemeManager::updateSeasonalTheme() {
         return;
     }
     
-    auto currentSeason = getCurrentSeason();
-    juce::String seasonalTheme;
-    
-    switch (currentSeason) {
-        case 0: seasonalTheme = seasonalSettings.springTheme; break;
-        case 1: seasonalTheme = seasonalSettings.summerTheme; break;
-        case 2: seasonalTheme = seasonalSettings.autumnTheme; break;
-        case 3: seasonalTheme = seasonalSettings.winterTheme; break;
-        default: return;
+    if (!shouldUpdateSeasonalTheme()) {
+        return;
     }
     
-    if (seasonalTheme != currentThemeName && themeColors.find(seasonalTheme) != themeColors.end()) {
+    juce::String seasonalTheme = getCurrentSeasonalTheme();
+    
+    if (!seasonalTheme.isEmpty() && seasonalTheme != currentThemeName) {
         setCurrentTheme(seasonalTheme);
         notifySeasonalThemeUpdated();
     }
 }
 
 juce::String ThemeManager::getCurrentSeasonalTheme() const {
-    if (!seasonalSettings.enabled) {
-        return {};
-    }
+    int season = getCurrentSeason();
     
-    auto currentSeason = getCurrentSeason();
-    switch (currentSeason) {
-        case 0: return seasonalSettings.springTheme;
-        case 1: return seasonalSettings.summerTheme;
-        case 2: return seasonalSettings.autumnTheme;
-        case 3: return seasonalSettings.winterTheme;
-        default: return {};
+    switch (season) {
+        case 0: return seasonalSettings.springTheme;  // Spring (Mar-May)
+        case 1: return seasonalSettings.summerTheme;  // Summer (Jun-Aug)
+        case 2: return seasonalSettings.autumnTheme;  // Autumn (Sep-Nov)
+        case 3: return seasonalSettings.winterTheme;  // Winter (Dec-Feb)
+        default: return seasonalSettings.springTheme;
     }
 }
 
@@ -547,12 +680,8 @@ juce::String ThemeManager::getCurrentSeasonalTheme() const {
 //==============================================================================
 
 bool ThemeManager::validateTheme(const juce::String& name) const {
-    auto it = themeColors.find(name);
-    if (it == themeColors.end()) {
-        return false;
-    }
-    
-    return validateThemeColors(it->second);
+    auto errors = getThemeValidationErrors(name);
+    return errors.isEmpty();
 }
 
 bool ThemeManager::validateThemeColors(const ThemeColors& colors) const {
@@ -561,12 +690,22 @@ bool ThemeManager::validateThemeColors(const ThemeColors& colors) const {
 }
 
 juce::StringArray ThemeManager::getThemeValidationErrors(const juce::String& name) const {
-    auto it = themeColors.find(name);
-    if (it == themeColors.end()) {
-        return {"Theme not found"};
+    juce::StringArray errors;
+    
+    if (!isValidThemeName(name)) {
+        errors.add("Invalid theme name");
     }
     
-    return validateThemeColorsInternal(it->second);
+    auto it = themeColors.find(name);
+    if (it == themeColors.end()) {
+        errors.add("Theme not found");
+        return errors;
+    }
+    
+    auto colorErrors = validateThemeColorsInternal(it->second);
+    errors.addArray(colorErrors);
+    
+    return errors;
 }
 
 //==============================================================================
@@ -576,44 +715,86 @@ juce::StringArray ThemeManager::getThemeValidationErrors(const juce::String& nam
 void ThemeManager::saveState(ComponentState& state) const {
     state.setValue("currentTheme", currentThemeName);
     state.setValue("accessibilityMode", static_cast<int>(currentAccessibilityMode));
+    
+    // Save seasonal settings
     state.setValue("seasonalEnabled", seasonalSettings.enabled);
     state.setValue("springTheme", seasonalSettings.springTheme);
     state.setValue("summerTheme", seasonalSettings.summerTheme);
     state.setValue("autumnTheme", seasonalSettings.autumnTheme);
     state.setValue("winterTheme", seasonalSettings.winterTheme);
+    state.setValue("useLocationBasedSeasons", seasonalSettings.useLocationBasedSeasons);
+    state.setValue("latitude", seasonalSettings.latitude);
+    state.setValue("longitude", seasonalSettings.longitude);
 }
 
 void ThemeManager::loadState(const ComponentState& state) {
-    currentThemeName = state.getValue("currentTheme", "Dark");
-    currentAccessibilityMode = static_cast<AccessibilityMode>(
-        state.getValue("accessibilityMode", static_cast<int>(AccessibilityMode::None))
-    );
+    // Load current theme
+    juce::String themeName = state.getValue("currentTheme", "Dark");
+    setCurrentTheme(themeName);
     
+    // Load accessibility mode
+    AccessibilityMode mode = static_cast<AccessibilityMode>(state.getValue("accessibilityMode", static_cast<int>(AccessibilityMode::None)));
+    setAccessibilityMode(mode);
+    
+    // Load seasonal settings
     seasonalSettings.enabled = state.getValue("seasonalEnabled", false);
     seasonalSettings.springTheme = state.getValue("springTheme", "Light");
     seasonalSettings.summerTheme = state.getValue("summerTheme", "Light");
     seasonalSettings.autumnTheme = state.getValue("autumnTheme", "Classic");
     seasonalSettings.winterTheme = state.getValue("winterTheme", "Dark");
+    seasonalSettings.useLocationBasedSeasons = state.getValue("useLocationBasedSeasons", false);
+    seasonalSettings.latitude = state.getValue("latitude", 0.0f);
+    seasonalSettings.longitude = state.getValue("longitude", 0.0f);
     
-    // Apply loaded theme
-    if (themeColors.find(currentThemeName) != themeColors.end()) {
-        setCurrentTheme(currentThemeName);
-    }
+    // Apply seasonal settings
+    setSeasonalSettings(seasonalSettings);
 }
 
 //==============================================================================
-// Integration with existing ColorScheme
+// Integration with ColorScheme
 //==============================================================================
 
 void ThemeManager::syncWithColorScheme() {
-    // This method would sync with the existing ColorScheme system
-    // Implementation depends on ColorScheme's API
+    // Get current colors from ColorScheme and create a theme
+    ThemeColors colors;
+    
+    // Map ColorScheme colors to ThemeColors
+    colors.primary = colorScheme.getColor(ColorScheme::ColorRole::Accent);
+    colors.background = colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground);
+    colors.surface = colorScheme.getColor(ColorScheme::ColorRole::WindowBackground);
+    colors.onBackground = colorScheme.getColor(ColorScheme::ColorRole::PrimaryText);
+    colors.onSurface = colorScheme.getColor(ColorScheme::ColorRole::SecondaryText);
+    
+    // Update current theme colors
+    currentThemeColors = colors;
 }
 
 void ThemeManager::updateColorScheme(const ThemeColors& colors) {
-    // Update the existing ColorScheme with new theme colors
-    // This would call appropriate ColorScheme methods to update colors
-    sendChangeMessage();
+    // Map ThemeColors to ColorScheme
+    colorScheme.setColor(ColorScheme::ColorRole::Accent, colors.accent);
+    colorScheme.setColor(ColorScheme::ColorRole::ComponentBackground, colors.background);
+    colorScheme.setColor(ColorScheme::ColorRole::WindowBackground, colors.surface);
+    colorScheme.setColor(ColorScheme::ColorRole::PrimaryText, colors.onBackground);
+    colorScheme.setColor(ColorScheme::ColorRole::SecondaryText, colors.onSurface);
+    colorScheme.setColor(ColorScheme::ColorRole::Error, colors.error);
+    colorScheme.setColor(ColorScheme::ColorRole::Success, colors.success);
+    colorScheme.setColor(ColorScheme::ColorRole::Warning, colors.warning);
+    
+    // Update button colors
+    colorScheme.setColor(ColorScheme::ColorRole::ButtonBackground, colors.primary);
+    colorScheme.setColor(ColorScheme::ColorRole::ButtonText, colors.onPrimary);
+    colorScheme.setColor(ColorScheme::ColorRole::ButtonHover, colors.hover);
+    colorScheme.setColor(ColorScheme::ColorRole::ButtonPressed, colors.pressed);
+    
+    // Update pattern colors
+    colorScheme.setColor(ColorScheme::ColorRole::PatternActive, colors.selected);
+    colorScheme.setColor(ColorScheme::ColorRole::PatternInactive, colors.disabled);
+    
+    // Update meter colors
+    colorScheme.setColor(ColorScheme::ColorRole::MeterLow, colors.meterLow);
+    colorScheme.setColor(ColorScheme::ColorRole::MeterMid, colors.meterMid);
+    colorScheme.setColor(ColorScheme::ColorRole::MeterHigh, colors.meterHigh);
+    colorScheme.setColor(ColorScheme::ColorRole::MeterPeak, colors.meterPeak);
 }
 
 //==============================================================================
@@ -621,6 +802,10 @@ void ThemeManager::updateColorScheme(const ThemeColors& colors) {
 //==============================================================================
 
 void ThemeManager::beginThemeEdit(const juce::String& name) {
+    if (editingTheme) {
+        endThemeEdit(false); // Cancel previous edit
+    }
+    
     auto it = themeColors.find(name);
     if (it == themeColors.end()) {
         return;
@@ -638,25 +823,31 @@ void ThemeManager::endThemeEdit(bool saveChanges) {
     }
     
     if (saveChanges) {
+        // Save changes
         themeColors[editingThemeName] = editingThemeColors;
         
         // Update metadata
-        auto& metadata = themeMetadata[editingThemeName];
-        metadata.modifiedDate = juce::Time::getCurrentTime();
+        auto metaIt = themeMetadata.find(editingThemeName);
+        if (metaIt != themeMetadata.end()) {
+            metaIt->second.modifiedDate = juce::Time::getCurrentTime();
+        }
         
         // Save to file
+        auto metadata = getThemeMetadata(editingThemeName);
         saveThemeToFile(editingThemeName, editingThemeColors, metadata);
         
         // Update current theme if it's the one being edited
-        if (editingThemeName == currentThemeName) {
-            setCurrentTheme(editingThemeName);
+        if (currentThemeName == editingThemeName) {
+            currentThemeColors = editingThemeColors;
+            updateColorScheme(currentThemeColors);
+            sendChangeMessage();
         }
-    } else {
-        editingThemeColors = originalEditingColors;
     }
     
     editingTheme = false;
-    editingThemeName.clear();
+    editingThemeName = juce::String();
+    editingThemeColors = ThemeColors();
+    originalEditingColors = ThemeColors();
 }
 
 void ThemeManager::setEditingThemeColors(const ThemeColors& colors) {
@@ -666,7 +857,7 @@ void ThemeManager::setEditingThemeColors(const ThemeColors& colors) {
 }
 
 ThemeManager::ThemeColors ThemeManager::getEditingThemeColors() const {
-    return editingTheme ? editingThemeColors : ThemeColors();
+    return editingThemeColors;
 }
 
 //==============================================================================
@@ -679,9 +870,10 @@ void ThemeManager::preloadThemes() {
         return;
     }
     
-    auto themeFiles = themesDir.findChildFiles(juce::File::findFiles, false, "*.theme");
+    auto themeFiles = themesDir.findChildFiles(juce::File::findFiles, false, "*.json");
+    
     for (const auto& file : themeFiles) {
-        auto themeName = file.getFileNameWithoutExtension();
+        juce::String themeName = file.getFileNameWithoutExtension();
         if (themeColors.find(themeName) == themeColors.end()) {
             loadThemeFromFile(themeName);
         }
@@ -689,19 +881,21 @@ void ThemeManager::preloadThemes() {
 }
 
 void ThemeManager::clearThemeCache() {
-    // Keep built-in themes, clear user themes
-    auto it = themeColors.begin();
-    while (it != themeColors.end()) {
-        auto metaIt = themeMetadata.find(it->first);
-        if (metaIt != themeMetadata.end() && metaIt->second.type != ThemeType::System) {
-            it = themeColors.erase(it);
-            themeMetadata.erase(metaIt);
-        } else {
-            ++it;
-        }
-    }
+    // Keep built-in themes and current theme
+    auto currentColors = currentThemeColors;
+    auto currentMeta = getCurrentThemeMetadata();
     
+    // Clear all themes
+    themeColors.clear();
+    themeMetadata.clear();
     themeLoadTimes.clear();
+    
+    // Restore built-in themes
+    initializeBuiltInThemes();
+    
+    // Restore current theme
+    themeColors[currentThemeName] = currentColors;
+    themeMetadata[currentThemeName] = currentMeta;
 }
 
 int ThemeManager::getCachedThemeCount() const {
@@ -726,229 +920,236 @@ void ThemeManager::removeListener(Listener* listener) {
 
 juce::File ThemeManager::getThemesDirectory() const {
     auto appDataDir = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory);
-    return appDataDir.getChildFile(INIConfig::OTTO_DATA_FOLDER)
-                    .getChildFile(INIConfig::SETTINGS_FOLDER)
-                    .getChildFile("Themes");
+    return appDataDir.getChildFile("OTTO").getChildFile("Themes");
 }
 
 juce::File ThemeManager::getThemeFile(const juce::String& name) const {
-    return getThemesDirectory().getChildFile(name + ".theme");
+    return getThemesDirectory().getChildFile(name + ".json");
 }
 
 bool ThemeManager::saveThemeToFile(const juce::String& name, const ThemeColors& colors, const ThemeMetadata& metadata) {
     auto themeFile = getThemeFile(name);
+    
+    // Ensure directory exists
     themeFile.getParentDirectory().createDirectory();
     
-    auto themeData = exportThemeToString(name);
-    return themeFile.replaceWithText(themeData);
+    return exportTheme(name, themeFile);
 }
 
 bool ThemeManager::loadThemeFromFile(const juce::String& name) {
     auto themeFile = getThemeFile(name);
+    
     if (!themeFile.exists()) {
         return false;
     }
     
-    auto themeData = themeFile.loadFileAsString();
-    return importThemeFromString(themeData, name);
+    bool success = importTheme(themeFile);
+    
+    if (success) {
+        themeLoadTimes[name] = juce::Time::getCurrentTime();
+    }
+    
+    return success;
 }
 
+//==============================================================================
+// Built-in Themes
+//==============================================================================
+
 void ThemeManager::initializeBuiltInThemes() {
-    // Dark Theme
-    {
-        ThemeMetadata metadata("Dark", ThemeType::System);
-        metadata.author = "OTTO Team";
-        metadata.description = "Professional dark theme optimized for studio environments";
-        
-        auto colors = createDarkThemeColors();
-        themeColors["Dark"] = colors;
-        themeMetadata["Dark"] = metadata;
-    }
+    // Dark theme
+    ThemeMetadata darkMeta("Dark", ThemeType::System);
+    darkMeta.author = "OTTO";
+    darkMeta.description = "Default dark theme";
+    darkMeta.version = "1.0";
     
-    // Light Theme
-    {
-        ThemeMetadata metadata("Light", ThemeType::System);
-        metadata.author = "OTTO Team";
-        metadata.description = "Clean light theme for bright environments";
-        
-        auto colors = createLightThemeColors();
-        themeColors["Light"] = colors;
-        themeMetadata["Light"] = metadata;
-    }
+    auto darkColors = createDarkThemeColors();
+    themeMetadata["Dark"] = darkMeta;
+    themeColors["Dark"] = darkColors;
     
-    // Classic Theme
-    {
-        ThemeMetadata metadata("Classic", ThemeType::System);
-        metadata.author = "OTTO Team";
-        metadata.description = "Classic OTTO theme with vintage aesthetics";
-        
-        auto colors = createClassicThemeColors();
-        themeColors["Classic"] = colors;
-        themeMetadata["Classic"] = metadata;
-    }
+    // Light theme
+    ThemeMetadata lightMeta("Light", ThemeType::System);
+    lightMeta.author = "OTTO";
+    lightMeta.description = "Default light theme";
+    lightMeta.version = "1.0";
     
-    // High Contrast Theme
-    {
-        ThemeMetadata metadata("High Contrast", ThemeType::Accessibility);
-        metadata.author = "OTTO Team";
-        metadata.description = "High contrast theme for accessibility";
-        metadata.accessibilityMode = AccessibilityMode::HighContrast;
-        
-        auto colors = createHighContrastThemeColors();
-        themeColors["High Contrast"] = colors;
-        themeMetadata["High Contrast"] = metadata;
-    }
+    auto lightColors = createLightThemeColors();
+    themeMetadata["Light"] = lightMeta;
+    themeColors["Light"] = lightColors;
+    
+    // Classic theme
+    ThemeMetadata classicMeta("Classic", ThemeType::System);
+    classicMeta.author = "OTTO";
+    classicMeta.description = "Classic OTTO theme";
+    classicMeta.version = "1.0";
+    
+    auto classicColors = createClassicThemeColors();
+    themeMetadata["Classic"] = classicMeta;
+    themeColors["Classic"] = classicColors;
+    
+    // High contrast theme
+    ThemeMetadata hcMeta("High Contrast", ThemeType::Accessibility);
+    hcMeta.author = "OTTO";
+    hcMeta.description = "High contrast accessibility theme";
+    hcMeta.version = "1.0";
+    hcMeta.accessibilityMode = AccessibilityMode::HighContrast;
+    
+    auto hcColors = createHighContrastThemeColors();
+    themeMetadata["High Contrast"] = hcMeta;
+    themeColors["High Contrast"] = hcColors;
 }
 
 ThemeManager::ThemeColors ThemeManager::createDarkThemeColors() {
     ThemeColors colors;
-    colors.setDefaults(); // Already dark theme defaults
+    colors.setDefaults(); // Already set to dark theme defaults
     return colors;
 }
 
 ThemeManager::ThemeColors ThemeManager::createLightThemeColors() {
     ThemeColors colors;
-    colors.primary = juce::Colour(0xFF1976D2);      // Darker Blue
-    colors.secondary = juce::Colour(0xFF757575);    // Medium Grey
-    colors.accent = juce::Colour(0xFFD32F2F);       // Red
-    colors.background = juce::Colour(0xFFFAFAFA);   // Light Background
-    colors.surface = juce::Colours::white;          // White Surface
-    colors.error = juce::Colour(0xFFD32F2F);        // Red
-    colors.warning = juce::Colour(0xFFF57C00);      // Orange
-    colors.success = juce::Colour(0xFF388E3C);      // Green
     
-    // Text colors
+    colors.primary = juce::Colour(0xff1976d2);
+    colors.secondary = juce::Colour(0xff00acc1);
+    colors.accent = juce::Colour(0xfff57c00);
+    colors.background = juce::Colour(0xfffafafa);
+    colors.surface = juce::Colours::white;
+    colors.error = juce::Colour(0xffd32f2f);
+    colors.warning = juce::Colour(0xfff57c00);
+    colors.success = juce::Colour(0xff388e3c);
+    
     colors.onPrimary = juce::Colours::white;
     colors.onSecondary = juce::Colours::white;
-    colors.onBackground = juce::Colour(0xFF212121);
-    colors.onSurface = juce::Colour(0xFF212121);
+    colors.onBackground = juce::Colour(0xff212121);
+    colors.onSurface = juce::Colour(0xff212121);
     colors.onError = juce::Colours::white;
     
-    // State colors
-    colors.hover = colors.primary.withAlpha(0.1f);
-    colors.pressed = colors.primary.withAlpha(0.2f);
-    colors.disabled = juce::Colour(0xFF9E9E9E);
-    colors.selected = colors.primary.withAlpha(0.3f);
+    colors.hover = colors.primary.brighter(0.1f);
+    colors.pressed = colors.primary.darker(0.1f);
+    colors.disabled = juce::Colour(0xffbdbdbd);
+    colors.selected = colors.accent.withAlpha(0.2f);
+    
+    colors.meterLow = juce::Colour(0xff4caf50);
+    colors.meterMid = juce::Colour(0xffffc107);
+    colors.meterHigh = juce::Colour(0xffff5722);
+    colors.meterPeak = juce::Colour(0xfff44336);
+    colors.waveform = colors.accent;
+    colors.spectrum = colors.primary;
     
     return colors;
 }
 
 ThemeManager::ThemeColors ThemeManager::createClassicThemeColors() {
     ThemeColors colors;
-    colors.primary = juce::Colour(0xFF607D8B);      // Blue Grey
-    colors.secondary = juce::Colour(0xFF455A64);    // Dark Blue Grey
-    colors.accent = juce::Colour(0xFFFF7043);       // Deep Orange
-    colors.background = juce::Colour(0xFF263238);   // Dark Blue Grey
-    colors.surface = juce::Colour(0xFF37474F);      // Blue Grey
-    colors.error = juce::Colour(0xFFE57373);        // Light Red
-    colors.warning = juce::Colour(0xFFFFB74D);      // Light Orange
-    colors.success = juce::Colour(0xFF81C784);      // Light Green
     
-    // Text colors
-    colors.onPrimary = juce::Colours::white;
-    colors.onSecondary = juce::Colours::white;
-    colors.onBackground = juce::Colour(0xFFECEFF1);
-    colors.onSurface = juce::Colour(0xFFECEFF1);
+    // Classic OTTO colors (based on original design)
+    colors.primary = juce::Colour(0xff00ff00);
+    colors.secondary = juce::Colour(0xff00ffff);
+    colors.accent = juce::Colour(0xffffff00);
+    colors.background = juce::Colour(0xff000000);
+    colors.surface = juce::Colour(0xff111111);
+    colors.error = juce::Colour(0xffff0000);
+    colors.warning = juce::Colour(0xffffff00);
+    colors.success = juce::Colour(0xff00ff00);
+    
+    colors.onPrimary = juce::Colours::black;
+    colors.onSecondary = juce::Colours::black;
+    colors.onBackground = juce::Colour(0xff00ff00);
+    colors.onSurface = juce::Colour(0xff00ff00);
     colors.onError = juce::Colours::white;
+    
+    colors.hover = colors.primary.brighter(0.2f);
+    colors.pressed = colors.primary.darker(0.2f);
+    colors.disabled = juce::Colour(0xff333333);
+    colors.selected = colors.accent.withAlpha(0.3f);
+    
+    colors.meterLow = juce::Colour(0xff00ff00);
+    colors.meterMid = juce::Colour(0xffffff00);
+    colors.meterHigh = juce::Colour(0xffff8800);
+    colors.meterPeak = juce::Colour(0xffff0000);
+    colors.waveform = juce::Colour(0xff00ff00);
+    colors.spectrum = juce::Colour(0xff00ffff);
     
     return colors;
 }
 
 ThemeManager::ThemeColors ThemeManager::createHighContrastThemeColors() {
     ThemeColors colors;
-    colors.primary = juce::Colours::white;
-    colors.secondary = juce::Colour(0xFF808080);
-    colors.accent = juce::Colours::yellow;
-    colors.background = juce::Colours::black;
-    colors.surface = juce::Colour(0xFF000000);
-    colors.error = juce::Colours::red;
-    colors.warning = juce::Colours::yellow;
-    colors.success = juce::Colours::lime;
-    
-    // Text colors
-    colors.onPrimary = juce::Colours::black;
-    colors.onSecondary = juce::Colours::white;
-    colors.onBackground = juce::Colours::white;
-    colors.onSurface = juce::Colours::white;
-    colors.onError = juce::Colours::white;
-    
-    // State colors
-    colors.hover = juce::Colours::yellow.withAlpha(0.3f);
-    colors.pressed = juce::Colours::yellow.withAlpha(0.5f);
-    colors.disabled = juce::Colour(0xFF404040);
-    colors.selected = juce::Colours::yellow.withAlpha(0.4f);
-    
+    colors.setDefaults();
+    colors.applyAccessibilityMode(AccessibilityMode::HighContrast);
     return colors;
 }
+
+//==============================================================================
+// Accessibility Helpers
+//==============================================================================
 
 juce::Colour ThemeManager::adjustColorForAccessibility(const juce::Colour& color, AccessibilityMode mode) {
     switch (mode) {
         case AccessibilityMode::HighContrast:
+            // Increase contrast
             return color.getPerceivedBrightness() > 0.5f ? juce::Colours::white : juce::Colours::black;
             
         case AccessibilityMode::Protanopia:
-            // Simulate protanopia (red-blind)
-            return juce::Colour::fromFloatRGBA(
-                color.getFloatGreen() * 0.567f + color.getFloatBlue() * 0.433f,
-                color.getFloatGreen(),
-                color.getFloatBlue(),
-                color.getFloatAlpha()
-            );
+            // Simulate red-blindness
+            return juce::Colour(0, color.getGreen(), color.getBlue(), color.getAlpha());
             
         case AccessibilityMode::Deuteranopia:
-            // Simulate deuteranopia (green-blind)
-            return juce::Colour::fromFloatRGBA(
-                color.getFloatRed(),
-                color.getFloatRed() * 0.625f + color.getFloatBlue() * 0.375f,
-                color.getFloatBlue(),
-                color.getFloatAlpha()
-            );
+            // Simulate green-blindness
+            return juce::Colour(color.getRed(), 0, color.getBlue(), color.getAlpha());
             
         case AccessibilityMode::Tritanopia:
-            // Simulate tritanopia (blue-blind)
-            return juce::Colour::fromFloatRGBA(
-                color.getFloatRed(),
-                color.getFloatGreen(),
-                color.getFloatRed() * 0.95f + color.getFloatGreen() * 0.05f,
-                color.getFloatAlpha()
-            );
+            // Simulate blue-blindness
+            return juce::Colour(color.getRed(), color.getGreen(), 0, color.getAlpha());
             
         case AccessibilityMode::Monochrome:
+            // Convert to grayscale
             {
-                auto brightness = color.getPerceivedBrightness();
-                return juce::Colour::fromFloatRGBA(brightness, brightness, brightness, color.getFloatAlpha());
+                float gray = color.getPerceivedBrightness();
+                return juce::Colour::fromFloatRGBA(gray, gray, gray, color.getFloatAlpha());
             }
             
-        case AccessibilityMode::None:
         default:
             return color;
     }
 }
 
 float ThemeManager::calculateContrastRatio(const juce::Colour& foreground, const juce::Colour& background) {
-    auto fgLuminance = foreground.getPerceivedBrightness();
-    auto bgLuminance = background.getPerceivedBrightness();
+    float fgLuminance = foreground.getPerceivedBrightness();
+    float bgLuminance = background.getPerceivedBrightness();
     
-    auto lighter = juce::jmax(fgLuminance, bgLuminance);
-    auto darker = juce::jmin(fgLuminance, bgLuminance);
+    float lighter = juce::jmax(fgLuminance, bgLuminance);
+    float darker = juce::jmin(fgLuminance, bgLuminance);
     
     return (lighter + 0.05f) / (darker + 0.05f);
 }
 
 bool ThemeManager::meetsAccessibilityStandards(const juce::Colour& foreground, const juce::Colour& background) {
-    auto contrast = calculateContrastRatio(foreground, background);
-    return contrast >= 4.5f; // WCAG AA standard
+    float contrastRatio = calculateContrastRatio(foreground, background);
+    return contrastRatio >= 4.5f; // WCAG AA standard
 }
+
+//==============================================================================
+// Seasonal Helpers
+//==============================================================================
 
 int ThemeManager::getCurrentSeason() const {
     auto now = juce::Time::getCurrentTime();
-    auto month = now.getMonth();
+    int month = now.getMonth(); // 0-11
     
-    // Northern hemisphere seasons
-    if (month >= 2 && month <= 4) return 0; // Spring (Mar-May)
-    if (month >= 5 && month <= 7) return 1; // Summer (Jun-Aug)
-    if (month >= 8 && month <= 10) return 2; // Autumn (Sep-Nov)
-    return 3; // Winter (Dec-Feb)
+    // Northern hemisphere seasons (adjust for southern hemisphere if needed)
+    if (seasonalSettings.useLocationBasedSeasons && seasonalSettings.latitude < 0) {
+        // Southern hemisphere - seasons are reversed
+        if (month >= 2 && month <= 4) return 2; // Autumn (Mar-May)
+        if (month >= 5 && month <= 7) return 3; // Winter (Jun-Aug)
+        if (month >= 8 && month <= 10) return 0; // Spring (Sep-Nov)
+        return 1; // Summer (Dec-Feb)
+    } else {
+        // Northern hemisphere
+        if (month >= 2 && month <= 4) return 0; // Spring (Mar-May)
+        if (month >= 5 && month <= 7) return 1; // Summer (Jun-Aug)
+        if (month >= 8 && month <= 10) return 2; // Autumn (Sep-Nov)
+        return 3; // Winter (Dec-Feb)
+    }
 }
 
 juce::String ThemeManager::getSeasonName(int season) const {
@@ -962,45 +1163,64 @@ juce::String ThemeManager::getSeasonName(int season) const {
 }
 
 bool ThemeManager::shouldUpdateSeasonalTheme() const {
-    if (!seasonalSettings.enabled) {
+    // Check if enough time has passed since last update
+    static juce::Time lastUpdate;
+    auto now = juce::Time::getCurrentTime();
+    
+    if ((now - lastUpdate).inHours() < 1) {
         return false;
     }
     
-    auto currentSeason = getCurrentSeason();
-    auto expectedTheme = getCurrentSeasonalTheme();
-    
-    return expectedTheme != currentThemeName;
+    lastUpdate = now;
+    return true;
 }
+
+//==============================================================================
+// Validation Helpers
+//==============================================================================
 
 bool ThemeManager::isValidThemeName(const juce::String& name) const {
     return !name.isEmpty() && 
            name.length() <= 50 && 
-           name.containsOnly("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_()");
+           name.containsOnly("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_");
 }
 
 bool ThemeManager::isValidColor(const juce::Colour& color) const {
-    return color.isOpaque() || color.getAlpha() > 0;
+    // Check if color is not completely transparent (unless intended)
+    return color.getAlpha() > 0;
 }
 
 juce::StringArray ThemeManager::validateThemeColorsInternal(const ThemeColors& colors) const {
     juce::StringArray errors;
     
-    // Check color validity
-    if (!isValidColor(colors.primary)) errors.add("Invalid primary color");
-    if (!isValidColor(colors.background)) errors.add("Invalid background color");
-    if (!isValidColor(colors.onBackground)) errors.add("Invalid text color");
-    
-    // Check contrast ratios
+    // Check contrast ratios for accessibility
     if (!meetsAccessibilityStandards(colors.onBackground, colors.background)) {
         errors.add("Insufficient contrast between text and background");
+    }
+    
+    if (!meetsAccessibilityStandards(colors.onSurface, colors.surface)) {
+        errors.add("Insufficient contrast between text and surface");
     }
     
     if (!meetsAccessibilityStandards(colors.onPrimary, colors.primary)) {
         errors.add("Insufficient contrast between primary text and primary color");
     }
     
+    // Check for valid colors
+    if (!isValidColor(colors.background)) {
+        errors.add("Invalid background color");
+    }
+    
+    if (!isValidColor(colors.primary)) {
+        errors.add("Invalid primary color");
+    }
+    
     return errors;
 }
+
+//==============================================================================
+// Notification Helpers
+//==============================================================================
 
 void ThemeManager::notifyThemeChanged() {
     listeners.call([this](Listener& l) { l.themeChanged(currentThemeName); });
@@ -1011,7 +1231,7 @@ void ThemeManager::notifyPreviewStarted() {
 }
 
 void ThemeManager::notifyPreviewStopped() {
-    listeners.call([&](Listener& l) { l.themePreviewStopped(); });
+    listeners.call([](Listener& l) { l.themePreviewStopped(); });
 }
 
 void ThemeManager::notifyAccessibilityModeChanged() {
@@ -1019,8 +1239,7 @@ void ThemeManager::notifyAccessibilityModeChanged() {
 }
 
 void ThemeManager::notifySeasonalThemeUpdated() {
-    auto seasonalTheme = getCurrentSeasonalTheme();
-    listeners.call([&seasonalTheme](Listener& l) { l.seasonalThemeUpdated(seasonalTheme); });
+    listeners.call([this](Listener& l) { l.seasonalThemeUpdated(getCurrentSeasonalTheme()); });
 }
 
 void ThemeManager::notifyValidationFailed(const juce::String& themeName, const juce::StringArray& errors) {

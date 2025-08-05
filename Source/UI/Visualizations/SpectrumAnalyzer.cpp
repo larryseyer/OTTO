@@ -15,9 +15,6 @@ SpectrumAnalyzer::SpectrumAnalyzer(ColorScheme& colorScheme)
     initializeBuffers();
     initializeWindow();
     
-    // Setup timer for display updates (60 FPS)
-    startTimer(16); // ~60 FPS
-    
     // Load settings from INI
     ComponentState state;
     if (INIDataManager::loadComponentState("SpectrumAnalyzer", state)) {
@@ -26,6 +23,9 @@ SpectrumAnalyzer::SpectrumAnalyzer(ColorScheme& colorScheme)
     
     // Update colors from theme
     updateColorsFromTheme();
+    
+    // Start timer for display updates (60 FPS)
+    startTimer(16);
     
     // Enable mouse tracking
     setMouseClickGrabsKeyboardFocus(false);
@@ -47,14 +47,6 @@ SpectrumAnalyzer::~SpectrumAnalyzer() {
 void SpectrumAnalyzer::paint(juce::Graphics& g) {
     // Clear background
     g.fillAll(settings.backgroundColor);
-    
-    // Early return if no data
-    if (magnitudeData.empty()) {
-        g.setColour(colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
-        g.setFont(JUCE8_FONT(14.0f));
-        g.drawText("No audio signal", getLocalBounds(), juce::Justification::centred);
-        return;
-    }
     
     // Enable antialiasing for smooth rendering
     g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
@@ -80,45 +72,35 @@ void SpectrumAnalyzer::paint(juce::Graphics& g) {
 }
 
 void SpectrumAnalyzer::resized() {
-    // Recalculate display paths when size changes
-    juce::ScopedLock lock(displayLock);
-    
+    // Update display paths when size changes
     updateSpectrumPath();
     updatePeakHoldPath();
     updateGridPath();
-    
-    // Optimize for current size
-    optimizeForPerformance();
 }
 
 void SpectrumAnalyzer::mouseMove(const juce::MouseEvent& e) {
     lastMousePosition = e.getPosition();
-    cursorFrequency = xToFrequency(static_cast<float>(e.x));
     
     if (settings.showCursor) {
+        cursorFrequency = xToFrequency(static_cast<float>(e.x));
         showFrequencyCursor = true;
         repaint();
     }
 }
 
 void SpectrumAnalyzer::mouseDown(const juce::MouseEvent& e) {
-    if (e.mods.isRightButtonDown()) {
-        // Right-click for context menu (future implementation)
-        return;
-    }
-    
-    // Left-click to focus on frequency
+    // Handle mouse interactions (e.g., frequency selection)
     cursorFrequency = xToFrequency(static_cast<float>(e.x));
     showFrequencyCursor = true;
     repaint();
 }
 
 void SpectrumAnalyzer::mouseUp(const juce::MouseEvent& e) {
-    // Handle mouse up events if needed
+    // Handle mouse release
 }
 
 void SpectrumAnalyzer::mouseDrag(const juce::MouseEvent& e) {
-    // Update cursor position during drag
+    // Update cursor frequency during drag
     cursorFrequency = xToFrequency(static_cast<float>(e.x));
     repaint();
 }
@@ -132,13 +114,13 @@ void SpectrumAnalyzer::processAudioBlock(const juce::AudioBuffer<float>& buffer)
         return;
     }
     
-    auto startTime = juce::Time::getMillisecondCounterHiRes();
+    auto startTime = juce::Time::getCurrentTime();
     
     juce::ScopedLock lock(bufferLock);
     
     // Mix down to mono if stereo
-    const int numChannels = buffer.getNumChannels();
-    const int numSamples = buffer.getNumSamples();
+    int numSamples = buffer.getNumSamples();
+    int numChannels = buffer.getNumChannels();
     
     for (int sample = 0; sample < numSamples; ++sample) {
         float monoSample = 0.0f;
@@ -156,28 +138,38 @@ void SpectrumAnalyzer::processAudioBlock(const juce::AudioBuffer<float>& buffer)
         circularBuffer.setSample(0, circularBufferWritePos, monoSample);
         circularBufferWritePos = (circularBufferWritePos + 1) % circularBuffer.getNumSamples();
         
-        // Check if we have enough data for FFT
+        // Check if we have enough samples for FFT
         if (circularBufferWritePos % (settings.fftSize / settings.overlapFactor) == 0) {
             bufferReady = true;
         }
     }
     
+    // Perform FFT if buffer is ready
+    if (bufferReady) {
+        performFFT();
+        bufferReady = false;
+    }
+    
     // Update performance stats
-    auto processingTime = juce::Time::getMillisecondCounterHiRes() - startTime;
+    auto endTime = juce::Time::getCurrentTime();
+    double processingTime = (endTime - startTime).inMilliseconds();
     updatePerformanceStats(processingTime);
 }
 
 void SpectrumAnalyzer::setSampleRate(double newSampleRate) {
-    if (newSampleRate > 0 && newSampleRate != sampleRate) {
+    if (newSampleRate != sampleRate && newSampleRate > 0) {
         sampleRate = newSampleRate;
         
-        // Reinitialize buffers for new sample rate
+        // Reinitialize buffers with new sample rate
         initializeBuffers();
         
         // Update frequency range if needed
-        if (settings.maxFrequency > sampleRate / 2.0f) {
-            settings.maxFrequency = static_cast<float>(sampleRate / 2.0f);
+        float nyquist = static_cast<float>(sampleRate * 0.5);
+        if (settings.maxFrequency > nyquist) {
+            settings.maxFrequency = nyquist;
         }
+        
+        repaint();
     }
 }
 
@@ -188,21 +180,36 @@ void SpectrumAnalyzer::setSampleRate(double newSampleRate) {
 void SpectrumAnalyzer::setAnalyzerSettings(const AnalyzerSettings& newSettings) {
     settings = newSettings;
     
-    // Validate and clamp settings
-    settings.fftSize = juce::jlimit(512, 8192, settings.fftSize);
-    settings.overlapFactor = juce::jlimit(1, 8, settings.overlapFactor);
-    settings.minFrequency = juce::jlimit(1.0f, static_cast<float>(sampleRate / 2.0f), settings.minFrequency);
-    settings.maxFrequency = juce::jlimit(settings.minFrequency, static_cast<float>(sampleRate / 2.0f), settings.maxFrequency);
-    settings.averagingFactor = juce::jlimit(0.0f, 1.0f, settings.averagingFactor);
-    
-    // Reinitialize if FFT size changed
-    if (fft->getSize() != settings.fftSize) {
+    // Validate and apply settings
+    if (isValidFFTSize(settings.fftSize)) {
         initializeFFT();
         initializeBuffers();
-        initializeWindow();
     }
     
+    if (isValidFrequencyRange(settings.minFrequency, settings.maxFrequency)) {
+        // Frequency range is valid
+    } else {
+        // Reset to default range
+        settings.minFrequency = 20.0f;
+        settings.maxFrequency = static_cast<float>(sampleRate * 0.5);
+    }
+    
+    if (isValidAmplitudeRange(settings.minDecibels, settings.maxDecibels)) {
+        // Amplitude range is valid
+    } else {
+        // Reset to default range
+        settings.minDecibels = -80.0f;
+        settings.maxDecibels = 0.0f;
+    }
+    
+    initializeWindow();
     updateColors();
+    
+    // Update display
+    updateSpectrumPath();
+    updatePeakHoldPath();
+    updateGridPath();
+    
     repaint();
 }
 
@@ -211,7 +218,7 @@ void SpectrumAnalyzer::setFFTSize(int size) {
         settings.fftSize = size;
         initializeFFT();
         initializeBuffers();
-        initializeWindow();
+        repaint();
     }
 }
 
@@ -247,11 +254,16 @@ void SpectrumAnalyzer::setAmplitudeRange(float minDb, float maxDb) {
 }
 
 void SpectrumAnalyzer::setAveragingMode(AveragingMode mode) {
-    settings.averagingMode = mode;
-    
-    // Reset averaging data when mode changes
-    if (!averagedMagnitudes.empty()) {
+    if (mode != settings.averagingMode) {
+        settings.averagingMode = mode;
+        
+        // Reset averaging data
         std::fill(averagedMagnitudes.begin(), averagedMagnitudes.end(), settings.minDecibels);
+        
+        if (mode == AveragingMode::PeakHold) {
+            std::fill(peakHoldData.begin(), peakHoldData.end(), settings.minDecibels);
+            std::fill(peakHoldTimes.begin(), peakHoldTimes.end(), juce::Time::getCurrentTime());
+        }
     }
 }
 
@@ -264,18 +276,24 @@ void SpectrumAnalyzer::setAveragingFactor(float factor) {
 //==============================================================================
 
 void SpectrumAnalyzer::setShowPeakHold(bool show) {
-    settings.showPeakHold = show;
-    repaint();
+    if (show != settings.showPeakHold) {
+        settings.showPeakHold = show;
+        repaint();
+    }
 }
 
 void SpectrumAnalyzer::setShowGrid(bool show) {
-    settings.showGrid = show;
-    repaint();
+    if (show != settings.showGrid) {
+        settings.showGrid = show;
+        repaint();
+    }
 }
 
 void SpectrumAnalyzer::setShowLabels(bool show) {
-    settings.showLabels = show;
-    repaint();
+    if (show != settings.showLabels) {
+        settings.showLabels = show;
+        repaint();
+    }
 }
 
 //==============================================================================
@@ -300,10 +318,9 @@ void SpectrumAnalyzer::setGridColor(const juce::Colour& color) {
 void SpectrumAnalyzer::updateColorsFromTheme() {
     settings.backgroundColor = colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground);
     settings.spectrumColor = colorScheme.getColor(ColorScheme::ColorRole::Accent);
-    settings.peakHoldColor = colorScheme.getColor(ColorScheme::ColorRole::MeterHigh);
+    settings.peakHoldColor = colorScheme.getColor(ColorScheme::ColorRole::Error);
     settings.gridColor = colorScheme.getColor(ColorScheme::ColorRole::GridLine);
     
-    updateColors();
     repaint();
 }
 
@@ -324,7 +341,7 @@ float SpectrumAnalyzer::getMagnitudeAtFrequency(float frequency) const {
         return settings.minDecibels;
     }
     
-    // Find the bin index for this frequency
+    // Convert frequency to bin index
     float binWidth = static_cast<float>(sampleRate) / static_cast<float>(settings.fftSize);
     int binIndex = static_cast<int>(frequency / binWidth);
     
@@ -344,16 +361,13 @@ juce::Array<SpectrumAnalyzer::FrequencyBin> SpectrumAnalyzer::getFrequencyBins()
     
     float binWidth = static_cast<float>(sampleRate) / static_cast<float>(settings.fftSize);
     
-    for (int i = 0; i < static_cast<int>(magnitudeData.size()); ++i) {
+    for (size_t i = 0; i < magnitudeData.size(); ++i) {
         FrequencyBin bin;
-        bin.frequency = i * binWidth;
+        bin.frequency = static_cast<float>(i) * binWidth;
         bin.magnitude = magnitudeData[i];
-        bin.phase = (i < static_cast<int>(phaseData.size())) ? phaseData[i] : 0.0f;
-        bin.peakHold = (i < static_cast<int>(peakHoldData.size())) ? peakHoldData[i] : settings.minDecibels;
-        
-        if (i < static_cast<int>(peakHoldTimes.size())) {
-            bin.peakTime = peakHoldTimes[i];
-        }
+        bin.phase = (i < phaseData.size()) ? phaseData[i] : 0.0f;
+        bin.peakHold = (i < peakHoldData.size()) ? peakHoldData[i] : settings.minDecibels;
+        bin.peakTime = (i < peakHoldTimes.size()) ? peakHoldTimes[i] : juce::Time();
         
         bins.add(bin);
     }
@@ -368,58 +382,45 @@ juce::Array<SpectrumAnalyzer::FrequencyBin> SpectrumAnalyzer::getFrequencyBins()
 juce::Array<SpectrumAnalyzer::Peak> SpectrumAnalyzer::detectPeaks(float threshold, int minPeakDistance) const {
     juce::Array<Peak> peaks;
     
-    if (magnitudeData.empty() || magnitudeData.size() < 3) {
+    if (magnitudeData.empty()) {
         return peaks;
     }
     
     float binWidth = static_cast<float>(sampleRate) / static_cast<float>(settings.fftSize);
     
-    for (int i = minPeakDistance; i < static_cast<int>(magnitudeData.size()) - minPeakDistance; ++i) {
+    for (size_t i = minPeakDistance; i < magnitudeData.size() - minPeakDistance; ++i) {
         float magnitude = magnitudeData[i];
         
-        // Check if this is above threshold
         if (magnitude < threshold) {
             continue;
         }
         
         // Check if this is a local maximum
         bool isPeak = true;
-        for (int j = i - minPeakDistance; j <= i + minPeakDistance; ++j) {
-            if (j != i && magnitudeData[j] >= magnitude) {
+        for (int j = -minPeakDistance; j <= minPeakDistance; ++j) {
+            if (j == 0) continue;
+            
+            size_t checkIndex = i + j;
+            if (checkIndex < magnitudeData.size() && magnitudeData[checkIndex] >= magnitude) {
                 isPeak = false;
                 break;
             }
         }
         
         if (isPeak) {
-            float frequency = i * binWidth;
+            float frequency = static_cast<float>(i) * binWidth;
             
             // Calculate bandwidth (simple estimation)
-            float bandwidth = 0.0f;
-            int leftEdge = i, rightEdge = i;
-            float halfPower = magnitude - 3.0f; // -3dB point
-            
-            // Find left edge
-            for (int j = i - 1; j >= 0; --j) {
-                if (magnitudeData[j] < halfPower) {
-                    leftEdge = j;
-                    break;
-                }
-            }
-            
-            // Find right edge
-            for (int j = i + 1; j < static_cast<int>(magnitudeData.size()); ++j) {
-                if (magnitudeData[j] < halfPower) {
-                    rightEdge = j;
-                    break;
-                }
-            }
-            
-            bandwidth = (rightEdge - leftEdge) * binWidth;
+            float bandwidth = binWidth;
             
             peaks.add(Peak(frequency, magnitude, bandwidth));
         }
     }
+    
+    // Sort peaks by magnitude (highest first)
+    peaks.sort([](const Peak& a, const Peak& b) {
+        return a.magnitude > b.magnitude;
+    });
     
     return peaks;
 }
@@ -427,22 +428,12 @@ juce::Array<SpectrumAnalyzer::Peak> SpectrumAnalyzer::detectPeaks(float threshol
 SpectrumAnalyzer::Peak SpectrumAnalyzer::getFundamentalFrequency() const {
     auto peaks = detectPeaks(-40.0f, 3);
     
-    if (peaks.isEmpty()) {
-        return Peak(0.0f, settings.minDecibels);
+    if (!peaks.isEmpty()) {
+        // Return the strongest peak as fundamental
+        return peaks.getFirst();
     }
     
-    // Find the strongest peak in the fundamental range (typically 80-800 Hz)
-    Peak fundamental(0.0f, settings.minDecibels);
-    
-    for (const auto& peak : peaks) {
-        if (peak.frequency >= 80.0f && peak.frequency <= 800.0f) {
-            if (peak.magnitude > fundamental.magnitude) {
-                fundamental = peak;
-            }
-        }
-    }
-    
-    return fundamental;
+    return Peak(0.0f, settings.minDecibels);
 }
 
 //==============================================================================
@@ -451,6 +442,7 @@ SpectrumAnalyzer::Peak SpectrumAnalyzer::getFundamentalFrequency() const {
 
 void SpectrumAnalyzer::saveState(ComponentState& state) const {
     state.setValue("fftSize", settings.fftSize);
+    state.setValue("overlapFactor", settings.overlapFactor);
     state.setValue("displayMode", static_cast<int>(settings.displayMode));
     state.setValue("windowType", static_cast<int>(settings.windowType));
     state.setValue("averagingMode", static_cast<int>(settings.averagingMode));
@@ -459,27 +451,35 @@ void SpectrumAnalyzer::saveState(ComponentState& state) const {
     state.setValue("minDecibels", settings.minDecibels);
     state.setValue("maxDecibels", settings.maxDecibels);
     state.setValue("averagingFactor", settings.averagingFactor);
+    state.setValue("peakHoldTime", settings.peakHoldTime);
+    state.setValue("peakDecayRate", settings.peakDecayRate);
     state.setValue("showPeakHold", settings.showPeakHold);
     state.setValue("showGrid", settings.showGrid);
     state.setValue("showLabels", settings.showLabels);
+    state.setValue("showCursor", settings.showCursor);
 }
 
 void SpectrumAnalyzer::loadState(const ComponentState& state) {
-    settings.fftSize = state.getValue("fftSize", 2048);
-    settings.displayMode = static_cast<DisplayMode>(state.getValue("displayMode", static_cast<int>(DisplayMode::Logarithmic)));
-    settings.windowType = static_cast<WindowType>(state.getValue("windowType", static_cast<int>(WindowType::Hanning)));
-    settings.averagingMode = static_cast<AveragingMode>(state.getValue("averagingMode", static_cast<int>(AveragingMode::Exponential)));
-    settings.minFrequency = state.getValue("minFrequency", 20.0f);
-    settings.maxFrequency = state.getValue("maxFrequency", 20000.0f);
-    settings.minDecibels = state.getValue("minDecibels", -80.0f);
-    settings.maxDecibels = state.getValue("maxDecibels", 0.0f);
-    settings.averagingFactor = state.getValue("averagingFactor", 0.8f);
-    settings.showPeakHold = state.getValue("showPeakHold", true);
-    settings.showGrid = state.getValue("showGrid", true);
-    settings.showLabels = state.getValue("showLabels", true);
+    AnalyzerSettings newSettings;
     
-    // Apply loaded settings
-    setAnalyzerSettings(settings);
+    newSettings.fftSize = state.getValue("fftSize", 2048);
+    newSettings.overlapFactor = state.getValue("overlapFactor", 4);
+    newSettings.displayMode = static_cast<DisplayMode>(state.getValue("displayMode", static_cast<int>(DisplayMode::Logarithmic)));
+    newSettings.windowType = static_cast<WindowType>(state.getValue("windowType", static_cast<int>(WindowType::Hanning)));
+    newSettings.averagingMode = static_cast<AveragingMode>(state.getValue("averagingMode", static_cast<int>(AveragingMode::Exponential)));
+    newSettings.minFrequency = state.getValue("minFrequency", 20.0f);
+    newSettings.maxFrequency = state.getValue("maxFrequency", 20000.0f);
+    newSettings.minDecibels = state.getValue("minDecibels", -80.0f);
+    newSettings.maxDecibels = state.getValue("maxDecibels", 0.0f);
+    newSettings.averagingFactor = state.getValue("averagingFactor", 0.8f);
+    newSettings.peakHoldTime = state.getValue("peakHoldTime", 2.0f);
+    newSettings.peakDecayRate = state.getValue("peakDecayRate", 12.0f);
+    newSettings.showPeakHold = state.getValue("showPeakHold", true);
+    newSettings.showGrid = state.getValue("showGrid", true);
+    newSettings.showLabels = state.getValue("showLabels", true);
+    newSettings.showCursor = state.getValue("showCursor", true);
+    
+    setAnalyzerSettings(newSettings);
 }
 
 //==============================================================================
@@ -487,11 +487,21 @@ void SpectrumAnalyzer::loadState(const ComponentState& state) {
 //==============================================================================
 
 void SpectrumAnalyzer::timerCallback() {
-    if (bufferReady) {
-        performFFT();
-        bufferReady = false;
-        repaint();
+    // Update peak hold decay
+    if (settings.averagingMode == AveragingMode::PeakHold) {
+        updatePeakHold();
     }
+    
+    // Update display paths
+    {
+        juce::ScopedLock lock(displayLock);
+        updateSpectrumPath();
+        if (settings.showPeakHold) {
+            updatePeakHoldPath();
+        }
+    }
+    
+    repaint();
 }
 
 //==============================================================================
@@ -499,8 +509,13 @@ void SpectrumAnalyzer::timerCallback() {
 //==============================================================================
 
 void SpectrumAnalyzer::parameterChanged(const juce::String& parameterID, float newValue) {
-    // Handle parameter changes from host if needed
-    // This would be used when integrated with an audio plugin
+    // Handle parameter changes from host
+    if (parameterID == "fftSize") {
+        setFFTSize(static_cast<int>(newValue));
+    } else if (parameterID == "averagingFactor") {
+        setAveragingFactor(newValue);
+    }
+    // Add more parameter mappings as needed
 }
 
 //==============================================================================
@@ -509,32 +524,26 @@ void SpectrumAnalyzer::parameterChanged(const juce::String& parameterID, float n
 
 void SpectrumAnalyzer::initializeFFT() {
     fft = std::make_unique<juce::dsp::FFT>(static_cast<int>(std::log2(settings.fftSize)));
+    
+    // Resize FFT data arrays
+    fftData.resize(settings.fftSize * 2, 0.0f);
+    magnitudeData.resize(settings.fftSize / 2, settings.minDecibels);
+    phaseData.resize(settings.fftSize / 2, 0.0f);
+    averagedMagnitudes.resize(settings.fftSize / 2, settings.minDecibels);
+    peakHoldData.resize(settings.fftSize / 2, settings.minDecibels);
+    peakHoldTimes.resize(settings.fftSize / 2, juce::Time::getCurrentTime());
 }
 
 void SpectrumAnalyzer::initializeBuffers() {
-    // Initialize circular buffer (4x FFT size for overlap)
-    int circularBufferSize = settings.fftSize * 4;
-    circularBuffer.setSize(1, circularBufferSize);
+    // Initialize circular buffer
+    int bufferSize = settings.fftSize * 4; // 4x FFT size for overlap
+    circularBuffer.setSize(1, bufferSize);
     circularBuffer.clear();
     circularBufferWritePos = 0;
     
     // Initialize FFT buffer
     fftBuffer.setSize(1, settings.fftSize);
     fftBuffer.clear();
-    
-    // Initialize data vectors
-    fftData.resize(settings.fftSize * 2, 0.0f); // Complex data (real + imaginary)
-    magnitudeData.resize(settings.fftSize / 2, settings.minDecibels);
-    phaseData.resize(settings.fftSize / 2, 0.0f);
-    averagedMagnitudes.resize(settings.fftSize / 2, settings.minDecibels);
-    peakHoldData.resize(settings.fftSize / 2, settings.minDecibels);
-    peakHoldTimes.resize(settings.fftSize / 2);
-    
-    // Initialize peak hold times
-    auto currentTime = juce::Time::getCurrentTime();
-    for (auto& time : peakHoldTimes) {
-        time = currentTime;
-    }
 }
 
 void SpectrumAnalyzer::initializeWindow() {
@@ -568,17 +577,17 @@ void SpectrumAnalyzer::initializeWindow() {
 }
 
 void SpectrumAnalyzer::performFFT() {
-    juce::ScopedLock lock(bufferLock);
+    juce::ScopedLock lock(displayLock);
     
     // Copy data from circular buffer to FFT buffer
     int readPos = (circularBufferWritePos - settings.fftSize + circularBuffer.getNumSamples()) % circularBuffer.getNumSamples();
     
     for (int i = 0; i < settings.fftSize; ++i) {
-        int pos = (readPos + i) % circularBuffer.getNumSamples();
-        fftBuffer.setSample(0, i, circularBuffer.getSample(0, pos));
+        int bufferIndex = (readPos + i) % circularBuffer.getNumSamples();
+        fftBuffer.setSample(0, i, circularBuffer.getSample(0, bufferIndex));
     }
     
-    // Apply window function
+    // Apply windowing
     applyWindow();
     
     // Copy to FFT data array (interleaved real/imaginary)
@@ -595,16 +604,6 @@ void SpectrumAnalyzer::performFFT() {
     
     // Apply averaging
     updateAveraging();
-    
-    // Update peak hold
-    updatePeakHold();
-    
-    // Update display paths
-    {
-        juce::ScopedLock displayLock(this->displayLock);
-        updateSpectrumPath();
-        updatePeakHoldPath();
-    }
 }
 
 void SpectrumAnalyzer::applyWindow() {
@@ -612,7 +611,7 @@ void SpectrumAnalyzer::applyWindow() {
 }
 
 void SpectrumAnalyzer::calculateMagnitudes() {
-    for (int i = 0; i < settings.fftSize / 2; ++i) {
+    for (size_t i = 0; i < magnitudeData.size(); ++i) {
         float real = fftData[i * 2];
         float imag = fftData[i * 2 + 1];
         
@@ -627,68 +626,63 @@ void SpectrumAnalyzer::calculateMagnitudes() {
         }
         
         // Calculate phase
-        phaseData[i] = std::atan2(imag, real);
+        if (i < phaseData.size()) {
+            phaseData[i] = std::atan2(imag, real);
+        }
+        
+        // Clamp to display range
+        magnitudeData[i] = juce::jlimit(settings.minDecibels, settings.maxDecibels, magnitudeData[i]);
     }
 }
 
 void SpectrumAnalyzer::updateAveraging() {
-    if (settings.averagingMode == AveragingMode::None) {
-        return;
-    }
-    
-    for (int i = 0; i < static_cast<int>(magnitudeData.size()); ++i) {
-        switch (settings.averagingMode) {
-            case AveragingMode::Exponential:
-                averagedMagnitudes[i] = averagedMagnitudes[i] * settings.averagingFactor + 
-                                       magnitudeData[i] * (1.0f - settings.averagingFactor);
-                break;
-                
-            case AveragingMode::Linear:
-                // Simple linear averaging (could be improved with a proper moving average)
-                averagedMagnitudes[i] = (averagedMagnitudes[i] + magnitudeData[i]) * 0.5f;
-                break;
-                
-            case AveragingMode::PeakHold:
-                // Peak hold is handled separately
-                averagedMagnitudes[i] = magnitudeData[i];
-                break;
-                
-            default:
-                averagedMagnitudes[i] = magnitudeData[i];
-                break;
-        }
-    }
-    
-    // Use averaged data for display
-    if (settings.averagingMode != AveragingMode::None) {
-        magnitudeData = averagedMagnitudes;
+    switch (settings.averagingMode) {
+        case AveragingMode::None:
+            // No averaging, use raw data
+            break;
+            
+        case AveragingMode::Exponential:
+            // Exponential moving average
+            for (size_t i = 0; i < averagedMagnitudes.size() && i < magnitudeData.size(); ++i) {
+                averagedMagnitudes[i] = settings.averagingFactor * averagedMagnitudes[i] + 
+                                       (1.0f - settings.averagingFactor) * magnitudeData[i];
+                magnitudeData[i] = averagedMagnitudes[i];
+            }
+            break;
+            
+        case AveragingMode::Linear:
+            // Simple linear averaging (not implemented in detail here)
+            break;
+            
+        case AveragingMode::PeakHold:
+            // Peak hold with decay
+            for (size_t i = 0; i < peakHoldData.size() && i < magnitudeData.size(); ++i) {
+                if (magnitudeData[i] > peakHoldData[i]) {
+                    peakHoldData[i] = magnitudeData[i];
+                    peakHoldTimes[i] = juce::Time::getCurrentTime();
+                }
+            }
+            break;
     }
 }
 
 void SpectrumAnalyzer::updatePeakHold() {
-    if (!settings.showPeakHold) {
-        return;
-    }
-    
     auto currentTime = juce::Time::getCurrentTime();
     
-    for (int i = 0; i < static_cast<int>(magnitudeData.size()); ++i) {
-        // Update peak if current magnitude is higher
-        if (magnitudeData[i] > peakHoldData[i]) {
-            peakHoldData[i] = magnitudeData[i];
-            peakHoldTimes[i] = currentTime;
-        } else {
+    for (size_t i = 0; i < peakHoldData.size(); ++i) {
+        double timeSincePeak = (currentTime - peakHoldTimes[i]).inSeconds();
+        
+        if (timeSincePeak > settings.peakHoldTime) {
             // Apply decay
-            auto timeSinceLastPeak = currentTime - peakHoldTimes[i];
-            auto decayTime = timeSinceLastPeak.inSeconds();
-            
-            if (decayTime > settings.peakHoldTime) {
-                float decay = settings.peakDecayRate * static_cast<float>(decayTime - settings.peakHoldTime);
-                peakHoldData[i] = juce::jmax(peakHoldData[i] - decay, settings.minDecibels);
-            }
+            float decay = settings.peakDecayRate * static_cast<float>(timeSincePeak - settings.peakHoldTime);
+            peakHoldData[i] = juce::jmax(peakHoldData[i] - decay, settings.minDecibels);
         }
     }
 }
+
+//==============================================================================
+// Display Calculations
+//==============================================================================
 
 void SpectrumAnalyzer::updateSpectrumPath() {
     spectrumPath.clear();
@@ -699,42 +693,36 @@ void SpectrumAnalyzer::updateSpectrumPath() {
     
     float binWidth = static_cast<float>(sampleRate) / static_cast<float>(settings.fftSize);
     
-    for (int i = 0; i < static_cast<int>(magnitudeData.size()); ++i) {
-        float frequency = i * binWidth;
+    for (size_t i = 1; i < magnitudeData.size(); ++i) {
+        float frequency = static_cast<float>(i) * binWidth;
         
-        // Skip frequencies outside our display range
-        if (frequency < settings.minFrequency || frequency > settings.maxFrequency) {
-            continue;
+        if (frequency >= settings.minFrequency && frequency <= settings.maxFrequency) {
+            float x = frequencyToX(frequency);
+            float y = magnitudeToY(magnitudeData[i]);
+            
+            spectrumPath.emplace_back(x, y);
         }
-        
-        float x = frequencyToX(frequency);
-        float y = magnitudeToY(magnitudeData[i]);
-        
-        spectrumPath.emplace_back(x, y);
     }
 }
 
 void SpectrumAnalyzer::updatePeakHoldPath() {
     peakHoldPath.clear();
     
-    if (peakHoldData.empty() || !settings.showPeakHold || getWidth() <= 0 || getHeight() <= 0) {
+    if (peakHoldData.empty() || getWidth() <= 0 || getHeight() <= 0) {
         return;
     }
     
     float binWidth = static_cast<float>(sampleRate) / static_cast<float>(settings.fftSize);
     
-    for (int i = 0; i < static_cast<int>(peakHoldData.size()); ++i) {
-        float frequency = i * binWidth;
+    for (size_t i = 1; i < peakHoldData.size(); ++i) {
+        float frequency = static_cast<float>(i) * binWidth;
         
-        // Skip frequencies outside our display range
-        if (frequency < settings.minFrequency || frequency > settings.maxFrequency) {
-            continue;
+        if (frequency >= settings.minFrequency && frequency <= settings.maxFrequency) {
+            float x = frequencyToX(frequency);
+            float y = magnitudeToY(peakHoldData[i]);
+            
+            peakHoldPath.emplace_back(x, y);
         }
-        
-        float x = frequencyToX(frequency);
-        float y = magnitudeToY(peakHoldData[i]);
-        
-        peakHoldPath.emplace_back(x, y);
     }
 }
 
@@ -749,20 +737,16 @@ void SpectrumAnalyzer::updateGridPath() {
     auto freqLines = calculateFrequencyGridLines();
     for (float freq : freqLines) {
         float x = frequencyToX(freq);
-        if (x >= 0 && x <= getWidth()) {
-            gridPath.startNewSubPath(x, 0);
-            gridPath.lineTo(x, static_cast<float>(getHeight()));
-        }
+        gridPath.startNewSubPath(x, 0);
+        gridPath.lineTo(x, static_cast<float>(getHeight()));
     }
     
     // Amplitude grid lines
     auto ampLines = calculateAmplitudeGridLines();
     for (float amp : ampLines) {
         float y = magnitudeToY(amp);
-        if (y >= 0 && y <= getHeight()) {
-            gridPath.startNewSubPath(0, y);
-            gridPath.lineTo(static_cast<float>(getWidth()), y);
-        }
+        gridPath.startNewSubPath(0, y);
+        gridPath.lineTo(static_cast<float>(getWidth()), y);
     }
 }
 
@@ -771,69 +755,99 @@ void SpectrumAnalyzer::updateGridPath() {
 //==============================================================================
 
 float SpectrumAnalyzer::frequencyToX(float frequency) const {
-    if (getWidth() <= 0) return 0.0f;
+    if (getWidth() <= 0) {
+        return 0.0f;
+    }
     
     switch (settings.displayMode) {
         case DisplayMode::Linear:
-            return (frequency - settings.minFrequency) / (settings.maxFrequency - settings.minFrequency) * getWidth();
+            {
+                float ratio = (frequency - settings.minFrequency) / (settings.maxFrequency - settings.minFrequency);
+                return ratio * static_cast<float>(getWidth());
+            }
             
         case DisplayMode::Logarithmic:
-            if (frequency <= 0 || settings.minFrequency <= 0) return 0.0f;
-            return std::log10(frequency / settings.minFrequency) / 
-                   std::log10(settings.maxFrequency / settings.minFrequency) * getWidth();
+            {
+                float logMin = std::log10(settings.minFrequency);
+                float logMax = std::log10(settings.maxFrequency);
+                float logFreq = std::log10(frequency);
+                float ratio = (logFreq - logMin) / (logMax - logMin);
+                return ratio * static_cast<float>(getWidth());
+            }
             
         case DisplayMode::MelScale:
-            // Mel scale conversion: mel = 2595 * log10(1 + freq/700)
             {
-                float melFreq = 2595.0f * std::log10(1.0f + frequency / 700.0f);
-                float melMin = 2595.0f * std::log10(1.0f + settings.minFrequency / 700.0f);
-                float melMax = 2595.0f * std::log10(1.0f + settings.maxFrequency / 700.0f);
-                return (melFreq - melMin) / (melMax - melMin) * getWidth();
+                // Mel scale conversion (simplified)
+                auto freqToMel = [](float f) { return 2595.0f * std::log10(1.0f + f / 700.0f); };
+                float melMin = freqToMel(settings.minFrequency);
+                float melMax = freqToMel(settings.maxFrequency);
+                float melFreq = freqToMel(frequency);
+                float ratio = (melFreq - melMin) / (melMax - melMin);
+                return ratio * static_cast<float>(getWidth());
             }
             
         default:
-            return frequencyToX(frequency); // Fallback to logarithmic
+            return frequencyToX(frequency); // Default to logarithmic
     }
 }
 
 float SpectrumAnalyzer::xToFrequency(float x) const {
-    if (getWidth() <= 0) return settings.minFrequency;
+    if (getWidth() <= 0) {
+        return settings.minFrequency;
+    }
     
-    float ratio = x / getWidth();
+    float ratio = x / static_cast<float>(getWidth());
+    ratio = juce::jlimit(0.0f, 1.0f, ratio);
     
     switch (settings.displayMode) {
         case DisplayMode::Linear:
             return settings.minFrequency + ratio * (settings.maxFrequency - settings.minFrequency);
             
         case DisplayMode::Logarithmic:
-            if (settings.minFrequency <= 0) return settings.minFrequency;
-            return settings.minFrequency * std::pow(settings.maxFrequency / settings.minFrequency, ratio);
+            {
+                float logMin = std::log10(settings.minFrequency);
+                float logMax = std::log10(settings.maxFrequency);
+                float logFreq = logMin + ratio * (logMax - logMin);
+                return std::pow(10.0f, logFreq);
+            }
             
         case DisplayMode::MelScale:
-            // Inverse mel scale conversion
             {
-                float melMin = 2595.0f * std::log10(1.0f + settings.minFrequency / 700.0f);
-                float melMax = 2595.0f * std::log10(1.0f + settings.maxFrequency / 700.0f);
+                // Inverse mel scale conversion
+                auto melToFreq = [](float mel) { return 700.0f * (std::pow(10.0f, mel / 2595.0f) - 1.0f); };
+                auto freqToMel = [](float f) { return 2595.0f * std::log10(1.0f + f / 700.0f); };
+                
+                float melMin = freqToMel(settings.minFrequency);
+                float melMax = freqToMel(settings.maxFrequency);
                 float mel = melMin + ratio * (melMax - melMin);
-                return 700.0f * (std::pow(10.0f, mel / 2595.0f) - 1.0f);
+                return melToFreq(mel);
             }
             
         default:
-            return xToFrequency(x); // Fallback to logarithmic
+            return xToFrequency(x); // Default to logarithmic
     }
 }
 
 float SpectrumAnalyzer::magnitudeToY(float magnitude) const {
-    if (getHeight() <= 0) return 0.0f;
+    if (getHeight() <= 0) {
+        return 0.0f;
+    }
     
     float ratio = (magnitude - settings.minDecibels) / (settings.maxDecibels - settings.minDecibels);
-    return getHeight() - (ratio * getHeight()); // Invert Y axis (0 at top)
+    ratio = juce::jlimit(0.0f, 1.0f, ratio);
+    
+    // Invert Y coordinate (0 at top, height at bottom)
+    return static_cast<float>(getHeight()) * (1.0f - ratio);
 }
 
 float SpectrumAnalyzer::yToMagnitude(float y) const {
-    if (getHeight() <= 0) return settings.minDecibels;
+    if (getHeight() <= 0) {
+        return settings.minDecibels;
+    }
     
-    float ratio = (getHeight() - y) / getHeight(); // Invert Y axis
+    float ratio = 1.0f - (y / static_cast<float>(getHeight()));
+    ratio = juce::jlimit(0.0f, 1.0f, ratio);
+    
     return settings.minDecibels + ratio * (settings.maxDecibels - settings.minDecibels);
 }
 
@@ -845,6 +859,8 @@ void SpectrumAnalyzer::drawSpectrum(juce::Graphics& g) {
     if (spectrumPath.empty()) {
         return;
     }
+    
+    g.setColour(settings.spectrumColor);
     
     // Create path from spectrum points
     juce::Path path;
@@ -864,7 +880,7 @@ void SpectrumAnalyzer::drawSpectrum(juce::Graphics& g) {
         }
     }
     
-    // Draw filled spectrum
+    // Fill spectrum
     g.setColour(settings.spectrumColor.withAlpha(0.3f));
     g.fillPath(path);
     
@@ -880,10 +896,10 @@ void SpectrumAnalyzer::drawPeakHold(juce::Graphics& g) {
     
     g.setColour(settings.peakHoldColor);
     
-    // Draw peak hold as individual lines
+    // Draw peak hold lines
     for (size_t i = 0; i < peakHoldPath.size(); ++i) {
         const auto& point = peakHoldPath[i];
-        g.drawLine(point.x - 1, point.y, point.x + 1, point.y, 1.0f);
+        g.drawLine(point.x, point.y, point.x, point.y + 2.0f, 1.0f);
     }
 }
 
@@ -900,20 +916,20 @@ void SpectrumAnalyzer::drawLabels(juce::Graphics& g) {
     auto freqLines = calculateFrequencyGridLines();
     for (float freq : freqLines) {
         float x = frequencyToX(freq);
-        if (x >= 0 && x <= getWidth()) {
-            auto label = formatFrequency(freq);
-            g.drawText(label, static_cast<int>(x - 20), getHeight() - 15, 40, 12, juce::Justification::centred);
-        }
+        juce::String label = formatFrequency(freq);
+        
+        g.drawText(label, static_cast<int>(x - 20), getHeight() - 15, 40, 12, 
+                  juce::Justification::centred);
     }
     
     // Draw amplitude labels
     auto ampLines = calculateAmplitudeGridLines();
     for (float amp : ampLines) {
         float y = magnitudeToY(amp);
-        if (y >= 0 && y <= getHeight()) {
-            auto label = formatAmplitude(amp);
-            g.drawText(label, 2, static_cast<int>(y - 6), 40, 12, juce::Justification::left);
-        }
+        juce::String label = formatAmplitude(amp);
+        
+        g.drawText(label, 2, static_cast<int>(y - 6), 40, 12, 
+                  juce::Justification::left);
     }
 }
 
@@ -924,17 +940,19 @@ void SpectrumAnalyzer::drawFrequencyCursor(juce::Graphics& g) {
     
     float x = frequencyToX(cursorFrequency);
     
-    g.setColour(juce::Colours::white.withAlpha(0.8f));
+    g.setColour(juce::Colours::yellow.withAlpha(0.8f));
     g.drawLine(x, 0, x, static_cast<float>(getHeight()), 1.0f);
     
     // Draw frequency value
-    auto freqText = formatFrequency(cursorFrequency);
-    auto magnitude = getMagnitudeAtFrequency(cursorFrequency);
-    auto magText = formatAmplitude(magnitude);
+    juce::String freqText = formatFrequency(cursorFrequency);
+    float magnitude = getMagnitudeAtFrequency(cursorFrequency);
+    juce::String magText = formatAmplitude(magnitude);
     
+    juce::String label = freqText + " / " + magText;
+    
+    g.setColour(juce::Colours::yellow);
     g.setFont(JUCE8_FONT(12.0f));
-    g.drawText(freqText + " / " + magText, 
-               static_cast<int>(x + 5), 5, 100, 15, juce::Justification::left);
+    g.drawText(label, static_cast<int>(x + 5), 5, 100, 15, juce::Justification::left);
 }
 
 //==============================================================================
@@ -948,7 +966,7 @@ std::vector<float> SpectrumAnalyzer::calculateFrequencyGridLines() const {
         case DisplayMode::Linear:
             {
                 float step = (settings.maxFrequency - settings.minFrequency) / 10.0f;
-                for (int i = 0; i <= 10; ++i) {
+                for (int i = 1; i < 10; ++i) {
                     lines.push_back(settings.minFrequency + i * step);
                 }
             }
@@ -956,9 +974,9 @@ std::vector<float> SpectrumAnalyzer::calculateFrequencyGridLines() const {
             
         case DisplayMode::Logarithmic:
             {
-                // Standard frequencies: 20, 50, 100, 200, 500, 1k, 2k, 5k, 10k, 20k
-                std::vector<float> standardFreqs = {20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
-                for (float freq : standardFreqs) {
+                // Octave-based grid lines
+                std::vector<float> frequencies = {20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000};
+                for (float freq : frequencies) {
                     if (freq >= settings.minFrequency && freq <= settings.maxFrequency) {
                         lines.push_back(freq);
                     }
@@ -967,8 +985,7 @@ std::vector<float> SpectrumAnalyzer::calculateFrequencyGridLines() const {
             break;
             
         default:
-            // Use logarithmic as default
-            return calculateFrequencyGridLines();
+            break;
     }
     
     return lines;
@@ -977,27 +994,24 @@ std::vector<float> SpectrumAnalyzer::calculateFrequencyGridLines() const {
 std::vector<float> SpectrumAnalyzer::calculateAmplitudeGridLines() const {
     std::vector<float> lines;
     
-    // Standard dB lines: every 10 dB
-    float step = 10.0f;
-    float start = std::ceil(settings.minDecibels / step) * step;
-    
-    for (float db = start; db <= settings.maxDecibels; db += step) {
-        lines.push_back(db);
+    float step = (settings.maxDecibels - settings.minDecibels) / 8.0f;
+    for (int i = 1; i < 8; ++i) {
+        lines.push_back(settings.minDecibels + i * step);
     }
     
     return lines;
 }
 
 juce::String SpectrumAnalyzer::formatFrequency(float frequency) const {
-    if (frequency >= 1000.0f) {
-        return juce::String(frequency / 1000.0f, 1) + "k";
+    if (frequency < 1000.0f) {
+        return juce::String(static_cast<int>(frequency)) + " Hz";
     } else {
-        return juce::String(static_cast<int>(frequency));
+        return juce::String(frequency / 1000.0f, 1) + " kHz";
     }
 }
 
 juce::String SpectrumAnalyzer::formatAmplitude(float amplitude) const {
-    return juce::String(amplitude, 1) + "dB";
+    return juce::String(amplitude, 1) + " dB";
 }
 
 //==============================================================================
@@ -1005,13 +1019,19 @@ juce::String SpectrumAnalyzer::formatAmplitude(float amplitude) const {
 //==============================================================================
 
 void SpectrumAnalyzer::updateColors() {
-    // Update colors based on current theme
-    // This could include gradient colors based on frequency
+    updateColorsFromTheme();
 }
 
 juce::Colour SpectrumAnalyzer::getSpectrumColorAtFrequency(float frequency) const {
-    // Could implement frequency-based coloring here
-    return settings.spectrumColor;
+    // Create frequency-based color gradient
+    float ratio = (frequency - settings.minFrequency) / (settings.maxFrequency - settings.minFrequency);
+    ratio = juce::jlimit(0.0f, 1.0f, ratio);
+    
+    // Interpolate between blue (low) and red (high)
+    juce::Colour lowColor = juce::Colours::blue;
+    juce::Colour highColor = juce::Colours::red;
+    
+    return lowColor.interpolatedWith(highColor, ratio);
 }
 
 //==============================================================================
@@ -1019,27 +1039,28 @@ juce::Colour SpectrumAnalyzer::getSpectrumColorAtFrequency(float frequency) cons
 //==============================================================================
 
 void SpectrumAnalyzer::optimizeForPerformance() {
-    // Adjust update rate based on component size
-    int updateRate = 16; // Default 60 FPS
-    
-    if (getWidth() * getHeight() > 500000) { // Large display
-        updateRate = 33; // 30 FPS
-    } else if (getWidth() * getHeight() < 50000) { // Small display
-        updateRate = 8; // 120 FPS
+    // Reduce FFT size if performance is poor
+    if (performanceStats.averageProcessingTime > 10.0) {
+        if (settings.fftSize > 512) {
+            setFFTSize(settings.fftSize / 2);
+        }
     }
     
-    startTimer(updateRate);
+    // Reduce overlap factor
+    if (performanceStats.averageProcessingTime > 5.0) {
+        settings.overlapFactor = juce::jmax(1, settings.overlapFactor / 2);
+    }
 }
 
 bool SpectrumAnalyzer::shouldSkipFrame() const {
-    // Skip frames if processing is taking too long
-    return performanceStats.averageProcessingTime > 10.0; // 10ms threshold
+    // Skip frame if processing is taking too long
+    return performanceStats.averageProcessingTime > 16.0; // 60 FPS target
 }
 
 void SpectrumAnalyzer::updatePerformanceStats(double processingTime) {
     processingTimes.push_back(processingTime);
     
-    // Keep only last 100 measurements
+    // Keep only recent measurements
     if (processingTimes.size() > 100) {
         processingTimes.erase(processingTimes.begin());
     }
@@ -1052,10 +1073,12 @@ void SpectrumAnalyzer::updatePerformanceStats(double processingTime) {
     performanceStats.averageProcessingTime = sum / processingTimes.size();
     
     // Update max
-    performanceStats.maxProcessingTime = *std::max_element(processingTimes.begin(), processingTimes.end());
+    if (processingTime > performanceStats.maxProcessingTime) {
+        performanceStats.maxProcessingTime = processingTime;
+    }
     
-    // Simple CPU usage estimation
-    performanceStats.cpuUsage = (performanceStats.averageProcessingTime / 16.67) * 100.0; // Assume 60 FPS target
+    // Estimate CPU usage (simplified)
+    performanceStats.cpuUsage = (performanceStats.averageProcessingTime / 16.0) * 100.0; // Assuming 60 FPS target
 }
 
 //==============================================================================
@@ -1063,11 +1086,11 @@ void SpectrumAnalyzer::updatePerformanceStats(double processingTime) {
 //==============================================================================
 
 bool SpectrumAnalyzer::isValidFFTSize(int size) const {
-    return size >= 512 && size <= 8192 && (size & (size - 1)) == 0; // Power of 2
+    return size >= 256 && size <= 8192 && (size & (size - 1)) == 0; // Power of 2
 }
 
 bool SpectrumAnalyzer::isValidFrequencyRange(float minFreq, float maxFreq) const {
-    return minFreq > 0 && maxFreq > minFreq && maxFreq <= sampleRate / 2.0;
+    return minFreq > 0 && maxFreq > minFreq && maxFreq <= static_cast<float>(sampleRate * 0.5);
 }
 
 bool SpectrumAnalyzer::isValidAmplitudeRange(float minDb, float maxDb) const {

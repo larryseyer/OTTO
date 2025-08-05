@@ -1062,8 +1062,7 @@ void MainContentComponent::lookAndFeelChanged() {
 void MainContentComponent::mouseDown(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
     if (gestureRecognizer) {
-        // Note: isEnabled() and handleMouseDown() not available in current GestureRecognizer implementation
-        // TODO: Implement gesture recognition mouse handling if needed
+        gestureRecognizer->processMouseEvent(e, this);
     }
     
     // Continue with normal mouse handling
@@ -1073,8 +1072,7 @@ void MainContentComponent::mouseDown(const juce::MouseEvent& e) {
 void MainContentComponent::mouseUp(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
     if (gestureRecognizer) {
-        // Note: isEnabled() and handleMouseUp() not available in current GestureRecognizer implementation
-        // TODO: Implement gesture recognition mouse handling if needed
+        gestureRecognizer->processMouseEvent(e, this);
     }
     
     // Continue with normal mouse handling
@@ -1084,8 +1082,7 @@ void MainContentComponent::mouseUp(const juce::MouseEvent& e) {
 void MainContentComponent::mouseDrag(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
     if (gestureRecognizer) {
-        // Note: isEnabled() and handleMouseDrag() not available in current GestureRecognizer implementation
-        // TODO: Implement gesture recognition mouse handling if needed
+        gestureRecognizer->processMouseEvent(e, this);
     }
     
     // Continue with normal mouse handling
@@ -1095,8 +1092,7 @@ void MainContentComponent::mouseDrag(const juce::MouseEvent& e) {
 void MainContentComponent::mouseMove(const juce::MouseEvent& e) {
     // Forward to gesture recognizer for touch platforms
     if (gestureRecognizer) {
-        // Note: isEnabled() and handleMouseMove() not available in current GestureRecognizer implementation
-        // TODO: Implement gesture recognition mouse handling if needed
+        gestureRecognizer->processMouseEvent(e, this);
     }
     
     // Continue with normal mouse handling

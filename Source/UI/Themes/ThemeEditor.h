@@ -118,7 +118,7 @@ private:
     
     // Accessibility validation
     juce::StringArray accessibilityIssues;
-    ThemeManager::AccessibilityMode previewAccessibilityMode = ThemeManager::AccessibilityMode::None;
+    ThemeManager::AccessibilityMode currentPreviewAccessibilityMode = ThemeManager::AccessibilityMode::None;
     
     // UI Components
     std::unique_ptr<juce::TabbedComponent> modeTabsComponent;
@@ -160,6 +160,27 @@ private:
     std::unique_ptr<juce::TextButton> resetButton;
     std::unique_ptr<juce::TextButton> newThemeButton;
     
+    // Mode buttons (used in implementation)
+    std::unique_ptr<juce::TextButton> colorsButton;
+    std::unique_ptr<juce::TextButton> gradientsButton;
+    std::unique_ptr<juce::TextButton> accessibilityButton;
+    std::unique_ptr<juce::TextButton> previewButton;
+    
+    // Additional components used in implementation
+    std::unique_ptr<juce::ColourSelector> colorPicker;
+    std::unique_ptr<juce::ToggleButton> livePreviewButton;
+    std::unique_ptr<juce::Component> previewComponent;
+    
+    // Theme state
+    juce::String currentThemeName;
+    juce::ValueTree originalTheme;
+    
+    // Callback functions
+    std::function<void(const juce::String&)> onThemeSaved;
+    std::function<void(const juce::String&)> onThemeExported;
+    std::function<void(const juce::String&)> onThemeImported;
+    std::function<void(const juce::String&)> onThemeShared;
+    
     // Layout helpers
     void setupColorGroupsList();
     void setupColorSelector();
@@ -168,6 +189,22 @@ private:
     void setupPreviewTab();
     void setupExportTab();
     void setupControlButtons();
+    
+    // Missing method declarations
+    void setupColorGroups();
+    void createUIComponents();
+    void setupLayout();
+    void updateModeButtons();
+    void refreshColorGroups();
+    void updateColorEditor();
+    void updateColorPicker();
+    void applyColorChange();
+    void checkContrastRatios(const juce::ValueTree& theme);
+    void checkColorBlindnessCompatibility(const juce::ValueTree& theme);
+    void updateAccessibilityDisplay();
+    void monitorVisualizationPerformance();
+    void trackGestureRecognitionLatency();
+    void optimizePerformanceUnderLoad();
     
     void layoutColorsTab(juce::Rectangle<int> area);
     void layoutGradientsTab(juce::Rectangle<int> area);

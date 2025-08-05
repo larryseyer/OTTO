@@ -260,7 +260,7 @@ private:
     // Accessibility helpers
     juce::Colour adjustColorForAccessibility(const juce::Colour& color, AccessibilityMode mode);
     float calculateContrastRatio(const juce::Colour& foreground, const juce::Colour& background);
-    bool meetsAccessibilityStandards(const juce::Colour& foreground, const juce::Colour& background);
+    bool meetsAccessibilityStandards(const juce::Colour& foreground, const juce::Colour& background) const;
     
     // Seasonal helpers
     int getCurrentSeason() const;

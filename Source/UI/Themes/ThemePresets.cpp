@@ -619,7 +619,10 @@ bool ThemePresets::saveToINI() const
 bool ThemePresets::loadFromINI()
 {
     try {
-        auto state = INIDataManager::loadComponentState("ThemePresets");
+        ComponentState state;
+        if (!INIDataManager::loadComponentState("ThemePresets", state)) {
+            return false;
+        }
         
         customPresets.clear();
         

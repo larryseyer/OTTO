@@ -844,7 +844,10 @@ bool ThemeValidator::saveToINI() const
 bool ThemeValidator::loadFromINI()
 {
     try {
-        auto state = INIDataManager::loadComponentState("ThemeValidator");
+        ComponentState state;
+        if (!INIDataManager::loadComponentState("ThemeValidator", state)) {
+            return false;
+        }
         
         minimumContrastRatio = static_cast<float>(state.getDoubleValue("MinimumContrastRatio", DEFAULT_MIN_CONTRAST_RATIO));
         accessibilityValidationEnabled = state.getBoolValue("AccessibilityValidationEnabled", true);
@@ -871,9 +874,12 @@ void ThemeValidator::resetToDefaults()
     performanceValidationEnabled = true;
     
     // Reset all categories to enabled
-    for (auto& pair : categoryEnabled) {
-        pair.second = true;
-    }
+    categoryEnabled.set(ValidationCategory::Colors, true);
+    categoryEnabled.set(ValidationCategory::Gradients, true);
+    categoryEnabled.set(ValidationCategory::Fonts, true);
+    categoryEnabled.set(ValidationCategory::Accessibility, true);
+    categoryEnabled.set(ValidationCategory::Performance, true);
+    categoryEnabled.set(ValidationCategory::Compatibility, true);
     
     customRules.clear();
 }
@@ -1031,7 +1037,7 @@ bool ThemeValidator::isValidColorValue(const juce::String& colorValue) const
     
     for (int i = 0; i < colorValue.length(); ++i) {
         auto c = colorValue[i];
-        if (!juce::CharacterFunctions::isHexDigit(c)) {
+        if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))) {
             return false;
         }
     }
@@ -1127,7 +1133,7 @@ ThemePresets::ThemePreset ThemeValidator::applyMigrationRules(const ThemePresets
             // Migrate color property
             if (migratedPreset.colorValues.containsKey(rule.oldName)) {
                 auto value = migratedPreset.colorValues[rule.oldName];
-                migratedPreset.colorValues.remove(rule.oldName);
+                migratedPreset.colorValues.removeValue(rule.oldName);
                 migratedPreset.colorValues.set(rule.newName, value);
             } else if (rule.required && !migratedPreset.colorValues.containsKey(rule.newName)) {
                 migratedPreset.colorValues.set(rule.newName, rule.defaultValue);

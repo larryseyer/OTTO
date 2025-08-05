@@ -1,5 +1,6 @@
 #include "SpectrumAnalyzer.h"
 #include "JUCE8_CODING_STANDARDS.h"
+#include "INIDataManager.h"
 #include <algorithm>
 #include <cmath>
 
@@ -418,7 +419,7 @@ juce::Array<SpectrumAnalyzer::Peak> SpectrumAnalyzer::detectPeaks(float threshol
     }
     
     // Sort peaks by magnitude (highest first)
-    peaks.sort([](const Peak& a, const Peak& b) {
+    std::sort(peaks.begin(), peaks.end(), [](const Peak& a, const Peak& b) {
         return a.magnitude > b.magnitude;
     });
     
@@ -464,9 +465,9 @@ void SpectrumAnalyzer::loadState(const ComponentState& state) {
     
     newSettings.fftSize = state.getValue("fftSize", 2048);
     newSettings.overlapFactor = state.getValue("overlapFactor", 4);
-    newSettings.displayMode = static_cast<DisplayMode>(state.getValue("displayMode", static_cast<int>(DisplayMode::Logarithmic)));
-    newSettings.windowType = static_cast<WindowType>(state.getValue("windowType", static_cast<int>(WindowType::Hanning)));
-    newSettings.averagingMode = static_cast<AveragingMode>(state.getValue("averagingMode", static_cast<int>(AveragingMode::Exponential)));
+    newSettings.displayMode = static_cast<DisplayMode>(state.getIntValue("displayMode", static_cast<int>(DisplayMode::Logarithmic)));
+    newSettings.windowType = static_cast<WindowType>(state.getIntValue("windowType", static_cast<int>(WindowType::Hanning)));
+    newSettings.averagingMode = static_cast<AveragingMode>(state.getIntValue("averagingMode", static_cast<int>(AveragingMode::Exponential)));
     newSettings.minFrequency = state.getValue("minFrequency", 20.0f);
     newSettings.maxFrequency = state.getValue("maxFrequency", 20000.0f);
     newSettings.minDecibels = state.getValue("minDecibels", -80.0f);

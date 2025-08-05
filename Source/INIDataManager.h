@@ -107,6 +107,10 @@ public:
     void enableAutoSave(int intervalSeconds);
     bool saveWithVersion(const ComponentState& state, const juce::String& version);
 
+    // Static convenience methods for component state management
+    static bool loadComponentState(const juce::String& componentName, ComponentState& state);
+    static bool saveComponentState(const juce::String& componentName, const ComponentState& state);
+
 private:
     juce::String lastError;
     void* midiFileManager = nullptr;

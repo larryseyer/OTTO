@@ -39,8 +39,8 @@ VUMeterAdvanced::VUMeterAdvanced(const MeterSettings& initialSettings)
     startTimer(1000 / settings.refreshRate);
     
     // Set initial size
-    setSize(static_cast<int>(getWidth() * INIConfig::LayoutConstants::Row5::patternMatrixWidthPercent / 100.0f),
-            static_cast<int>(getHeight() * INIConfig::LayoutConstants::Row5::patternMatrixHeightPercent / 100.0f));
+    setSize(static_cast<int>(getWidth() * 80.0f / 100.0f),  // Default 80% width
+            static_cast<int>(getHeight() * 60.0f / 100.0f)); // Default 60% height
 }
 
 VUMeterAdvanced::~VUMeterAdvanced()
@@ -148,14 +148,14 @@ void VUMeterAdvanced::processAudioBuffer(const juce::AudioBuffer<float>& buffer)
 void VUMeterAdvanced::setLevel(int channel, float level)
 {
     if (channel >= 0 && channel < channelData.size()) {
-        channelData[channel].currentLevel = level;
+        channelData.getReference(channel).currentLevel = level;
         
         // Check for clipping
-        if (level > CLIP_THRESHOLD && !channelData[channel].isClipping) {
-            channelData[channel].isClipping = true;
+        if (level > CLIP_THRESHOLD && !channelData.getReference(channel).isClipping) {
+            channelData.getReference(channel).isClipping = true;
             notifyListeners([=](Listener* l) { l->meterClippingDetected(channel); });
         } else if (level <= CLIP_THRESHOLD) {
-            channelData[channel].isClipping = false;
+            channelData.getReference(channel).isClipping = false;
         }
         
         needsRepaint = true;
@@ -165,7 +165,7 @@ void VUMeterAdvanced::setLevel(int channel, float level)
 void VUMeterAdvanced::setPeakLevel(int channel, float peakLevel)
 {
     if (channel >= 0 && channel < channelData.size()) {
-        channelData[channel].peakLevel = peakLevel;
+        channelData.getReference(channel).peakLevel = peakLevel;
         updatePeakHold(channel, peakLevel);
         needsRepaint = true;
     }
@@ -174,7 +174,7 @@ void VUMeterAdvanced::setPeakLevel(int channel, float peakLevel)
 void VUMeterAdvanced::setRMSLevel(int channel, float rmsLevel)
 {
     if (channel >= 0 && channel < channelData.size()) {
-        channelData[channel].rmsLevel = rmsLevel;
+        channelData.getReference(channel).rmsLevel = rmsLevel;
         needsRepaint = true;
     }
 }
@@ -777,7 +777,7 @@ void VUMeterAdvanced::updatePeakHold(int channel, float currentLevel)
         return;
     }
     
-    auto& data = channelData[channel];
+    auto& data = channelData.getReference(channel);
     auto currentTime = juce::Time::getCurrentTime();
     
     // Update peak hold level
@@ -800,7 +800,7 @@ void VUMeterAdvanced::updateSmoothing(int channel, float deltaTime)
         return;
     }
     
-    auto& data = channelData[channel];
+    auto& data = channelData.getReference(channel);
     
     // Apply ballistics to current level
     data.smoothedLevel = applyBallistics(data.smoothedLevel, data.currentLevel, deltaTime);
@@ -1001,7 +1001,9 @@ float VUMeterAdvanced::calculatePeak(const float* samples, int numSamples) const
 
 void VUMeterAdvanced::notifyListeners(std::function<void(Listener*)> notification)
 {
-    listeners.call(notification);
+    listeners.call([&notification](Listener& listener) {
+        notification(&listener);
+    });
 }
 
 } // namespace Visualizations

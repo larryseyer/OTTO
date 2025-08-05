@@ -2,6 +2,19 @@
 #include "JUCE8_CODING_STANDARDS.h"
 #include "../../INIDataManager.h"
 
+//==============================================================================
+// LongPressTimer Implementation
+//==============================================================================
+
+void LongPressTimer::timerCallback()
+{
+    stopTimer();
+    if (owner.onLongPress) {
+        owner.onLongPress();
+    }
+    owner.triggerHapticFeedback(); // Different haptic for long press
+}
+
 namespace OTTO {
 namespace UI {
 namespace Controls {
@@ -228,15 +241,9 @@ void TouchOptimizedButton::triggerHapticFeedback()
 
 void TouchOptimizedButton::startLongPressTimer()
 {
-    if (!longPressTimer) return;
-    
-    longPressTimer->onTimer = [this]() {
-        stopLongPressTimer();
-        if (onLongPress) {
-            onLongPress();
-        }
-        triggerHapticFeedback(); // Different haptic for long press
-    };
+    if (!longPressTimer) {
+        longPressTimer = std::make_unique<LongPressTimer>(*this);
+    }
     
     longPressTimer->startTimer(longPressDelay);
 }
@@ -258,8 +265,12 @@ juce::Rectangle<int> TouchOptimizedButton::getExpandedBounds() const
 //==============================================================================
 
 TouchOptimizedSlider::TouchOptimizedSlider(SliderStyle style, TextEntryBoxPosition textBoxPosition)
-    : juce::Slider(style, textBoxPosition)
+    : juce::Slider()
 {
+    // Set slider style and text box position
+    setSliderStyle(style);
+    setTextBoxStyle(textBoxPosition, false, 80, 20);
+    
     // Set minimum size for touch interaction
     setSize(100, 44); // Minimum touch-friendly size
     

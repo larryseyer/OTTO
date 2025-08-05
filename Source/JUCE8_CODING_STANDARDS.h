@@ -9,9 +9,11 @@
 #ifndef JUCE8_CODING_STANDARDS_H
 #define JUCE8_CODING_STANDARDS_H
 
-// Enforce JUCE 8 version check
-#if JUCE_MAJOR_VERSION < 8
-    #error "This project requires JUCE 8.0.8 or higher"
+// Enforce JUCE 8 version check - only if JUCE headers are already included
+#ifdef JUCE_MAJOR_VERSION
+    #if JUCE_MAJOR_VERSION < 8
+        #error "This project requires JUCE 8.0.8 or higher"
+    #endif
 #endif
 
 //==============================================================================
@@ -43,9 +45,11 @@
 // DISPLAY API - MANDATORY PATTERNS  
 //==============================================================================
 
-// ✅ ALWAYS USE JUCE 8 Display API:
-inline auto getDisplays() { return juce::Desktop::getInstance().getDisplays(); }
-inline auto getPrimaryDisplay() { return juce::Desktop::getInstance().getDisplays().getPrimaryDisplay(); }
+// ✅ ALWAYS USE JUCE 8 Display API - only define if JUCE headers are included:
+#ifdef JUCE_MAJOR_VERSION
+    inline auto getDisplays() { return juce::Desktop::getInstance().getDisplays(); }
+    inline auto getPrimaryDisplay() { return juce::Desktop::getInstance().getDisplays().getPrimaryDisplay(); }
+#endif
 
 //==============================================================================
 // COMPONENT MANAGEMENT - MANDATORY PATTERNS
@@ -71,12 +75,18 @@ namespace JUCE8Standards {
     constexpr int JUCE_VERSION_REQUIRED = 8;
     constexpr const char* PROJECT_TYPE = "JUCE8_NATIVE";
     
-    // Compile-time verification this is JUCE 8
-    static_assert(JUCE_MAJOR_VERSION >= 8, "This project requires JUCE 8.0.8+");
+    // Compile-time verification this is JUCE 8 - only if JUCE headers are included
+    #ifdef JUCE_MAJOR_VERSION
+        static_assert(JUCE_MAJOR_VERSION >= 8, "This project requires JUCE 8.0.8+");
+    #endif
     
     // Runtime verification function
     inline bool verifyJUCE8Compliance() {
-        return JUCE_MAJOR_VERSION >= 8;
+        #ifdef JUCE_MAJOR_VERSION
+            return JUCE_MAJOR_VERSION >= 8;
+        #else
+            return false; // JUCE headers not included yet
+        #endif
     }
 }
 

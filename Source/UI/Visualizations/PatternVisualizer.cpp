@@ -115,8 +115,8 @@ PatternVisualizer::PatternVisualizer(const VisualizerSettings& initialSettings)
     startTimer(1000 / settings.refreshRate);
     
     // Set initial size using INI constants
-    setSize(static_cast<int>(getWidth() * INIConfig::LayoutConstants::Row5::patternMatrixWidthPercent / 100.0f),
-            static_cast<int>(getHeight() * INIConfig::LayoutConstants::Row5::patternMatrixHeightPercent / 100.0f));
+    setSize(static_cast<int>(getWidth() * 80.0f / 100.0f),  // Default 80% width
+            static_cast<int>(getHeight() * 60.0f / 100.0f)); // Default 60% height
 }
 
 PatternVisualizer::~PatternVisualizer()

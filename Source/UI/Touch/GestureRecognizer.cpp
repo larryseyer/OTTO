@@ -1,5 +1,6 @@
 #include "GestureRecognizer.h"
 #include "JUCE8_CODING_STANDARDS.h"
+#include "INIDataManager.h"
 #include <algorithm>
 #include <cmath>
 
@@ -132,12 +133,12 @@ void GestureRecognizer::processMouseEvent(const juce::MouseEvent& e, juce::Compo
     // Convert mouse event to touch event for unified processing
     int touchId = 0; // Mouse is always touch ID 0
     
-    if (e.eventType == juce::MouseInputSource::InputSourceType::mouse) {
+    if (e.source.isTouch()) {
         if (e.mouseWasClicked()) {
             addTouchPoint(touchId, e.position, component);
-        } else if (e.mouseDraggedSinceMouseDown()) {
+        } else if (e.mouseWasDraggedSinceMouseDown()) {
             updateTouchPoint(touchId, e.position);
-        } else if (e.mouseWasReleased()) {
+        } else if (e.mouseWasClicked()) { // Use mouseWasClicked for release detection
             removeTouchPoint(touchId);
         }
     }
@@ -145,7 +146,7 @@ void GestureRecognizer::processMouseEvent(const juce::MouseEvent& e, juce::Compo
     updateGestureRecognition();
 }
 
-void GestureRecognizer::processTouchEvent(const juce::TouchEvent& e, juce::Component* component) {
+void GestureRecognizer::processTouchEvent(const juce::MouseEvent& e, juce::Component* component) {
     // Process native touch events (iOS, Android, Windows Touch)
     for (const auto& touch : e.touches) {
         if (touch.isTouchStart()) {

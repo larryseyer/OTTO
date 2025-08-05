@@ -594,11 +594,11 @@ bool AudioScopeComponent::exportData(const juce::File& file, int channel)
     
     // Write CSV header
     if (channel == -1) {
-        stream.writeText("Time");
+        stream.writeText("Time", false, false, nullptr);
         for (int i = 0; i < settings.numChannels; ++i) {
-            stream.writeText(",Channel" + juce::String(i + 1));
+            stream.writeText(",Channel" + juce::String(i + 1), false, false, nullptr);
         }
-        stream.writeText("\n");
+        stream.writeText("\n", false, false, nullptr);
         
         // Write data for all channels
         int maxSamples = 0;
@@ -608,24 +608,24 @@ bool AudioScopeComponent::exportData(const juce::File& file, int channel)
         
         for (int sample = 0; sample < maxSamples; ++sample) {
             float time = sample / settings.sampleRate;
-            stream.writeText(juce::String(time, 6));
+            stream.writeText(juce::String(time, 6), false, false, nullptr);
             
             for (int ch = 0; ch < settings.numChannels; ++ch) {
                 float value = (sample < channelData[ch].displayBuffer.size()) ? 
                              channelData[ch].displayBuffer[sample] : 0.0f;
-                stream.writeText("," + juce::String(value, 6));
+                stream.writeText("," + juce::String(value, 6), false, false, nullptr);
             }
-            stream.writeText("\n");
+            stream.writeText("\n", false, false, nullptr);
         }
     } else if (channel >= 0 && channel < settings.numChannels) {
         // Write single channel data
-        stream.writeText("Time,Amplitude\n");
+        stream.writeText("Time,Amplitude\n", false, false, nullptr);
         const auto& data = channelData[channel];
         
         for (int sample = 0; sample < data.displayBuffer.size(); ++sample) {
             float time = sample / settings.sampleRate;
             stream.writeText(juce::String(time, 6) + "," + 
-                           juce::String(data.displayBuffer[sample], 6) + "\n");
+                           juce::String(data.displayBuffer[sample], 6) + "\n", false, false, nullptr);
         }
     }
     
@@ -1401,11 +1401,11 @@ void AudioScopeComponent::saveRecordingData()
     if (!stream.openedOk()) return;
     
     // Write CSV header
-    stream.writeText("Time");
+    stream.writeText("Time", false, false, nullptr);
     for (int i = 0; i < recordingData.size(); ++i) {
-        stream.writeText(",Channel" + juce::String(i + 1));
+        stream.writeText(",Channel" + juce::String(i + 1), false, false, nullptr);
     }
-    stream.writeText("\n");
+    stream.writeText("\n", false, false, nullptr);
     
     // Find maximum number of samples
     int maxSamples = 0;
@@ -1416,14 +1416,14 @@ void AudioScopeComponent::saveRecordingData()
     // Write data
     for (int sample = 0; sample < maxSamples; ++sample) {
         float time = sample / settings.sampleRate;
-        stream.writeText(juce::String(time, 6));
+        stream.writeText(juce::String(time, 6), false, false, nullptr);
         
         for (int channel = 0; channel < recordingData.size(); ++channel) {
             float value = (sample < recordingData[channel].size()) ? 
                          recordingData[channel][sample] : 0.0f;
-            stream.writeText("," + juce::String(value, 6));
+            stream.writeText("," + juce::String(value, 6), false, false, nullptr);
         }
-        stream.writeText("\n");
+        stream.writeText("\n", false, false, nullptr);
     }
     
     recordingData.clear();

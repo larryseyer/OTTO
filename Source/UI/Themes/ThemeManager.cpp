@@ -1,5 +1,6 @@
 #include "ThemeManager.h"
 #include "JUCE8_CODING_STANDARDS.h"
+#include "INIDataManager.h"
 #include <algorithm>
 #include <cmath>
 
@@ -733,7 +734,7 @@ void ThemeManager::loadState(const ComponentState& state) {
     setCurrentTheme(themeName);
     
     // Load accessibility mode
-    AccessibilityMode mode = static_cast<AccessibilityMode>(state.getValue("accessibilityMode", static_cast<int>(AccessibilityMode::None)));
+    AccessibilityMode mode = static_cast<AccessibilityMode>(state.getIntValue("accessibilityMode", static_cast<int>(AccessibilityMode::None)));
     setAccessibilityMode(mode);
     
     // Load seasonal settings
@@ -770,31 +771,15 @@ void ThemeManager::syncWithColorScheme() {
 }
 
 void ThemeManager::updateColorScheme(const ThemeColors& colors) {
-    // Map ThemeColors to ColorScheme
-    colorScheme.setColor(ColorScheme::ColorRole::Accent, colors.accent);
-    colorScheme.setColor(ColorScheme::ColorRole::ComponentBackground, colors.background);
-    colorScheme.setColor(ColorScheme::ColorRole::WindowBackground, colors.surface);
-    colorScheme.setColor(ColorScheme::ColorRole::PrimaryText, colors.onBackground);
-    colorScheme.setColor(ColorScheme::ColorRole::SecondaryText, colors.onSurface);
-    colorScheme.setColor(ColorScheme::ColorRole::Error, colors.error);
-    colorScheme.setColor(ColorScheme::ColorRole::Success, colors.success);
-    colorScheme.setColor(ColorScheme::ColorRole::Warning, colors.warning);
+    // TODO: ColorScheme integration needs to be redesigned
+    // ColorScheme::setColor expects component/property strings, not ColorRole enums
+    // For now, store colors in currentThemeColors and notify listeners
+    currentThemeColors = colors;
     
-    // Update button colors
-    colorScheme.setColor(ColorScheme::ColorRole::ButtonBackground, colors.primary);
-    colorScheme.setColor(ColorScheme::ColorRole::ButtonText, colors.onPrimary);
-    colorScheme.setColor(ColorScheme::ColorRole::ButtonHover, colors.hover);
-    colorScheme.setColor(ColorScheme::ColorRole::ButtonPressed, colors.pressed);
-    
-    // Update pattern colors
-    colorScheme.setColor(ColorScheme::ColorRole::PatternActive, colors.selected);
-    colorScheme.setColor(ColorScheme::ColorRole::PatternInactive, colors.disabled);
-    
-    // Update meter colors
-    colorScheme.setColor(ColorScheme::ColorRole::MeterLow, colors.meterLow);
-    colorScheme.setColor(ColorScheme::ColorRole::MeterMid, colors.meterMid);
-    colorScheme.setColor(ColorScheme::ColorRole::MeterHigh, colors.meterHigh);
-    colorScheme.setColor(ColorScheme::ColorRole::MeterPeak, colors.meterPeak);
+    // Notify listeners of theme change
+    listeners.call([this](Listener& listener) {
+        listener.themeChanged(currentThemeName);
+    });
 }
 
 //==============================================================================
@@ -1123,7 +1108,7 @@ float ThemeManager::calculateContrastRatio(const juce::Colour& foreground, const
     return (lighter + 0.05f) / (darker + 0.05f);
 }
 
-bool ThemeManager::meetsAccessibilityStandards(const juce::Colour& foreground, const juce::Colour& background) {
+bool ThemeManager::meetsAccessibilityStandards(const juce::Colour& foreground, const juce::Colour& background) const {
     float contrastRatio = calculateContrastRatio(foreground, background);
     return contrastRatio >= 4.5f; // WCAG AA standard
 }

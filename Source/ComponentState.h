@@ -466,6 +466,45 @@ public:
     juce::String currentLearnParameter;
     bool midiLearnActive = false;
 
+    // Generic key-value storage for component-specific settings
+    std::unordered_map<juce::String, juce::var> componentValues;
+
+    // Generic setValue/getValue methods for component state management
+    void setValue(const juce::String& key, const juce::var& value) {
+        componentValues[key] = value;
+    }
+
+    juce::var getValue(const juce::String& key, const juce::var& defaultValue = juce::var()) const {
+        auto it = componentValues.find(key);
+        return (it != componentValues.end()) ? it->second : defaultValue;
+    }
+
+    // Convenience methods for specific types
+    int getIntValue(const juce::String& key, int defaultValue = 0) const {
+        auto it = componentValues.find(key);
+        return (it != componentValues.end()) ? static_cast<int>(it->second) : defaultValue;
+    }
+
+    double getDoubleValue(const juce::String& key, double defaultValue = 0.0) const {
+        auto it = componentValues.find(key);
+        return (it != componentValues.end()) ? static_cast<double>(it->second) : defaultValue;
+    }
+
+    float getFloatValue(const juce::String& key, float defaultValue = 0.0f) const {
+        auto it = componentValues.find(key);
+        return (it != componentValues.end()) ? static_cast<float>(it->second) : defaultValue;
+    }
+
+    bool getBoolValue(const juce::String& key, bool defaultValue = false) const {
+        auto it = componentValues.find(key);
+        return (it != componentValues.end()) ? static_cast<bool>(it->second) : defaultValue;
+    }
+
+    juce::String getStringValue(const juce::String& key, const juce::String& defaultValue = juce::String()) const {
+        auto it = componentValues.find(key);
+        return (it != componentValues.end()) ? it->second.toString() : defaultValue;
+    }
+
     bool isValid() const {
         if (!globalSettings.isValid() || !themeSettings.isValid() || !audioSettings.isValid()) {
             return false;

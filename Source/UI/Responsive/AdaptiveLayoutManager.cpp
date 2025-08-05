@@ -1,5 +1,6 @@
 #include "AdaptiveLayoutManager.h"
 #include "JUCE8_CODING_STANDARDS.h"
+#include "INIDataManager.h"
 #include <algorithm>
 #include <cmath>
 

@@ -1,5 +1,6 @@
 #include "WaveformDisplay.h"
 #include "JUCE8_CODING_STANDARDS.h"
+#include "INIDataManager.h"
 #include <algorithm>
 #include <cmath>
 
@@ -820,7 +821,7 @@ void WaveformDisplay::saveState(ComponentState& state) const {
 }
 
 void WaveformDisplay::loadState(const ComponentState& state) {
-    settings.displayMode = static_cast<DisplayMode>(state.getValue("displayMode", static_cast<int>(DisplayMode::Peak)));
+    settings.displayMode = static_cast<DisplayMode>(state.getIntValue("displayMode", static_cast<int>(DisplayMode::Peak)));
     settings.showRuler = state.getValue("showRuler", true);
     settings.showGrid = state.getValue("showGrid", true);
     settings.showZeroCrossings = state.getValue("showZeroCrossings", false);

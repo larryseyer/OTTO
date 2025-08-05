@@ -46,6 +46,24 @@ namespace OTTO {
 namespace UI {
 namespace Controls {
 
+// Forward declaration
+class TouchOptimizedButton;
+
+/**
+ * @class LongPressTimer
+ * @brief Timer for handling long press detection
+ */
+class LongPressTimer : public juce::Timer
+{
+public:
+    explicit LongPressTimer(TouchOptimizedButton& button) : owner(button) {}
+    
+    void timerCallback() override;
+    
+private:
+    TouchOptimizedButton& owner;
+};
+
 /**
  * @class TouchOptimizedButton
  * @brief Touch-friendly button with haptic feedback and gesture support
@@ -146,7 +164,7 @@ private:
     juce::Point<int> touchStartPosition;
     
     // Timing
-    std::unique_ptr<juce::Timer> longPressTimer;
+    std::unique_ptr<LongPressTimer> longPressTimer;
     juce::uint32 touchStartTime = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TouchOptimizedButton)
@@ -201,7 +219,7 @@ public:
     float getTrackThickness() const { return trackThickness; }
     
     void setShowValueTooltip(bool show);
-    bool isShowValueTooltip() const { return showValueTooltip; }
+    bool isShowValueTooltip() const { return showValueTooltipEnabled; }
 
     // Gesture Recognition
     void enablePinchZoom(bool enabled);
@@ -227,7 +245,7 @@ private:
     // Visual Properties
     float thumbSize = 20.0f;
     float trackThickness = 4.0f;
-    bool showValueTooltip = true;
+    bool showValueTooltipEnabled = true;
 
     // Gesture Recognition
     bool pinchZoomEnabled = false;

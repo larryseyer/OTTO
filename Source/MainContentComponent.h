@@ -9,6 +9,13 @@
 #include "INIConfig.h"
 #include "PlatformResponsiveManager.h"
 
+// Phase 9D Component Includes
+#include "UI/Themes/ThemeManager.h"
+#include "UI/Responsive/AdaptiveLayoutManager.h"
+#include "UI/Touch/GestureRecognizer.h"
+#include "UI/Visualizations/SpectrumAnalyzer.h"
+#include "UI/Visualizations/WaveformDisplay.h"
+
 
 class MidiEngine;
 class Mixer;
@@ -40,7 +47,9 @@ struct PatternGroupCache {
 
 class MainContentComponent : public juce::Component,
                               public juce::Button::Listener,
-                              public juce::ComboBox::Listener {
+                              public juce::ComboBox::Listener,
+                              public ThemeManager::Listener,
+                              public GestureRecognizer::Listener {
 public:
     MainContentComponent(MidiEngine& midiEngine,
                         Mixer& mixer,
@@ -60,6 +69,14 @@ public:
     
     // juce::ComboBox::Listener
     void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override;
+    
+    // ThemeManager::Listener
+    void themeChanged(const juce::String& newThemeName) override;
+    void themePreviewStarted(const juce::String& previewThemeName) override;
+    void themePreviewStopped() override;
+    
+    // GestureRecognizer::Listener
+    void gestureDetected(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data) override;
 
     void updatePlayerDisplay(int playerIndex);
 
@@ -180,6 +197,13 @@ private:
     std::unique_ptr<KeyboardHandler> keyboardHandler;
     std::unique_ptr<ContextMenuManager> contextMenuManager;
     std::unique_ptr<RenderOptimizer> renderOptimizer;
+    
+    // Phase 9D Components
+    std::unique_ptr<ThemeManager> themeManager;
+    std::unique_ptr<AdaptiveLayoutManager> adaptiveLayoutManager;
+    std::unique_ptr<GestureRecognizer> gestureRecognizer;
+    std::unique_ptr<SpectrumAnalyzer> spectrumAnalyzer;
+    std::unique_ptr<WaveformDisplay> waveformDisplay;
     // Row separators - one between each row for visual debugging
     SeparatorComponent row1Separator;  // Between Row 1 (TopBar) and Row 2 (Player Tabs)
     SeparatorComponent row2Separator;  // Between Row 2 (Player Tabs) and Row 3 (DrumKit Menu)
@@ -270,6 +294,18 @@ private:
     void setupContextMenuCallbacks();
     void setupAnimationManagers();
     void setCurrentPlayerIndex(int index) { currentPlayerIndex = index; }
+    
+    // PHASE 9D: Integration helper methods
+    void initializePhase9DComponents();
+    void setupThemeManagerIntegration();
+    void setupAdaptiveLayoutIntegration();
+    void setupGestureRecognizerIntegration();
+    void setupVisualizationIntegration();
+    void updateVisualizationBounds();
+    void handleGestureInput(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data);
+    void broadcastThemeChangeToComponents();
+    void optimizeLayoutForDevice();
+    void updateTouchTargetsForPlatform();
     
 #ifdef JUCE_DEBUG
     void performIntegrationValidation(const juce::Rectangle<int>& bounds);

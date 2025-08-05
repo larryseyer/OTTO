@@ -209,6 +209,9 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     keyboardHandler = std::make_unique<KeyboardHandler>(fontManager, colorScheme);
     contextMenuManager = std::make_unique<ContextMenuManager>(colorScheme, fontManager);
     renderOptimizer = std::make_unique<RenderOptimizer>();
+    
+    // PHASE 9D: Initialize advanced UI components
+    initializePhase9DComponents();
 
     setupKeyboardHandlerCallbacks();
     setupContextMenuCallbacks();

@@ -226,6 +226,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     }
     
     
+#ifdef JUCE_DEBUG
     // ROW SEPARATORS: Visual dividers for clear section definition
     // Positioned between rows using INIConfig::LayoutConstants positioning
     addAndMakeVisible(row1Separator);   // Between TopBar and PlayerTabs
@@ -233,7 +234,9 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     addAndMakeVisible(row3Separator);   // Between DrumKit and Pattern controls
     addAndMakeVisible(row4Separator);   // Between Pattern and Main content
     addAndMakeVisible(row5Separator);   // Between Main content and Loop section
+#endif
     
+#ifdef JUCE_DEBUG
     // TEMPORARY: Add row identification labels for debugging
     addAndMakeVisible(rowLabel1);
     addAndMakeVisible(rowLabel2);
@@ -241,6 +244,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     addAndMakeVisible(rowLabel4);
     addAndMakeVisible(rowLabel5);
     addAndMakeVisible(rowLabel6);
+#endif
     
     // PHASE 8: Row components handle their own setup in constructors
     // No additional setup needed - components are self-contained
@@ -1337,14 +1341,17 @@ void MainContentComponent::updateRowSeparators() {
     int row4Bottom = row3Bottom + layoutManager.scaled(ROW_4_HEIGHT);
     int row5Bottom = row4Bottom + layoutManager.scaled(ROW_5_HEIGHT);
     
+#ifdef JUCE_DEBUG
     row1Separator.setBounds(0, row1Bottom, bounds.getWidth(), separatorHeight);
     row2Separator.setBounds(0, row2Bottom, bounds.getWidth(), separatorHeight);
     row3Separator.setBounds(0, row3Bottom, bounds.getWidth(), separatorHeight);
     row4Separator.setBounds(0, row4Bottom, bounds.getWidth(), separatorHeight);
     row5Separator.setBounds(0, row5Bottom, bounds.getWidth(), separatorHeight);
+#endif
 }
 
 void MainContentComponent::updateDebugLabels() {
+#ifdef JUCE_DEBUG
     // Position red row markers on far left, just above their black horizontal lines
     using namespace INIConfig::LayoutConstants;
     auto bounds = getLocalBounds();
@@ -1364,6 +1371,7 @@ void MainContentComponent::updateDebugLabels() {
     rowLabel4.setBounds(markerX, row4Y - markerHeight, markerWidth, markerHeight);
     rowLabel5.setBounds(markerX, row5Y - markerHeight, markerWidth, markerHeight);
     rowLabel6.setBounds(markerX, row6Y - markerHeight, markerWidth, markerHeight);
+#endif
 }
 
 // PHASE 8: Pattern group management methods - simplified for Row4Component delegation

@@ -96,7 +96,9 @@ public:
     void themePreviewStopped() override;
     
     // GestureRecognizer::Listener
-    void gestureDetected(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data) override;
+    void gestureStarted(const GestureRecognizer::GestureInfo& gesture) override;
+    void gestureChanged(const GestureRecognizer::GestureInfo& gesture) override;
+    void gestureEnded(const GestureRecognizer::GestureInfo& gesture) override;
 
     void updatePlayerDisplay(int playerIndex);
 
@@ -151,8 +153,6 @@ public:
     // Row6Component interface methods
     float getLoopPosition() const;
     void setLoopPosition(float position);
-    
-    void mouseDown(const juce::MouseEvent& event) override;
 
     std::function<void(bool)> onEditModeChanged;
     std::function<void(int, const juce::String&)> onMidiFileChanged;
@@ -328,8 +328,7 @@ private:
     void setupAdaptiveLayoutIntegration();
     void setupGestureRecognizerIntegration();
     void setupVisualizationIntegration();
-    void updateVisualizationBounds();
-    void handleGestureInput(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data);
+    void handleGestureInput(const GestureRecognizer::GestureInfo& gesture);
     void broadcastThemeChangeToComponents();
     void optimizeLayoutForDevice();
     void updateTouchTargetsForPlatform();

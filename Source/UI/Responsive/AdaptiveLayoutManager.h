@@ -145,7 +145,7 @@ public:
     };
 
     AdaptiveLayoutManager(const LayoutConfig& config);
-    ~AdaptiveLayoutManager() override;
+    ~AdaptiveLayoutManager();
 
     // Breakpoint management
     void addBreakpoint(const Breakpoint& breakpoint);
@@ -174,7 +174,7 @@ public:
     juce::Array<ComponentPriority> getComponentPriorities() const;
 
     // Adaptive layout calculation
-    void updateLayout(int width, int height) override;
+    void updateLayout(int width, int height);
     juce::Array<juce::String> calculateVisibleComponents(const LayoutConstraints& constraints) const;
     juce::Rectangle<int> calculateComponentBounds(const juce::String& componentId, 
                                                  const LayoutConstraints& constraints) const;
@@ -221,8 +221,8 @@ public:
     LayoutAnalysis predictLayout(const LayoutConstraints& constraints) const;
 
     // State management
-    void saveState(ComponentState& state) const override;
-    void loadState(const ComponentState& state) override;
+    void saveState(ComponentState& state) const;
+    void loadState(const ComponentState& state);
 
     // Listener interface for layout changes
     class Listener {

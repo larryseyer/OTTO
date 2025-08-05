@@ -219,7 +219,7 @@ public:
 
     // Gesture recognition
     void processMouseEvent(const juce::MouseEvent& e, juce::Component* component);
-    void processTouchEvent(const juce::TouchEvent& e, juce::Component* component);
+    void processTouchEvent(const juce::MouseEvent& e, juce::Component* component);
     
     // Current gesture state
     GestureInfo getCurrentGesture() const { return currentGesture; }

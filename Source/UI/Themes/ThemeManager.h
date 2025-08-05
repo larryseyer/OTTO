@@ -57,14 +57,14 @@ public:
         juce::String description;
         juce::String version;
         ThemeType type;
-        AccessibilityMode accessibilityMode;
+        AccessibilityMode accessibilityMode = AccessibilityMode::None;
         juce::Time createdDate;
         juce::Time modifiedDate;
         juce::StringArray tags;
         bool isValid = true;
         juce::String filePath;
         
-        ThemeMetadata() = default;
+        ThemeMetadata() : createdDate(juce::Time::getCurrentTime()), modifiedDate(juce::Time::getCurrentTime()) {}
         ThemeMetadata(const juce::String& themeName, ThemeType themeType = ThemeType::User)
             : name(themeName), type(themeType), accessibilityMode(AccessibilityMode::None),
               createdDate(juce::Time::getCurrentTime()), modifiedDate(juce::Time::getCurrentTime()) {}

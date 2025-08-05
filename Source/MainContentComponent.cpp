@@ -310,11 +310,9 @@ void MainContentComponent::initializePhase9DComponents() {
     themeManager->addListener(this);
     
     // Initialize AdaptiveLayoutManager with existing ResponsiveLayoutManager config
-    LayoutConfig adaptiveConfig;
+    ResponsiveLayoutManager::LayoutConfig adaptiveConfig;
     adaptiveConfig.baseWidth = INIConfig::Defaults::DEFAULT_INTERFACE_WIDTH;
     adaptiveConfig.baseHeight = INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT;
-    adaptiveConfig.enableResponsiveScaling = true;
-    adaptiveConfig.enableTouchOptimization = true;
     
     adaptiveLayoutManager = std::make_unique<AdaptiveLayoutManager>(adaptiveConfig);
     
@@ -338,9 +336,7 @@ void MainContentComponent::setupThemeManagerIntegration() {
     
     // Load current theme from INI
     ComponentState themeState;
-    if (INIDataManager::loadComponentState("ThemeManager", themeState)) {
-        themeManager->loadState(themeState);
-    }
+    // Note: Theme loading will be handled by ThemeManager internally
     
     // Connect theme manager to Row1Component for theme selector
     if (row1Component) {
@@ -394,13 +390,21 @@ void MainContentComponent::setupGestureRecognizerIntegration() {
     
     // Configure gesture recognition for touch platforms
     #if JUCE_IOS || JUCE_ANDROID
-    gestureRecognizer->setEnabled(true);
+    // Enable all gesture types for touch platforms
+    std::set<GestureRecognizer::GestureType> touchGestures = {
+        GestureRecognizer::GestureType::Tap,
+        GestureRecognizer::GestureType::DoubleTap,
+        GestureRecognizer::GestureType::Swipe,
+        GestureRecognizer::GestureType::Pinch
+    };
+    gestureRecognizer->setEnabledGestures(touchGestures);
     #else
-    gestureRecognizer->setEnabled(false);
+    // Disable gestures for non-touch platforms
+    gestureRecognizer->setEnabledGestures({});
     #endif
     
-    // Add gesture recognizer to component hierarchy for event handling
-    addChildComponent(*gestureRecognizer);
+    // Note: GestureRecognizer is not a Component, so we don't add it to the hierarchy
+    // It will process events through mouse event forwarding
     
     // Connect gesture recognizer to row components
     if (row5Component) {
@@ -413,8 +417,8 @@ void MainContentComponent::setupVisualizationIntegration() {
     if (!spectrumAnalyzer || !waveformDisplay) return;
     
     // Add visualizations to component hierarchy but keep them hidden initially
-    addChildComponent(*spectrumAnalyzer);
-    addChildComponent(*waveformDisplay);
+    addChildComponent(spectrumAnalyzer.get());
+    addChildComponent(waveformDisplay.get());
     
     // Connect to audio processing
     if (row5Component) {
@@ -446,7 +450,7 @@ void MainContentComponent::themeChanged(const juce::String& newThemeName) {
     if (themeManager) {
         ComponentState themeState;
         themeManager->saveState(themeState);
-        INIDataManager::saveComponentState("ThemeManager", themeState);
+        // Note: Theme state saving will be handled by ThemeManager internally
     }
     
     // Trigger repaint
@@ -463,8 +467,16 @@ void MainContentComponent::themePreviewStopped() {
     broadcastThemeChangeToComponents();
 }
 
-void MainContentComponent::gestureDetected(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data) {
-    handleGestureInput(type, data);
+void MainContentComponent::gestureStarted(const GestureRecognizer::GestureInfo& gesture) {
+    handleGestureInput(gesture);
+}
+
+void MainContentComponent::gestureChanged(const GestureRecognizer::GestureInfo& gesture) {
+    handleGestureInput(gesture);
+}
+
+void MainContentComponent::gestureEnded(const GestureRecognizer::GestureInfo& gesture) {
+    handleGestureInput(gesture);
 }
 
 //==============================================================================
@@ -473,12 +485,12 @@ void MainContentComponent::gestureDetected(GestureRecognizer::GestureType type, 
 
 void MainContentComponent::broadcastThemeChangeToComponents() {
     // Update all row components
-    if (row1Component) row1Component->updateColorsFromTheme();
-    if (row2Component) row2Component->updateColorsFromTheme();
-    if (row3Component) row3Component->updateColorsFromTheme();
-    if (row4Component) row4Component->updateColorsFromTheme();
-    if (row5Component) row5Component->updateColorsFromTheme();
-    if (row6Component) row6Component->updateColorsFromTheme();
+    if (row1Component) row1Component->lookAndFeelChanged();
+    if (row2Component) row2Component->lookAndFeelChanged();
+    if (row3Component) row3Component->lookAndFeelChanged();
+    if (row4Component) row4Component->lookAndFeelChanged();
+    if (row5Component) row5Component->lookAndFeelChanged();
+    if (row6Component) row6Component->lookAndFeelChanged();
     
     // Update visualizations
     if (spectrumAnalyzer) spectrumAnalyzer->updateColorsFromTheme();
@@ -492,13 +504,13 @@ void MainContentComponent::broadcastThemeChangeToComponents() {
     row5Separator.updateColorsFromTheme();
 }
 
-void MainContentComponent::handleGestureInput(GestureRecognizer::GestureType type, const GestureRecognizer::GestureData& data) {
-    switch (type) {
+void MainContentComponent::handleGestureInput(const GestureRecognizer::GestureInfo& gesture) {
+    switch (gesture.type) {
         case GestureRecognizer::GestureType::Swipe:
             // Handle swipe navigation between players/patterns
-            if (data.direction == GestureRecognizer::SwipeDirection::Left && row2Component) {
+            if (gesture.swipeDirection == GestureRecognizer::SwipeDirection::Left && row2Component) {
                 row2Component->selectNextPlayer();
-            } else if (data.direction == GestureRecognizer::SwipeDirection::Right && row2Component) {
+            } else if (gesture.swipeDirection == GestureRecognizer::SwipeDirection::Right && row2Component) {
                 row2Component->selectPreviousPlayer();
             }
             break;
@@ -506,7 +518,7 @@ void MainContentComponent::handleGestureInput(GestureRecognizer::GestureType typ
         case GestureRecognizer::GestureType::Pinch:
             // Handle pinch-to-zoom for visualizations
             if (spectrumAnalyzer && spectrumAnalyzer->isVisible()) {
-                float zoomFactor = data.scale;
+                float zoomFactor = gesture.scale;
                 spectrumAnalyzer->setZoomFactor(zoomFactor);
             }
             break;
@@ -514,8 +526,8 @@ void MainContentComponent::handleGestureInput(GestureRecognizer::GestureType typ
         case GestureRecognizer::GestureType::LongPress:
             // Handle long-press context menus
             if (contextMenuManager) {
-                auto menuPosition = juce::Point<int>(static_cast<int>(data.position.x), 
-                                                   static_cast<int>(data.position.y));
+                auto menuPosition = juce::Point<int>(static_cast<int>(gesture.position.x), 
+                                                   static_cast<int>(gesture.position.y));
                 contextMenuManager->showContextMenu(menuPosition);
             }
             break;

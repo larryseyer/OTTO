@@ -15,6 +15,7 @@ public:
         Icon,
         Player,
         Beat,
+        DrumButton,  // Issue 5.2: New type for Row 5 drum buttons with 2x font size
         Label,
         Other
     };

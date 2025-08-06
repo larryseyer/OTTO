@@ -66,6 +66,13 @@ public:
     juce::StringArray loadMidiPatternFilenames();
     void loadMidiFilesByPatternGroup(int patternGroupIndex);
     
+    // Pattern group navigation
+    int getCurrentPatternGroupIndex() const { return currentPatternGroupIndex; }
+    void setCurrentPatternGroupIndex(int index);
+    void navigateToNextPatternGroup();
+    void navigateToPreviousPatternGroup();
+    int getTotalPatternGroups() const;
+    
     void setAnimationManager(AnimationManager* manager) { animationManager = manager; }
     void setupDragDropTargets();
     void setupHoverEffects();
@@ -180,6 +187,7 @@ private:
     int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     bool isEditMode = INIConfig::Defaults::DEFAULT_EDIT_MODE;
     int selectedDrumButton = INIConfig::Defaults::DEFAULT_SELECTED_BUTTON;
+    int currentPatternGroupIndex = 0;  // Current pattern group (0-based index)
     juce::String assignedMidiFiles[INIConfig::Audio::NUM_DRUM_PADS];
     bool toggleStates[INIConfig::UI::MAX_TOGGLE_STATES] = {};
     bool fillStates[INIConfig::UI::MAX_FILL_STATES] = {};

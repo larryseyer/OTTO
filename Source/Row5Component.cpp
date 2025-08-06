@@ -388,20 +388,11 @@ void Row5Component::updateInteractiveLayout() {
 }
 
 void Row5Component::setupDrumGrid() {
-    // Issue 5.3: Load MIDI pattern filenames instead of numbers
-    auto midiFilenames = loadMidiPatternFilenames();
+    // Issue 5.3: Load MIDI pattern filenames from current pattern group
+    loadMidiFilesByPatternGroup(currentPatternGroupIndex);
     
     for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
         auto& button = drumButtons[i];
-        
-        // Issue 5.3: Set MIDI filename as button text
-        if (i < midiFilenames.size()) {
-            button.setButtonText(midiFilenames[i]);
-            assignedMidiFiles[i] = midiFilenames[i] + ".mid";
-        } else {
-            button.setButtonText("Empty");
-            assignedMidiFiles[i] = "";
-        }
         
         button.setClickingTogglesState(false);
         button.setComponentID("drum_button_" + juce::String(i));
@@ -919,16 +910,58 @@ juce::StringArray Row5Component::loadMidiPatternFilenames() {
 }
 
 void Row5Component::loadMidiFilesByPatternGroup(int patternGroupIndex) {
-    // Future enhancement: Filter MIDI files by pattern group
-    // This would integrate with the pattern group system from Row4
-    juce::ignoreUnused(patternGroupIndex);
+    // Load all available MIDI files
+    auto allMidiFilenames = loadMidiPatternFilenames();
     
-    // For now, load all available MIDI files
-    auto midiFilenames = loadMidiPatternFilenames();
+    // Calculate the range for this pattern group (16 files per group)
+    const int filesPerGroup = INIConfig::Audio::NUM_DRUM_PADS; // 16
+    int startIndex = patternGroupIndex * filesPerGroup;
+    int endIndex = juce::jmin(startIndex + filesPerGroup, allMidiFilenames.size());
     
-    // Update drum button texts with filtered results
-    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS && i < midiFilenames.size(); ++i) {
-        drumButtons[i].setButtonText(midiFilenames[i]);
-        assignedMidiFiles[i] = midiFilenames[i] + ".mid";
+    // Update drum button texts with files from the current pattern group
+    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
+        int fileIndex = startIndex + i;
+        
+        if (fileIndex < endIndex && fileIndex < allMidiFilenames.size()) {
+            // Set MIDI filename from current pattern group
+            drumButtons[i].setButtonText(allMidiFilenames[fileIndex]);
+            assignedMidiFiles[i] = allMidiFilenames[fileIndex] + ".mid";
+        } else {
+            // Empty slot if we've run out of files in this group
+            drumButtons[i].setButtonText("Empty");
+            assignedMidiFiles[i] = "";
+        }
     }
+}
+
+//==============================================================================
+// Pattern Group Navigation Implementation
+//==============================================================================
+
+void Row5Component::setCurrentPatternGroupIndex(int index) {
+    int totalGroups = getTotalPatternGroups();
+    currentPatternGroupIndex = juce::jlimit(0, totalGroups - 1, index);
+    loadMidiFilesByPatternGroup(currentPatternGroupIndex);
+}
+
+void Row5Component::navigateToNextPatternGroup() {
+    int totalGroups = getTotalPatternGroups();
+    if (totalGroups > 1) {
+        currentPatternGroupIndex = (currentPatternGroupIndex + 1) % totalGroups;
+        loadMidiFilesByPatternGroup(currentPatternGroupIndex);
+    }
+}
+
+void Row5Component::navigateToPreviousPatternGroup() {
+    int totalGroups = getTotalPatternGroups();
+    if (totalGroups > 1) {
+        currentPatternGroupIndex = (currentPatternGroupIndex - 1 + totalGroups) % totalGroups;
+        loadMidiFilesByPatternGroup(currentPatternGroupIndex);
+    }
+}
+
+int Row5Component::getTotalPatternGroups() const {
+    auto allMidiFilenames = const_cast<Row5Component*>(this)->loadMidiPatternFilenames();
+    const int filesPerGroup = INIConfig::Audio::NUM_DRUM_PADS; // 16
+    return (allMidiFilenames.size() + filesPerGroup - 1) / filesPerGroup; // Ceiling division
 }

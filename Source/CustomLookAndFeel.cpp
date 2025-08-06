@@ -99,7 +99,7 @@ CustomLookAndFeel::CustomLookAndFeel(FontManager& fontMgr, ColorScheme& colorSch
     // STEP 4: Load embedded images from BinaryData for custom component rendering
     // These images provide professional visual elements without external file dependencies
     // Used by: Custom button rendering, slider thumb graphics, application branding
-    buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button080_png, BinaryData::Button080_pngSize);
+    buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button100_png, BinaryData::Button100_pngSize);
     sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
     splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
 }
@@ -247,6 +247,11 @@ CustomLookAndFeel::ComponentType CustomLookAndFeel::getComponentType(const juce:
             return Icon;
         }
 
+        // Issue 5.2: Identify Row 5 drum buttons for 2x font size
+        if (componentID.startsWith("drum_button_")) {
+            return DrumButton;
+        }
+
         if (textButton->getButtonText().startsWith("PLAYER")) {
             return Player;
         }
@@ -324,6 +329,10 @@ juce::Font CustomLookAndFeel::getTextButtonFont(juce::TextButton& button, int bu
         case Player:
             // Issue 2.2: Font Size Should Be Twice as Large for Row 2 player tabs
             font = fontManager.getFont(FontManager::FontRole::Button, INIConfig::LayoutConstants::fontSizeButton * 2.0f * sizeMult);
+            break;
+        case DrumButton:
+            // Issue 5.2: Font Size Should Be Twice as Large for Row 5 drum buttons
+            font = fontManager.getFont(FontManager::FontRole::Button, INIConfig::LayoutConstants::fontSizeButton * INIConfig::LayoutConstants::Row5::drumButtonFontMultiplier * sizeMult);
             break;
         case Beat:
             font = fontManager.getFont(FontManager::FontRole::Button,
@@ -404,7 +413,7 @@ void CustomLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& bu
         return;
     }
 
-    if (type == Beat || type == Player) {
+    if (type == Beat || type == Player || type == DrumButton) {
         if (!buttonImage.isNull()) {
             drawButtonWithImage(g, button, backgroundColour, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
         } else {
@@ -1104,7 +1113,7 @@ void CustomLookAndFeel::syncWithColorScheme() {
 void CustomLookAndFeel::reloadImages() {
    // Load from embedded BinaryData instead of files
    if (!buttonImage.isValid()) {
-       buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button080_png, BinaryData::Button080_pngSize);
+       buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button100_png, BinaryData::Button100_pngSize);
    }
 
    if (!sliderImage.isValid()) {

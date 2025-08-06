@@ -1145,12 +1145,22 @@ void MainContentComponent::buttonClicked(juce::Button* button) {
         if (row4Component) {
             // Navigate to previous pattern group using public interface
             row4Component->navigatePatternGroup(false);
+            
+            // Update Row5 drum buttons to show MIDI files from new pattern group
+            if (row5Component) {
+                row5Component->navigateToPreviousPatternGroup();
+            }
         }
     }
     else if (button == &patternGroupRightChevron) {
         if (row4Component) {
             // Navigate to next pattern group using public interface
             row4Component->navigatePatternGroup(true);
+            
+            // Update Row5 drum buttons to show MIDI files from new pattern group
+            if (row5Component) {
+                row5Component->navigateToNextPatternGroup();
+            }
         }
     }
     else if (button == &patternGroupFavoriteButton) {

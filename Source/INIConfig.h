@@ -186,7 +186,7 @@ namespace INIConfig {
          *
          * Referenced by: All LayoutConstants calculations, ResponsiveLayoutManager.cpp
          */
-        static const int DEFAULT_INTERFACE_WIDTH = 1024;
+        static const int DEFAULT_INTERFACE_WIDTH = 1354;
 
         /**
          * @brief Base interface height for responsive scaling calculations
@@ -1353,7 +1353,7 @@ namespace LayoutConstants {
    constexpr float ROW_5_SPECTRUM_Y_PERCENT = 5.0f;         // 5% margin from top
    constexpr float ROW_5_SPECTRUM_WIDTH_PERCENT = 30.0f;    // 30% of row width
    constexpr float ROW_5_SPECTRUM_HEIGHT_PERCENT = 90.0f;   // 90% of row height (10% margins)
-   
+
    // Validate spectrum analyzer positioning
    static_assert(ROW_5_SPECTRUM_X_PERCENT + ROW_5_SPECTRUM_WIDTH_PERCENT <= 100.0f,
                  "Row 5 spectrum analyzer exceeds row width");
@@ -1631,7 +1631,7 @@ namespace LayoutConstants {
        constexpr int volumeLabelY = defaultPadding + ((contentHeight - labelHeight) / 2);
 
        // Total width calculation for validation
-       constexpr float totalWidthPercent = editIconWidthPercent + (chevronWidthPercent * 2) + dropdownWidthPercent + 
+       constexpr float totalWidthPercent = editIconWidthPercent + (chevronWidthPercent * 2) + dropdownWidthPercent +
                                           favoriteIconWidthPercent + (labelWidthPercent * 5) + (componentSpacingPercent * 9);
        constexpr int totalUsedWidth = volumeLabelX + labelWidth + defaultMargin - startX;
 

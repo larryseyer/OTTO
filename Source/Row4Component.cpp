@@ -161,6 +161,9 @@ void Row4Component::setupPatternGroupComponents() {
     // Configure dropdown
     patternGroupDropdown.setTextWhenNothingSelected("Select Pattern Group");
     patternGroupDropdown.setTextWhenNoChoicesAvailable("No Pattern Groups");
+    
+    // Populate dropdown with default pattern groups
+    populatePatternGroupDropdown();
 }
 
 void Row4Component::setupLabels() {
@@ -205,7 +208,12 @@ void Row4Component::setupPatternGroupCallbacks() {
     
     // Edit mode toggle
     patternGroupEditButton.onClick = [this]() {
-        setPatternGroupEditMode(!patternGroupEditMode);
+        bool newEditMode = !patternGroupEditMode;
+        setPatternGroupEditMode(newEditMode);
+        
+        if (newEditMode) {
+            showPatternGroupEditor();
+        }
     };
     
     // Favorite toggle
@@ -409,4 +417,86 @@ int Row4Component::getResponsiveSpacing() const {
 
 float Row4Component::getResponsiveFontSize(float baseSize) const {
     return ResponsiveComponent::getResponsiveFontSize(baseSize);
+}
+
+//==============================================================================
+// Pattern Group Editor and Dropdown Implementation
+//==============================================================================
+
+void Row4Component::showPatternGroupEditor() {
+    // Create pattern group editor window using PopupWindows system
+    auto editorWindow = std::make_unique<juce::AlertWindow>("Pattern Group Editor", 
+                                                           "Edit Pattern Group " + juce::String(currentPatternGroupIndex + 1),
+                                                           juce::AlertWindow::InfoIcon);
+    
+    editorWindow->addTextEditor("groupName", "Group " + juce::String(currentPatternGroupIndex + 1), "Group Name:");
+    editorWindow->addButton("Save", 1, juce::KeyPress(juce::KeyPress::returnKey));
+    editorWindow->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey));
+    
+    editorWindow->setSize(400, 200);
+    editorWindow->centreWithSize(400, 200);
+    
+    // Use async approach for JUCE 8 compatibility
+    editorWindow->enterModalState(true, juce::ModalCallbackFunction::create([this, editorWindow = editorWindow.get()](int result) {
+        if (result == 1) {
+            juce::String newName = editorWindow->getTextEditorContents("groupName");
+            // Update pattern group name in dropdown
+            if (currentPatternGroupIndex < patternGroupDropdown.getNumItems()) {
+                patternGroupDropdown.changeItemText(currentPatternGroupIndex, newName);
+            }
+        }
+    }));
+    
+    // Release ownership since the modal callback will handle cleanup
+    editorWindow.release();
+}
+
+void Row4Component::populatePatternGroupDropdown() {
+    patternGroupDropdown.clear();
+    
+    // Load pattern groups from INI data if available
+    if (iniDataManager) {
+        // TODO: Implement INI data loading when INIDataManager is available
+        // auto patternGroups = iniDataManager->getPatternGroups();
+        // for (int i = 0; i < patternGroups.size(); ++i) {
+        //     patternGroupDropdown.addItem(patternGroups[i].name, i + 1);
+        // }
+    }
+    
+    // Default pattern groups if no INI data
+    if (patternGroupDropdown.getNumItems() == 0) {
+        for (int i = 0; i < 16; ++i) {
+            patternGroupDropdown.addItem(juce::String("Group ") + juce::String(i + 1), i + 1);
+        }
+    }
+    
+    // Set current selection
+    if (currentPatternGroupIndex < patternGroupDropdown.getNumItems()) {
+        patternGroupDropdown.setSelectedId(currentPatternGroupIndex + 1, juce::dontSendNotification);
+    }
+}
+
+bool Row4Component::isPatternGroupFavorite(int index) {
+    if (iniDataManager) {
+        // TODO: Implement INI data loading when INIDataManager is available
+        // return iniDataManager->isPatternGroupFavorite(index);
+    }
+    
+    // Default: no favorites
+    return false;
+}
+
+void Row4Component::setPatternGroupFavorite(int index, bool favorite) {
+    if (iniDataManager) {
+        // TODO: Implement INI data saving when INIDataManager is available
+        // iniDataManager->setPatternGroupFavorite(index, favorite);
+    }
+    
+    updateFavoriteButtonState();
+}
+
+void Row4Component::updateFavoriteButtonState() {
+    bool isFavorite = isPatternGroupFavorite(currentPatternGroupIndex);
+    patternGroupFavoriteButton.setToggleState(isFavorite, juce::dontSendNotification);
+    patternGroupFavoriteButton.setIconName(isFavorite ? "heart-fill" : "heart");
 }

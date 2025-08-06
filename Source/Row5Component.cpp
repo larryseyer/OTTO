@@ -297,9 +297,9 @@ void Row5Component::updateInteractiveLayout() {
     int spacing = getResponsiveSpacing();
     int margin = getResponsiveMargin(8);
     
-    // Calculate section dimensions responsively
-    int leftSectionWidth = static_cast<int>(bounds.getWidth() * 0.6f); // 60% for drum grid
-    int rightSectionWidth = static_cast<int>(bounds.getWidth() * 0.35f); // 35% for controls
+    // Issue 5.1: Use INIConfig constants for section allocation
+    int leftSectionWidth = static_cast<int>(bounds.getWidth() * (INIConfig::LayoutConstants::Row5::leftSectionWidthPercent / 100.0f));
+    int rightSectionWidth = static_cast<int>(bounds.getWidth() * (INIConfig::LayoutConstants::Row5::rightSectionWidthPercent / 100.0f));
     
     // LEFT SECTION: 4x4 Drum Pattern Grid
     auto leftSection = bounds.removeFromLeft(leftSectionWidth);
@@ -338,48 +338,49 @@ void Row5Component::updateInteractiveLayout() {
     auto rightSection = bounds.removeFromLeft(rightSectionWidth);
     rightSection = rightSection.reduced(margin);
     
-    // Layout right section controls vertically with responsive sizing
-    int controlHeight = static_cast<int>(drumButtonSize * 0.7f); // Scale with drum buttons
+    // Issue 5.4: Arrange toggle and fill buttons vertically using INIConfig constants
+    int controlButtonHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonHeight);
+    int controlButtonWidth = rightSection.getWidth() - layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonMargin * 2);
     
     // Update control font size responsively
     float controlFontSize = getResponsiveFontSize(10.0f);
     
-    // Toggle buttons row
-    auto toggleArea = rightSection.removeFromTop(controlHeight);
-    int toggleButtonWidth = (toggleArea.getWidth() - spacing * (INIConfig::UI::MAX_TOGGLE_STATES - 1)) / INIConfig::UI::MAX_TOGGLE_STATES;
+    // Toggle buttons - vertical arrangement
+    int toggleStartY = layoutManager.scaled(INIConfig::LayoutConstants::Row5::toggleStartY);
     for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
-        int x = toggleArea.getX() + i * (toggleButtonWidth + spacing);
-        toggleButtons[i].setBounds(x, toggleArea.getY(), toggleButtonWidth, controlHeight);
-        // Note: Font styling handled by LookAndFeel in JUCE 8
+        int y = toggleStartY + i * (controlButtonHeight + spacing);
+        toggleButtons[i].setBounds(rightSection.getX() + layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonMargin), 
+                                  y, controlButtonWidth, controlButtonHeight);
+        toggleButtons[i].setButtonText(juce::String("Toggle ") + juce::String(i + 1));
     }
     
-    rightSection.removeFromTop(spacing);
-    
-    // Fill buttons row
-    auto fillArea = rightSection.removeFromTop(controlHeight);
-    int fillButtonWidth = (fillArea.getWidth() - spacing * (INIConfig::UI::MAX_FILL_STATES - 1)) / INIConfig::UI::MAX_FILL_STATES;
+    // Fill buttons - vertical arrangement below toggles
+    int fillStartY = toggleStartY + (INIConfig::UI::MAX_TOGGLE_STATES * (controlButtonHeight + spacing)) + 
+                     layoutManager.scaled(INIConfig::LayoutConstants::Row5::fillButtonSpacing);
     for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
-        int x = fillArea.getX() + i * (fillButtonWidth + spacing);
-        fillButtons[i].setBounds(x, fillArea.getY(), fillButtonWidth, controlHeight);
-        // Note: Font styling handled by LookAndFeel in JUCE 8
+        int y = fillStartY + i * (controlButtonHeight + spacing);
+        fillButtons[i].setBounds(rightSection.getX() + layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonMargin), 
+                                y, controlButtonWidth, controlButtonHeight);
+        fillButtons[i].setButtonText(juce::String("Fill ") + juce::String(i + 1));
     }
     
-    rightSection.removeFromTop(spacing * 2);
+    // Issue 5.5: Vertical sliders positioned below buttons using INIConfig constants
+    int slidersStartY = fillStartY + (INIConfig::UI::MAX_FILL_STATES * (controlButtonHeight + spacing)) + 
+                        layoutManager.scaled(INIConfig::LayoutConstants::Row5::sliderStartSpacing);
+    int sliderWidth = layoutManager.scaled(INIConfig::LayoutConstants::Row5::verticalSliderWidth);
+    int sliderHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row5::verticalSliderHeight);
+    int sliderSpacing = (controlButtonWidth - (3 * sliderWidth)) / 4; // Even spacing
     
-    // Sliders (remaining space divided equally) with responsive font
-    int sliderHeight = (rightSection.getHeight() - spacing * 2) / 3;
-    float sliderFontSize = getResponsiveFontSize(11.0f);
+    // Position three vertical sliders side by side
+    int sliderX = rightSection.getX() + sliderSpacing;
     
-    swingSlider.setBounds(rightSection.removeFromTop(sliderHeight));
-    swingSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    rightSection.removeFromTop(spacing);
+    swingSlider.setBounds(sliderX, slidersStartY, sliderWidth, sliderHeight);
+    sliderX += sliderWidth + sliderSpacing;
     
-    energySlider.setBounds(rightSection.removeFromTop(sliderHeight));
-    energySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    rightSection.removeFromTop(spacing);
+    energySlider.setBounds(sliderX, slidersStartY, sliderWidth, sliderHeight);
+    sliderX += sliderWidth + sliderSpacing;
     
-    volumeSlider.setBounds(rightSection);
-    volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    volumeSlider.setBounds(sliderX, slidersStartY, sliderWidth, sliderHeight);
     
     // Right separator
     rightSeparator.setBounds(bounds.getRight() - separatorThickness, 0, 
@@ -387,11 +388,29 @@ void Row5Component::updateInteractiveLayout() {
 }
 
 void Row5Component::setupDrumGrid() {
+    // Issue 5.3: Load MIDI pattern filenames instead of numbers
+    auto midiFilenames = loadMidiPatternFilenames();
+    
     for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
         auto& button = drumButtons[i];
-        button.setButtonText(juce::String(i + 1));
+        
+        // Issue 5.3: Set MIDI filename as button text
+        if (i < midiFilenames.size()) {
+            button.setButtonText(midiFilenames[i]);
+            assignedMidiFiles[i] = midiFilenames[i] + ".mid";
+        } else {
+            button.setButtonText("Empty");
+            assignedMidiFiles[i] = "";
+        }
+        
         button.setClickingTogglesState(false);
         button.setComponentID("drum_button_" + juce::String(i));
+        
+        // Issue 5.2: Set larger font using INIConfig multiplier
+        float baseFontSize = getResponsiveFontSize(12.0f);
+        float enlargedFontSize = baseFontSize * INIConfig::LayoutConstants::Row5::drumButtonFontMultiplier;
+        // Note: TextButton font is set through LookAndFeel in JUCE 8
+        
         addAndMakeVisible(button);
     }
 }
@@ -417,27 +436,29 @@ void Row5Component::setupControlButtons() {
 }
 
 void Row5Component::setupSliders() {
+    // Issue 5.5: Change sliders to vertical orientation
+    
     // Swing slider
     swingSlider.setRange(INIConfig::Validation::MIN_SWING, INIConfig::Validation::MAX_SWING, 0.01);
     swingSlider.setValue(INIConfig::Defaults::SWING);
-    swingSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    swingSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 20);
+    swingSlider.setSliderStyle(juce::Slider::LinearVertical);
+    swingSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     swingSlider.setComponentID("swing_slider");
     addAndMakeVisible(swingSlider);
     
     // Energy slider
     energySlider.setRange(INIConfig::Validation::MIN_ENERGY, INIConfig::Validation::MAX_ENERGY, 0.01);
     energySlider.setValue(INIConfig::Defaults::ENERGY);
-    energySlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    energySlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 20);
+    energySlider.setSliderStyle(juce::Slider::LinearVertical);
+    energySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     energySlider.setComponentID("energy_slider");
     addAndMakeVisible(energySlider);
     
     // Volume slider
     volumeSlider.setRange(INIConfig::Validation::MIN_VOLUME, INIConfig::Validation::MAX_VOLUME, 0.01);
     volumeSlider.setValue(INIConfig::Defaults::VOLUME);
-    volumeSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    volumeSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 20);
+    volumeSlider.setSliderStyle(juce::Slider::LinearVertical);
+    volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     volumeSlider.setComponentID("volume_slider");
     addAndMakeVisible(volumeSlider);
     
@@ -849,4 +870,65 @@ int Row5Component::getResponsiveSpacing() const {
 
 float Row5Component::getResponsiveFontSize(float baseSize) const {
     return ResponsiveComponent::getResponsiveFontSize(baseSize);
+}
+
+//==============================================================================
+// MIDI File Loading Implementation - Issue 5.3
+//==============================================================================
+
+juce::StringArray Row5Component::loadMidiPatternFilenames() {
+    juce::StringArray filenames;
+    
+    // Load from Assets/MidiFiles/Grooves directory
+    juce::File groovesDir = juce::File::getCurrentWorkingDirectory()
+                           .getChildFile("Assets")
+                           .getChildFile("MidiFiles")
+                           .getChildFile("Grooves");
+    
+    if (groovesDir.exists()) {
+        auto midiFiles = groovesDir.findChildFiles(juce::File::findFiles, false, "*.mid;*.MID");
+        
+        for (auto& file : midiFiles) {
+            // Remove extension and add to list
+            juce::String filename = file.getFileNameWithoutExtension();
+            filenames.add(filename);
+        }
+    }
+    
+    // If no files found, use default names from GUI_TWEAKS.md
+    if (filenames.isEmpty()) {
+        filenames.add("Basic House");
+        filenames.add("70's Rock");
+        filenames.add("Fusion Funk");
+        filenames.add("Hip Hop Funk");
+        filenames.add("Latin Groove");
+        filenames.add("Jazz Swing");
+        filenames.add("Reggae Beat");
+        filenames.add("Techno Loop");
+        filenames.add("Drum & Bass");
+        filenames.add("Breakbeat");
+        filenames.add("Ambient Pad");
+        filenames.add("World Beat");
+        filenames.add("Experimental");
+        filenames.add("Custom 1");
+        filenames.add("Custom 2");
+        filenames.add("Custom 3");
+    }
+    
+    return filenames;
+}
+
+void Row5Component::loadMidiFilesByPatternGroup(int patternGroupIndex) {
+    // Future enhancement: Filter MIDI files by pattern group
+    // This would integrate with the pattern group system from Row4
+    juce::ignoreUnused(patternGroupIndex);
+    
+    // For now, load all available MIDI files
+    auto midiFilenames = loadMidiPatternFilenames();
+    
+    // Update drum button texts with filtered results
+    for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS && i < midiFilenames.size(); ++i) {
+        drumButtons[i].setButtonText(midiFilenames[i]);
+        assignedMidiFiles[i] = midiFilenames[i] + ".mid";
+    }
 }

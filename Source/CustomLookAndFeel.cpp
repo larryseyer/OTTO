@@ -322,7 +322,8 @@ juce::Font CustomLookAndFeel::getTextButtonFont(juce::TextButton& button, int bu
             font = fontManager.getFont(FontManager::FontRole::Icon, INIConfig::LayoutConstants::fontSizeIcon * sizeMult);
             break;
         case Player:
-            font = fontManager.getFont(FontManager::FontRole::Button, INIConfig::LayoutConstants::fontSizeButton * sizeMult);
+            // Issue 2.2: Font Size Should Be Twice as Large for Row 2 player tabs
+            font = fontManager.getFont(FontManager::FontRole::Button, INIConfig::LayoutConstants::fontSizeButton * 2.0f * sizeMult);
             break;
         case Beat:
             font = fontManager.getFont(FontManager::FontRole::Button,

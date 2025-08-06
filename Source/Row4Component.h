@@ -43,6 +43,13 @@ public:
     int getCurrentPatternGroupIndex() const;
     void setCurrentPatternGroupIndex(int index);
     
+    // Pattern Group Editor Window
+    void showPatternGroupEditor();
+    void populatePatternGroupDropdown();
+    bool isPatternGroupFavorite(int index);
+    void setPatternGroupFavorite(int index, bool favorite);
+    void updateFavoriteButtonState();
+    
     // Label Update Interface - CRITICAL for Phase 5
     void updateLabelsFromControls();
     void setLabelStates(const juce::String& togglesText, const juce::String& fillsText,
@@ -79,6 +86,7 @@ private:
     // State management
     int currentPatternGroupIndex = 0;
     bool patternGroupEditMode = false;
+    bool showingPatternGroupLabel = true;
     
     std::unique_ptr<PatternDragSource> patternDragSource;
     

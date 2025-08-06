@@ -47,9 +47,13 @@ void Row2Component::paint(juce::Graphics& g) {
         selectedButtonX += tabWidth + tabSpacing;
     }
     
-    g.fillRect(selectedButtonX + highlightMargin,
+    // Issue 2.1: Player Selection Line Not Centered - Center the highlight indicator
+    int indicatorWidth = static_cast<int>(tabWidth * 0.8f); // 80% of tab width for better centering
+    int centeredIndicatorX = selectedButtonX + (tabWidth - indicatorWidth) / 2;
+    
+    g.fillRect(centeredIndicatorX,
                bounds.getBottom() - highlightHeight,
-               tabWidth - highlightWidthReduction,
+               indicatorWidth,
                highlightHeight);
 }
 

@@ -18,6 +18,7 @@
 #include "INIDataManager.h"
 #include "UI/Themes/ThemeManager.h"
 #include "ResponsiveLayoutManager.h"
+#include "PopupWindows.h"
 
 Row1Component::Row1Component(MidiEngine& midiEngine,
                            juce::AudioProcessorValueTreeState& valueTreeState,
@@ -82,6 +83,7 @@ void Row1Component::setupTopBarComponents() {
         if (onGearButtonClicked) {
             onGearButtonClicked();
         }
+        showSettingsWindow();
     };
 
     linkButton.onClick = [this] {
@@ -143,6 +145,8 @@ void Row1Component::setupTopBarComponents() {
     ottoLabel.setFont(fontManager.getFont(FontManager::FontRole::Header,
                       layoutManager.scaled(INIConfig::LayoutConstants::Row1::ottoHeight * 0.6f)));
     ottoLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    ottoLabel.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    ottoLabel.addMouseListener(this, false);
 
     versionLabel.setComponentID("version_label");
     versionLabel.setText("Ver. 1.0", juce::dontSendNotification);
@@ -276,8 +280,8 @@ void Row1Component::resized() {
     int loopX = ottoX - margin - iconSize;
     int overdubX = loopX - iconSize - spacing;
     int recordX = overdubX - iconSize - spacing;
-    int themeX = recordX - iconSize - spacing;
-    int tapTempoX = themeX - iconSize - spacing;
+    int tapTempoX = recordX - iconSize - spacing;  // Position relative to record button
+    int themeX = tapTempoX - iconSize - spacing;
 
     tapTempoButton.setBounds(tapTempoX, iconY, iconSize, iconSize);
     tapTempoLabel.setBounds(tapTempoX, iconY + iconSize - static_cast<int>(currentHeight * 0.02f),
@@ -560,6 +564,8 @@ void Row1Component::lookAndFeelChanged() {
 void Row1Component::mouseDown(const juce::MouseEvent& event) {
     if (event.eventComponent == &presetDisplayLabel && showingPresetLabel) {
         togglePresetDisplay();
+    } else if (event.eventComponent == &ottoLabel) {
+        showSplashScreen();
     }
 }
 
@@ -574,7 +580,22 @@ void Row1Component::setupPresets() {
     presetsMenu.setJustificationType(juce::Justification::left);
 
     presetsMenu.onPopupRequest = [this] {
-        buildHierarchicalPresetMenu();
+        if (!showingPresetLabel) {
+            // Menu is visible, clicking should show the popup
+            buildHierarchicalPresetMenu();
+        } else {
+            // Label is visible, clicking should switch to menu mode
+            showPresetMenu();
+            buildHierarchicalPresetMenu();
+        }
+    };
+
+    presetsMenu.onChange = [this]() {
+        int selectedId = presetsMenu.getSelectedId();
+        if (selectedId > 0) {
+            handlePresetMenuSelection(selectedId);
+            showPresetLabel();
+        }
     };
 
     currentPresetName = "Default";
@@ -1217,4 +1238,37 @@ int Row1Component::getResponsiveSpacing() const {
 
 float Row1Component::getResponsiveFontSize(float baseSize) const {
     return ResponsiveComponent::getResponsiveFontSize(baseSize);
+}
+
+void Row1Component::showSettingsWindow() {
+    // Create a modal dialog window to contain the settings panel
+    auto settingsPanel = std::make_unique<SettingsPanelWindow>(
+        fontManager, 
+        colorScheme, 
+        layoutManager, 
+        *iniDataManager,
+        &midiEngine
+    );
+    
+    // Create a dialog window to hold the settings panel
+    juce::DialogWindow::LaunchOptions options;
+    options.content.setOwned(settingsPanel.release());
+    options.dialogTitle = "OTTO Settings";
+    options.dialogBackgroundColour = colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground);
+    options.escapeKeyTriggersCloseButton = true;
+    options.useNativeTitleBar = true;
+    options.resizable = false;
+    options.useBottomRightCornerResizer = false;
+    
+    options.launchAsync();
+}
+
+void Row1Component::showSplashScreen() {
+    // Create a simple splash screen using AlertWindow for now
+    juce::AlertWindow::showMessageBoxAsync(
+        juce::MessageBoxIconType::InfoIcon,
+        "OTTO Drum Machine",
+        "OTTO v1.0\n\nAdvanced Drum Machine & Sequencer\n\nBuilt with JUCE 8",
+        "OK"
+    );
 }

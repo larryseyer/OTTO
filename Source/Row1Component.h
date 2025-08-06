@@ -177,5 +177,9 @@ private:
     void toggleThemeSelector();
     void populateThemeSelector();
     
+    // Row 1 GUI fixes
+    void showSettingsWindow();
+    void showSplashScreen();
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Row1Component)
 };

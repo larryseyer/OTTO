@@ -1664,8 +1664,9 @@ namespace LayoutConstants {
        // Left Section: 4x4 drum matrix (buttons)
        // Right Section: Controls (toggles, fills, sliders)
 
-       constexpr float leftSectionWidthPercent = 60.0f;    // Pattern matrix gets more space
-       constexpr float rightSectionWidthPercent = 39.5f;   // Controls get remaining space
+       // Issue 5.1: Increase drum matrix allocation from 60% to 75%
+       constexpr float leftSectionWidthPercent = 75.0f;    // Pattern matrix gets more space (increased)
+       constexpr float rightSectionWidthPercent = 24.0f;   // Controls get remaining space (reduced)
        constexpr float sectionMarginPercent = 0.5f;        // Small margin between sections
 
        // Validate percentages
@@ -1694,6 +1695,18 @@ namespace LayoutConstants {
        constexpr int minSectionWidth = 200;  // Minimum for pattern matrix
        static_assert(leftSectionWidth >= minSectionWidth && rightSectionWidth >= minSectionWidth / 2,
                      "Row 5 sections too narrow for usable content");
+
+       // Issue 5.4 & 5.5: Control button and slider layout constants
+       constexpr int controlButtonHeight = 30;        // Height for toggle/fill buttons
+       constexpr int controlButtonMargin = 10;        // Margin around control buttons
+       constexpr int toggleStartY = 20;               // Starting Y position for toggle buttons
+       constexpr int fillButtonSpacing = 20;         // Spacing between toggle and fill sections
+       constexpr int sliderStartSpacing = 30;        // Spacing before sliders
+       constexpr int verticalSliderWidth = 40;       // Width for vertical sliders
+       constexpr int verticalSliderHeight = 120;     // Height for vertical sliders
+
+       // Issue 5.2: Font size multiplier for drum buttons (2x increase)
+       constexpr float drumButtonFontMultiplier = 2.0f;
    }
 
    namespace Row6 {
@@ -1718,6 +1731,11 @@ namespace LayoutConstants {
        constexpr int endLabelX = Defaults::DEFAULT_INTERFACE_WIDTH - labelWidth - labelMargin;
        constexpr int labelY = (height - 20) / 2;  // Center vertically in row
        constexpr int labelHeight = 20;            // Standard label height
+       constexpr float labelFontSize = 12.0f;     // Font size for loop labels
+       constexpr int windowMargin = 20;           // Margin from window edges
+       constexpr int labelTopMargin = 5;          // Small margin from top for labels
+       constexpr int sliderTopOffset = 5;         // Offset below labels for slider
+       constexpr int remainingHeightOffset = 15;  // Offset for remaining height calculation
 
        // Slider positioning - fills space between labels
        constexpr int sliderX = startLabelX + labelWidth + sliderMargin;
@@ -1957,6 +1975,7 @@ namespace LayoutConstants {
        static const uint32_t DEFAULT_METER_LOW_COLOR = 0xff44ff44;
        static const uint32_t DEFAULT_METER_MID_COLOR = 0xffffaa44;
        static const uint32_t DEFAULT_METER_HIGH_COLOR = 0xffff4444;
+       static const uint32_t DEFAULT_BUTTON_TEXT_COLOR = 0x000000;
        static const float ALPHA_OVERLAY = 0.375f;
 
        // ROW-SPECIFIC DEBUG BACKGROUND COLORS (Dark variants for easy identification)
@@ -2431,67 +2450,90 @@ namespace LayoutConstants {
       return juce::jlimit(Validation::MIN_SWING, Validation::MAX_SWING, swing);
   }
 
-  inline float clampEnergy(float energy) {
-      return juce::jlimit(Validation::MIN_ENERGY, Validation::MAX_ENERGY, energy);
+  inline int clampPatternLength(int length) {
+      return juce::jlimit(Validation::MIN_PATTERN_LENGTH, Validation::MAX_PATTERN_LENGTH, length);
   }
 
-  inline int clampPresetIndex(int index) {
-      return juce::jlimit(Validation::MIN_PRESET_ID, Validation::MAX_PRESET_ID, index);
-  }
-
-  inline int clampMidiNote(int note) {
-      return juce::jlimit(Validation::MIN_MIDI_NOTE, Validation::MAX_MIDI_NOTE, note);
-  }
-
-  inline int clampMidiChannel(int channel) {
-      return juce::jlimit(Validation::MIN_MIDI_CHANNEL, Validation::MAX_MIDI_CHANNEL, channel);
+  inline int clampChannelIndex(int index) {
+      return juce::jlimit(Validation::MIN_AUDIO_CHANNELS, Validation::MAX_AUDIO_CHANNELS - 1, index);
   }
 
   inline float clampPan(float pan) {
       return juce::jlimit(Validation::MIN_PAN, Validation::MAX_PAN, pan);
   }
 
+  inline float clampGain(float gain) {
+      return juce::jlimit(Validation::MIN_EQ_GAIN, Validation::MAX_EQ_GAIN, gain);
+  }
+
+  inline int clampMidiChannel(int channel) {
+      return juce::jlimit(Validation::MIN_MIDI_CHANNEL, Validation::MAX_MIDI_CHANNEL, channel);
+  }
+
+  inline int clampMidiNote(int note) {
+      return juce::jlimit(Validation::MIN_MIDI_NOTE, Validation::MAX_MIDI_NOTE, note);
+  }
+
+  inline int clampMidiVelocity(int velocity) {
+      return juce::jlimit(Validation::MIN_MIDI_VELOCITY, Validation::MAX_MIDI_VELOCITY, velocity);
+  }
+
   inline int clampPhosphorWeight(int weight) {
       return juce::jlimit(Validation::MIN_PHOSPHOR_WEIGHT, Validation::MAX_PHOSPHOR_WEIGHT, weight);
-  }
-
-  inline float clampPhosphorIconBoxFitRatio(float ratio) {
-      return juce::jlimit(Validation::MIN_PHOSPHOR_ICON_BOX_FIT_RATIO, Validation::MAX_PHOSPHOR_ICON_BOX_FIT_RATIO, ratio);
-  }
-
-  inline float clampLoopPosition(float position) {
-      return juce::jlimit(Validation::MIN_LOOP_POSITION, Validation::MAX_LOOP_POSITION, position);
   }
 
   inline int clampWindowSize(int size) {
       return juce::jlimit(Validation::MIN_WINDOW_SIZE, Validation::MAX_WINDOW_SIZE, size);
   }
 
-  inline bool createDirectoryStructure() {
-      bool success = true;
-
-      auto dataDir = getOTTODataDirectory();
-      if (!dataDir.exists()) success = success && dataDir.createDirectory().wasOk();
-
-      auto settingsDir = getSettingsDirectory();
-      if (!settingsDir.exists()) success = success && settingsDir.createDirectory().wasOk();
-
-      auto performanceDir = getPerformanceDirectory();
-      if (!performanceDir.exists()) success = success && performanceDir.createDirectory().wasOk();
-
-      auto patternsDir = getPatternsDirectory();
-      if (!patternsDir.exists()) success = success && patternsDir.createDirectory().wasOk();
-
-      auto kitsDir = getKitsDirectory();
-      if (!kitsDir.exists()) success = success && kitsDir.createDirectory().wasOk();
-
-      auto mixingDir = getMixingDirectory();
-      if (!mixingDir.exists()) success = success && mixingDir.createDirectory().wasOk();
-
-      auto systemDir = getSystemDirectory();
-      if (!systemDir.exists()) success = success && systemDir.createDirectory().wasOk();
-
-      return success;
+  inline int clampPresetIndex(int index) {
+      return juce::jlimit(0, 127, index);  // MIDI preset range
   }
-}
 
+  inline float clampEnergy(float energy) {
+      return juce::jlimit(0.0f, 1.0f, energy);  // Energy typically 0-1 range
+  }
+
+  inline float clampLoopPosition(float position) {
+      return juce::jlimit(Validation::MIN_LOOP_POSITION, Validation::MAX_LOOP_POSITION, position);
+  }
+
+  inline float clampPhosphorIconBoxFitRatio(float ratio) {
+      return juce::jlimit(Validation::MIN_PHOSPHOR_ICON_BOX_FIT_RATIO, Validation::MAX_PHOSPHOR_ICON_BOX_FIT_RATIO, ratio);
+  }
+
+  /**
+   * @brief Creates the complete directory structure for OTTO data storage
+   * @param baseDirectory The root directory where OTTO_Data folder will be created
+   * @return true if all directories were created successfully, false otherwise
+   */
+  inline bool createDirectoryStructure(const juce::File& baseDirectory) {
+      juce::File ottoDataDir = baseDirectory.getChildFile(OTTO_DATA_FOLDER);
+      
+      // Create main OTTO_Data directory
+      if (!ottoDataDir.createDirectory()) {
+          return false;
+      }
+      
+      // Create all subdirectories
+      juce::StringArray folders = {
+          SETTINGS_FOLDER,
+          PERFORMANCE_FOLDER,
+          PATTERNS_FOLDER,
+          KITS_FOLDER,
+          MIXING_FOLDER,
+          SYSTEM_FOLDER,
+          PRESETS_FOLDER
+      };
+      
+      for (const auto& folder : folders) {
+          juce::File subDir = ottoDataDir.getChildFile(folder);
+          if (!subDir.createDirectory()) {
+              return false;
+          }
+      }
+      
+      return true;
+  }
+
+} // namespace INIConfig

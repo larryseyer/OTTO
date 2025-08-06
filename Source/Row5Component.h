@@ -62,6 +62,10 @@ public:
     void setSelectedDrumButton(int buttonIndex);
     void triggerDrumPad(int padIndex);
     
+    // MIDI file loading for Issue 5.3
+    juce::StringArray loadMidiPatternFilenames();
+    void loadMidiFilesByPatternGroup(int patternGroupIndex);
+    
     void setAnimationManager(AnimationManager* manager) { animationManager = manager; }
     void setupDragDropTargets();
     void setupHoverEffects();

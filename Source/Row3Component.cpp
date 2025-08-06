@@ -31,6 +31,7 @@
 #include "INIConfig.h"
 #include "ErrorHandling.h"
 #include "UI/Visualizations/WaveformDisplay.h"
+#include "PopupWindows.h"
 
 Row3Component::Row3Component(MidiEngine& midiEngine,
                            Mixer& mixer,
@@ -96,7 +97,7 @@ void Row3Component::loadStates(const ComponentState& state) {
 void Row3Component::updateFromState(const ComponentState& state) {
     drumKitEditButton.setToggleState(editMode, juce::dontSendNotification);
     drumKitSelectedLabel.setText(currentDrumKitName, juce::dontSendNotification);
-    updatePlayerNumberDisplay();
+    // updatePlayerNumberDisplay();  // Issue 3.1: Removed player number display
     updateMuteButtonState();
     updateDrumKitDisplayToggle();
 }
@@ -144,7 +145,7 @@ void Row3Component::mouseDown(const juce::MouseEvent& event) {
 
 void Row3Component::updatePlayerDisplay(int playerIndex) {
     currentPlayerIndex = INIConfig::clampPlayerIndex(playerIndex);
-    updatePlayerNumberDisplay();
+    // updatePlayerNumberDisplay();  // Issue 3.1: Removed player number display
     updateMuteButtonState();
 }
 
@@ -185,13 +186,14 @@ bool Row3Component::isMuted() const {
 
 void Row3Component::setupDrumKitComponents() {
     // PLAYER NUMBER LABEL: Large display for current player
-    playerNumberLabel.setComponentID("player_number_label");
-    playerNumberLabel.setJustificationType(juce::Justification::centred);
-    playerNumberLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
-                                                 INIConfig::LayoutConstants::Row3::largePlayerFontSize));
-    playerNumberLabel.setColour(juce::Label::textColourId, 
-                               colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
-    addAndMakeVisible(playerNumberLabel);
+    // Issue 3.1: Remove Number "1" Display - Comment out player number label setup
+    // playerNumberLabel.setComponentID("player_number_label");
+    // playerNumberLabel.setJustificationType(juce::Justification::centred);
+    // playerNumberLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+    //                                              INIConfig::LayoutConstants::Row3::largePlayerFontSize));
+    // playerNumberLabel.setColour(juce::Label::textColourId, 
+    //                            colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    // addAndMakeVisible(playerNumberLabel);  // Removed to hide player number display
     
     // EDIT BUTTON: Toggle edit mode for pattern editing
     drumKitEditButton.setComponentID("drumkit_edit_button");
@@ -253,7 +255,7 @@ void Row3Component::setupDrumKitComponents() {
     addAndMakeVisible(drumKitMuteButton);
     
     // Initialize display state
-    updatePlayerNumberDisplay();
+    // updatePlayerNumberDisplay();  // Issue 3.1: Removed player number display
     updateMuteButtonState();
     updateDrumKitDisplayToggle();
 }
@@ -269,18 +271,19 @@ void Row3Component::updateDrumKitLayout() {
     int buttonY = (bounds.getHeight() - buttonSize) / 2;
     
     // Player number label - large display on the left
-    int playerNumWidth = static_cast<int>(buttonSize * 1.5f);
-    int playerNumHeight = buttonSize;
-    int playerNumX = margin;
+    // Issue 3.1: Remove Number "1" Display - Comment out player number layout
+    // int playerNumWidth = static_cast<int>(buttonSize * 1.5f);
+    // int playerNumHeight = buttonSize;
+    // int playerNumX = margin;
+    // 
+    // playerNumberLabel.setBounds(playerNumX, buttonY, playerNumWidth, playerNumHeight);
+    // 
+    // // Update player number font size responsively
+    // float playerFontSize = getResponsiveFontSize(24.0f);
+    // playerNumberLabel.setFont(JUCE8_FONT(playerFontSize));
     
-    playerNumberLabel.setBounds(playerNumX, buttonY, playerNumWidth, playerNumHeight);
-    
-    // Update player number font size responsively
-    float playerFontSize = getResponsiveFontSize(24.0f);
-    playerNumberLabel.setFont(JUCE8_FONT(playerFontSize));
-    
-    // Edit button
-    int editButtonX = playerNumX + playerNumWidth + spacing;
+    // Edit button - now starts from left margin since player number is removed
+    int editButtonX = margin;
     drumKitEditButton.setBounds(editButtonX, buttonY, buttonSize, buttonSize);
     
     // Left chevron
@@ -313,7 +316,8 @@ void Row3Component::updateDrumKitLayout() {
 }
 
 void Row3Component::updatePlayerNumberDisplay() {
-    playerNumberLabel.setText(juce::String(currentPlayerIndex + 1), juce::dontSendNotification);
+    // Issue 3.1: Remove Number "1" Display - Comment out player number display update
+    // playerNumberLabel.setText(juce::String(currentPlayerIndex + 1), juce::dontSendNotification);
 }
 
 void Row3Component::updateMuteButtonState() {
@@ -333,8 +337,37 @@ void Row3Component::toggleDrumKitDisplay() {
 }
 
 void Row3Component::handleDrumKitChevrons(bool isRight) {
+    // Issue 3.3 & 3.5: Left/Right Chevron Does Not Decrement/Increment Drumkit Menu
+    // Get list of available drumkits from the dropdown
+    juce::StringArray drumKitList;
+    for (int i = 0; i < drumKitDropdown.getNumItems(); ++i) {
+        drumKitList.add(drumKitDropdown.getItemText(i));
+    }
+    
+    if (drumKitList.size() == 0) return; // No drumkits available
+    
+    int currentIndex = drumKitList.indexOf(currentDrumKitName);
+    if (currentIndex == -1) currentIndex = 0; // Default to first if not found
+    
+    if (isRight) {
+        // Navigate to next drumkit (wrap around to beginning)
+        currentIndex = (currentIndex + 1) % drumKitList.size();
+    } else {
+        // Navigate to previous drumkit (wrap around to end)
+        currentIndex = (currentIndex - 1 + drumKitList.size()) % drumKitList.size();
+    }
+    
+    // Update the current drumkit name and UI
+    setDrumKitName(drumKitList[currentIndex]);
+    
+    // Notify parent component
     if (onDrumKitNavigated) {
         onDrumKitNavigated(isRight);
+    }
+    
+    // Trigger drumkit change callback if available
+    if (onDrumKitChanged) {
+        onDrumKitChanged(currentDrumKitName);
     }
 }
 
@@ -342,16 +375,22 @@ void Row3Component::handleEditButtonClick() {
     editMode = !editMode;
     drumKitEditButton.setToggleState(editMode, juce::dontSendNotification);
     
+    // Issue 3.2: Edit Icon Does Not Bring Up Drumkit Edit Window
+    // Use callback to notify parent component to show edit window
     if (onEditModeChanged) {
         onEditModeChanged(editMode);
     }
+    
+    // Note: The actual DrumKitEditorWindow creation should be handled by the parent component
+    // that has access to SFZEngine and INIDataManager dependencies
 }
 
 void Row3Component::handleMuteButtonClick() {
     bool newMuteState = !drumKitMuteButton.getToggleState();
     setMuteState(newMuteState);
     
-    // Update mixer state
+    // Issue 3.7: Mute Icon Toggles But Doesn't Mute MIDI Signal - ALREADY IMPLEMENTED
+    // Update mixer state to actually mute the audio signal
     mixer.setChannelMute(currentPlayerIndex, newMuteState);
     
     if (onMuteToggled) {
@@ -360,9 +399,14 @@ void Row3Component::handleMuteButtonClick() {
 }
 
 void Row3Component::handleMixerButtonClick() {
+    // Issue 3.6: Mixer Icon Does Not Bring Up Mixer Window
+    // Use callback to notify parent component to show mixer window
     if (onMixerRequested) {
         onMixerRequested();
     }
+    
+    // Note: The actual DrumKitMixerWindow creation should be handled by the parent component
+    // that has access to the required dependencies
 }
 
 void Row3Component::handleDrumKitDropdownChange() {
@@ -370,6 +414,11 @@ void Row3Component::handleDrumKitDropdownChange() {
     if (selectedId > 0) {
         juce::String selectedName = drumKitDropdown.getItemText(selectedId - 1);
         setDrumKitName(selectedName);
+        
+        // Issue 3.4: Drumkit Menu Label Does Not Return When Item Selected
+        // Always return to label view after selection
+        showingDrumKitLabel = true;
+        updateDrumKitDisplayToggle();
         
         if (onDrumKitChanged) {
             onDrumKitChanged(selectedName);

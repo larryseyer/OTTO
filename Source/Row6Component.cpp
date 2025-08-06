@@ -12,6 +12,10 @@ Row6Component::Row6Component(ResponsiveLayoutManager& layoutManager,
       colorScheme(colorScheme),
       loopSlider(layoutManager) {
     
+    // Issue 6.4: Apply custom look and feel to slider for rotated thumb
+    rotatedSliderLookAndFeel = std::make_unique<RotatedSliderLookAndFeel>();
+    loopSlider.setLookAndFeel(rotatedSliderLookAndFeel.get());
+    
     setupLoopComponents();
 }
 
@@ -60,18 +64,29 @@ juce::Rectangle<int> Row6Component::getRowBounds() const {
 }
 
 void Row6Component::setupLoopComponents() {
-    addAndMakeVisible(startLabel);
-    addAndMakeVisible(endLabel);
-    addAndMakeVisible(loopSlider);
-
+    // Issues 6.1 & 6.2: Ensure only one instance of each component exists
+    // Set unique component IDs to prevent duplicates
+    
+    // LOOP START label - single instance only
+    startLabel.setComponentID("loop_start_label");
     startLabel.setText("LOOP START", juce::dontSendNotification);
     startLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     startLabel.setJustificationType(juce::Justification::centredLeft);
-
+    startLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+                      layoutManager.scaled(INIConfig::LayoutConstants::Row6::labelFontSize)));
+    addAndMakeVisible(startLabel);
+    
+    // LOOP END label - single instance only
+    endLabel.setComponentID("loop_end_label");
     endLabel.setText("LOOP END", juce::dontSendNotification);
     endLabel.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
     endLabel.setJustificationType(juce::Justification::centredRight);
-
+    endLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, 
+                    layoutManager.scaled(INIConfig::LayoutConstants::Row6::labelFontSize)));
+    addAndMakeVisible(endLabel);
+    
+    // Loop slider - single instance only
+    loopSlider.setComponentID("loop_position_slider");
     loopSlider.setSliderStyle(juce::Slider::LinearHorizontal);
     loopSlider.setRange(INIConfig::Validation::MIN_LOOP_POSITION, INIConfig::Validation::MAX_LOOP_POSITION, 1.0);
     loopSlider.setValue(INIConfig::Defaults::DEFAULT_LOOP_POSITION);
@@ -79,6 +94,7 @@ void Row6Component::setupLoopComponents() {
     loopSlider.setColour(juce::Slider::backgroundColourId, juce::Colours::transparentBlack);
     loopSlider.setColour(juce::Slider::trackColourId, colorScheme.getColor(ColorScheme::ColorRole::Separator));
     loopSlider.setColour(juce::Slider::thumbColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
+    addAndMakeVisible(loopSlider);
 
     loopSlider.onValueChange = [this] {
         if (onLoopPositionChanged) {
@@ -90,44 +106,38 @@ void Row6Component::setupLoopComponents() {
 void Row6Component::updateLoopLayout() {
     auto bounds = getLocalBounds();
     
+    // Issue 6.3: Slider should travel full width of app window
+    int fullWindowWidth = layoutManager.getWindowWidth(); // Get full app width
+    
     // Use responsive calculations instead of hardcoded values
     int spacing = getResponsiveSpacing();
-    int margin = getResponsiveMargin(10);
+    int margin = layoutManager.scaled(INIConfig::LayoutConstants::Row6::windowMargin);
     
-    // Calculate responsive dimensions
-    int labelWidth = static_cast<int>(bounds.getWidth() * 0.15f); // 15% of width for labels
+    // Calculate responsive dimensions using INIConfig constants
+    int labelWidth = layoutManager.scaled(INIConfig::LayoutConstants::Row6::labelWidth);
     int labelHeight = static_cast<int>(bounds.getHeight() * 0.4f); // 40% of row height
     int sliderHeight = static_cast<int>(bounds.getHeight() * 0.6f); // 60% of row height
     
-    // Center everything vertically
-    int labelY = (bounds.getHeight() - labelHeight) / 2;
-    int sliderY = (bounds.getHeight() - sliderHeight) / 2;
+    // Position labels at window edges with margin
+    int labelY = bounds.getY() + layoutManager.scaled(INIConfig::LayoutConstants::Row6::labelTopMargin);
     
-    // Update label font size responsively
-    float labelFontSize = getResponsiveFontSize(10.0f);
+    // Update label font size responsively using INIConfig constant
+    float labelFontSize = getResponsiveFontSize(INIConfig::LayoutConstants::Row6::labelFontSize);
     startLabel.setFont(JUCE8_FONT(labelFontSize));
     endLabel.setFont(JUCE8_FONT(labelFontSize));
     
-    // Position start label (left side)
-    int startLabelX = margin;
-    startLabel.setBounds(startLabelX, labelY, labelWidth, labelHeight);
+    // Position start label (left edge of window)
+    startLabel.setBounds(margin, labelY, labelWidth, labelHeight);
     
-    // Position end label (right side)
-    int endLabelX = bounds.getWidth() - labelWidth - margin;
-    endLabel.setBounds(endLabelX, labelY, labelWidth, labelHeight);
+    // Position end label (right edge of window)
+    endLabel.setBounds(fullWindowWidth - labelWidth - margin, labelY, labelWidth, labelHeight);
     
-    // Position slider (center, between labels)
-    int sliderX = startLabelX + labelWidth + spacing;
-    int sliderWidth = endLabelX - sliderX - spacing;
+    // Issue 6.3: Slider spans full width with margins
+    int sliderY = labelY + labelHeight + layoutManager.scaled(INIConfig::LayoutConstants::Row6::sliderTopOffset);
+    int sliderWidth = fullWindowWidth - (2 * margin); // Full width minus margins
+    int finalSliderHeight = bounds.getHeight() - labelHeight - layoutManager.scaled(INIConfig::LayoutConstants::Row6::remainingHeightOffset);
     
-    // Ensure minimum slider width for usability
-    int minSliderWidth = static_cast<int>(bounds.getWidth() * 0.3f); // At least 30% of width
-    if (sliderWidth < minSliderWidth) {
-        sliderWidth = minSliderWidth;
-        sliderX = (bounds.getWidth() - sliderWidth) / 2;
-    }
-    
-    loopSlider.setBounds(sliderX, sliderY, sliderWidth, sliderHeight);
+    loopSlider.setBounds(margin, sliderY, sliderWidth, finalSliderHeight);
 }
 
 //==============================================================================
@@ -205,4 +215,36 @@ int Row6Component::getResponsiveSpacing() const {
 
 float Row6Component::getResponsiveFontSize(float baseSize) const {
     return ResponsiveComponent::getResponsiveFontSize(baseSize);
+}
+
+//==============================================================================
+// Issue 6.4: Custom LookAndFeel Implementation for Rotated Slider Thumb
+//==============================================================================
+
+void Row6Component::RotatedSliderLookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+                                                              float sliderPos, float minSliderPos, float maxSliderPos,
+                                                              const juce::Slider::SliderStyle style, juce::Slider& slider) {
+    juce::ignoreUnused(minSliderPos, maxSliderPos, style);
+    
+    // Draw the track normally (horizontal)
+    juce::LookAndFeel_V4::drawLinearSlider(g, x, y, width, height, sliderPos, 
+                                          minSliderPos, maxSliderPos, style, slider);
+    
+    // Draw custom rotated thumb
+    float thumbX = x + sliderPos * (width - 20); // 20 = thumb width
+    float thumbY = y + (height - 30) / 2; // 30 = thumb height, center vertically
+    
+    // Save graphics state
+    juce::Graphics::ScopedSaveState saveState(g);
+    
+    // Rotate thumb image 90 degrees
+    g.addTransform(juce::AffineTransform::rotation(juce::MathConstants<float>::halfPi, 
+                                                  thumbX + 10, thumbY + 15));
+    
+    // Draw rotated thumb
+    juce::Rectangle<float> thumbBounds(thumbX, thumbY, 20, 30);
+    g.setColour(juce::Colours::lightgrey);
+    g.fillRoundedRectangle(thumbBounds, 3.0f);
+    g.setColour(juce::Colours::darkgrey);
+    g.drawRoundedRectangle(thumbBounds, 3.0f, 1.0f);
 }

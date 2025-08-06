@@ -27,7 +27,7 @@ OTTO uses a **unified CMake build system** that ensures identical results across
 - **macOS 10.13+**: Minimum deployment target
 - **Apple Developer Account**: For code signing (optional for development)
 
-#### Windows  
+#### Windows
 - **Visual Studio 2022**: Community, Professional, or Enterprise
 - **Windows SDK 10.0+**: Platform SDK
 - **Windows 10/11**: Target platform
@@ -61,7 +61,7 @@ OTTO uses a **unified CMake build system** that ensures identical results across
 ```
 **Output**: `Builds/MacOSX/Release/`
 - `VST3/OTTO.vst3` - VST3 plugin
-- `AU/OTTO.component` - Audio Unit plugin  
+- `AU/OTTO.component` - Audio Unit plugin
 - `Standalone/OTTO.app` - Standalone application
 
 #### iOS (Device & Simulator)
@@ -176,7 +176,7 @@ cmake --build build-macos-release --target install
 # iOS Device build
 ./scripts/build/build_ios.sh --device --team-id XXXXXXXXXX
 
-# iOS Simulator build  
+# iOS Simulator build
 ./scripts/build/build_ios.sh --simulator --team-id XXXXXXXXXX
 
 # Archive build for App Store
@@ -316,13 +316,13 @@ OTTO includes comprehensive CMake presets for IDE integration:
 cmake --preset macos-debug
 cmake --preset macos-release
 
-# iOS  
+# iOS
 cmake --preset ios-simulator-debug
 cmake --preset ios-device-debug
 cmake --preset ios-simulator-release
 cmake --preset ios-device-release
 
-# Windows  
+# Windows
 cmake --preset windows-debug
 cmake --preset windows-release
 
@@ -380,7 +380,7 @@ codesign -dv Builds/iOS/Release/Standalone/OTTO.app
 # Check Linux plugins
 ldd Builds/LinuxMakefile/Release/VST3/OTTO.vst3/Contents/x86_64-linux/OTTO.so
 
-# Check Windows plugins  
+# Check Windows plugins
 dumpbin /dependents Builds/VisualStudio2022/Release/VST3/OTTO.vst3/Contents/x86_64-win/OTTO.vst3
 
 # Check Android library
@@ -426,7 +426,7 @@ REM Solution: Install CMake via Visual Studio Installer or standalone
 
 #### Linux Issues
 ```bash
-# Missing dependencies  
+# Missing dependencies
 # Solution: Build script auto-installs, or run manually:
 sudo apt install libasound2-dev libgtk-3-dev libfreetype6-dev libx11-dev
 
@@ -440,7 +440,7 @@ sudo apt install gcc-11 g++-11
 # NDK not found
 export ANDROID_NDK_ROOT=/path/to/your/ndk
 
-# SDK not found  
+# SDK not found
 export ANDROID_HOME=/path/to/your/sdk
 
 # CMake toolchain issues
@@ -452,7 +452,7 @@ export ANDROID_HOME=/path/to/your/sdk
 #### All Scripts Support
 ```bash
 --release        # Release build (default)
---debug          # Debug build  
+--debug          # Debug build
 --clean          # Clean before build
 --verbose        # Verbose output
 --help           # Show help message
@@ -464,7 +464,7 @@ export ANDROID_HOME=/path/to/your/sdk
 --test           # Run tests after build
 --notarize       # Notarize for distribution
 
-# iOS  
+# iOS
 --simulator      # Build for simulator
 --device         # Build for device
 --archive        # Create archive for App Store
@@ -501,7 +501,7 @@ export CMAKE_CXX_COMPILER_LAUNCHER=ccache
 ```bash
 # Release builds use:
 # - Link-time optimization (LTO)
-# - Dead code elimination  
+# - Dead code elimination
 # - Symbol stripping
 # - Optimal compiler flags per platform
 ```
@@ -546,3 +546,7 @@ REM Install to:
 ---
 
 This unified build system ensures **consistent, reliable builds** across all platforms while maintaining the flexibility to use different development environments and workflows.
+
+### Note to Zencoder:
+Use our build system by doing this: cd /Users/larryseyer/AudioDevelopment/OTTO && ./scripts/build/build_macos.sh
+

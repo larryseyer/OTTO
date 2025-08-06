@@ -35,3 +35,5 @@ ISYSTEM DIRECTIVES - CRITICAL TO REMEMBER:
 
 **CONSTRAINTS**: Use INIConfig::LayoutConstants, FontManager, ColorScheme namespace
 
+### Note to Zencoder:
+**Use our build system by doing this: cd /Users/larryseyer/AudioDevelopment/OTTO && ./scripts/build/build_macos.sh

@@ -194,12 +194,18 @@ void Row4Component::setupLabels() {
     energyLabel.setComponentID("energy_label");
     volumeLabel.setComponentID("volume_label");
     
-    // Configure label properties using JUCE 8 patterns
+    // Issue 4.7: Labels Too Small - Need Playfair Display Font 2x Larger
+    // Use responsive font sizing with INIConfig and FontManager
+    float baseFontSize = fontManager.getDefaultSize(FontManager::FontRole::Header);
+    float enlargedFontSize = getResponsiveFontSize(baseFontSize * 2.0f);
+    
+    // Configure label properties using responsive design with INIConfig ColorScheme and FontManager
     auto setupLabel = [&](juce::Label& label, const juce::String& text) {
         label.setText(text, juce::dontSendNotification);
         label.setJustificationType(juce::Justification::centred);
-        label.setFont(fontManager.getFont(FontManager::FontRole::Body, 12.0f));
-        label.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::SecondaryText));
+        // Use Header font role which maps to Playfair Display (fontSecondaryType)
+        label.setFont(fontManager.getFont(FontManager::FontRole::Header, enlargedFontSize));
+        label.setColour(juce::Label::textColourId, colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     };
     
     setupLabel(togglesLabel, "TOGGLES");
@@ -238,69 +244,96 @@ void Row4Component::setupPatternGroupCallbacks() {
 }
 
 void Row4Component::updatePatternGroupLayout() {
-    auto bounds = getLocalBounds();
+    using namespace INIConfig::LayoutConstants::Row4;
     
-    // Use responsive calculations instead of hardcoded values
-    int buttonSize = getResponsiveButtonSize();
-    int spacing = getResponsiveSpacing();
-    int margin = getResponsiveMargin(8);
-    
-    int buttonY = (bounds.getHeight() - buttonSize) / 2;
-    
-    // Pattern group controls - left side
-    int currentX = margin;
-    
-    // Edit button
-    patternGroupEditButton.setBounds(currentX, buttonY, buttonSize, buttonSize);
-    currentX += buttonSize + spacing;
+    // Use INIConfig constants for precise positioning as defined in INIConfig.h
+    // Edit/Pencil icon
+    patternGroupEditButton.setBounds(
+        layoutManager.scaled(editIconX),
+        layoutManager.scaled(editIconY),
+        layoutManager.scaled(editIconWidth),
+        layoutManager.scaled(iconHeight)
+    );
     
     // Left chevron
-    patternGroupLeftChevron.setBounds(currentX, buttonY, buttonSize, buttonSize);
-    currentX += buttonSize + spacing;
+    patternGroupLeftChevron.setBounds(
+        layoutManager.scaled(leftChevronX),
+        layoutManager.scaled(leftChevronY),
+        layoutManager.scaled(chevronWidth),
+        layoutManager.scaled(iconHeight)
+    );
     
     // Pattern group dropdown
-    int dropdownWidth = static_cast<int>(bounds.getWidth() * 0.15f); // 15% of width
-    patternGroupDropdown.setBounds(currentX, buttonY, dropdownWidth, buttonSize);
-    
-    // Note: Font styling handled by LookAndFeel in JUCE 8
-    // float dropdownFontSize = getResponsiveFontSize(12.0f);
-    
-    currentX += dropdownWidth + spacing;
+    patternGroupDropdown.setBounds(
+        layoutManager.scaled(dropdownX),
+        layoutManager.scaled(dropdownY),
+        layoutManager.scaled(dropdownWidth),
+        layoutManager.scaled(dropdownHeight)
+    );
     
     // Right chevron
-    patternGroupRightChevron.setBounds(currentX, buttonY, buttonSize, buttonSize);
-    currentX += buttonSize + spacing;
+    patternGroupRightChevron.setBounds(
+        layoutManager.scaled(rightChevronX),
+        layoutManager.scaled(rightChevronY),
+        layoutManager.scaled(chevronWidth),
+        layoutManager.scaled(iconHeight)
+    );
     
     // Favorite button
-    patternGroupFavoriteButton.setBounds(currentX, buttonY, buttonSize, buttonSize);
-    currentX += buttonSize + spacing * 2; // Extra spacing before labels
+    patternGroupFavoriteButton.setBounds(
+        layoutManager.scaled(favoriteIconX),
+        layoutManager.scaled(favoriteIconY),
+        layoutManager.scaled(favoriteIconWidth),
+        layoutManager.scaled(iconHeight)
+    );
     
-    // Labels - right side of Row 4
-    int labelWidth = static_cast<int>((bounds.getWidth() - currentX - margin) / 5.0f); // Divide remaining space by 5 labels
-    int labelHeight = static_cast<int>(buttonSize * 0.8f);
-    int labelY = buttonY + (buttonSize - labelHeight) / 2;
+    // Labels using INIConfig positioning - Issue 4.7: 2x larger Playfair Display font
+    float labelFontSize = getResponsiveFontSize(fontManager.getDefaultSize(FontManager::FontRole::Header) * 2.0f);
     
-    // Update label font size responsively
-    float labelFontSize = getResponsiveFontSize(10.0f);
+    // Toggles label
+    togglesLabel.setBounds(
+        layoutManager.scaled(togglesLabelX),
+        layoutManager.scaled(togglesLabelY),
+        layoutManager.scaled(labelWidth),
+        layoutManager.scaled(labelHeight)
+    );
+    togglesLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, labelFontSize));
     
-    togglesLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
-    togglesLabel.setFont(JUCE8_FONT(labelFontSize));
-    currentX += labelWidth;
+    // Fills label
+    fillsLabel.setBounds(
+        layoutManager.scaled(fillsLabelX),
+        layoutManager.scaled(fillsLabelY),
+        layoutManager.scaled(labelWidth),
+        layoutManager.scaled(labelHeight)
+    );
+    fillsLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, labelFontSize));
     
-    fillsLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
-    fillsLabel.setFont(JUCE8_FONT(labelFontSize));
-    currentX += labelWidth;
+    // Swing label
+    swingLabel.setBounds(
+        layoutManager.scaled(swingLabelX),
+        layoutManager.scaled(swingLabelY),
+        layoutManager.scaled(labelWidth),
+        layoutManager.scaled(labelHeight)
+    );
+    swingLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, labelFontSize));
     
-    swingLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
-    swingLabel.setFont(JUCE8_FONT(labelFontSize));
-    currentX += labelWidth;
+    // Energy label
+    energyLabel.setBounds(
+        layoutManager.scaled(energyLabelX),
+        layoutManager.scaled(energyLabelY),
+        layoutManager.scaled(labelWidth),
+        layoutManager.scaled(labelHeight)
+    );
+    energyLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, labelFontSize));
     
-    energyLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
-    energyLabel.setFont(JUCE8_FONT(labelFontSize));
-    currentX += labelWidth;
-    
-    volumeLabel.setBounds(currentX, labelY, labelWidth, labelHeight);
-    volumeLabel.setFont(JUCE8_FONT(labelFontSize));
+    // Volume label
+    volumeLabel.setBounds(
+        layoutManager.scaled(volumeLabelX),
+        layoutManager.scaled(volumeLabelY),
+        layoutManager.scaled(labelWidth),
+        layoutManager.scaled(labelHeight)
+    );
+    volumeLabel.setFont(fontManager.getFont(FontManager::FontRole::Header, labelFontSize));
 }
 
 void Row4Component::setupPatternGroupDragDrop() {
@@ -325,8 +358,8 @@ void Row4Component::setupPatternGroupAnimations() {
         }
     };
     
-    // Handle dropdown click for label/menu toggle
-    patternGroupDropdown.onClick = [this]() {
+    // Handle dropdown popup request for label/menu toggle
+    patternGroupDropdown.onPopupRequest = [this]() {
         if (showingPatternGroupLabel) {
             // First click: hide label, show menu
             showingPatternGroupLabel = false;

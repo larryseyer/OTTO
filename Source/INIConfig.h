@@ -186,7 +186,7 @@ namespace INIConfig {
          *
          * Referenced by: All LayoutConstants calculations, ResponsiveLayoutManager.cpp
          */
-        static const int DEFAULT_INTERFACE_WIDTH = 1354;
+        static const int DEFAULT_INTERFACE_WIDTH = 1366;
 
         /**
          * @brief Base interface height for responsive scaling calculations

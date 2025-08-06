@@ -266,36 +266,30 @@ void Row3Component::updateDrumKitLayout() {
     // Use responsive calculations instead of hardcoded values
     int buttonSize = getResponsiveButtonSize();
     int spacing = getResponsiveSpacing();
-    int margin = getResponsiveMargin(10);
     
     int buttonY = (bounds.getHeight() - buttonSize) / 2;
     
-    // Player number label - large display on the left
-    // Issue 3.1: Remove Number "1" Display - Comment out player number layout
-    // int playerNumWidth = static_cast<int>(buttonSize * 1.5f);
-    // int playerNumHeight = buttonSize;
-    // int playerNumX = margin;
-    // 
-    // playerNumberLabel.setBounds(playerNumX, buttonY, playerNumWidth, playerNumHeight);
-    // 
-    // // Update player number font size responsively
-    // float playerFontSize = getResponsiveFontSize(24.0f);
-    // playerNumberLabel.setFont(JUCE8_FONT(playerFontSize));
+    // Issue 3.8: All Icons Should Be Centered to App Window
+    // Calculate total width needed for all components
+    int dropdownWidth = static_cast<int>(bounds.getWidth() * 0.25f); // 25% of width
+    int totalComponentsWidth = (5 * buttonSize) + (4 * spacing) + dropdownWidth;
+    int startX = (bounds.getWidth() - totalComponentsWidth) / 2; // Center all components
     
-    // Edit button - now starts from left margin since player number is removed
-    int editButtonX = margin;
-    drumKitEditButton.setBounds(editButtonX, buttonY, buttonSize, buttonSize);
+    // Position components from center outward
+    int currentX = startX;
+    
+    // Edit button - centered layout
+    drumKitEditButton.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing;
     
     // Left chevron
-    int leftChevronX = editButtonX + buttonSize + spacing;
-    drumKitLeftChevron.setBounds(leftChevronX, buttonY, buttonSize, buttonSize);
+    drumKitLeftChevron.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing;
     
     // DrumKit dropdown and label (center area)
-    int dropdownX = leftChevronX + buttonSize + spacing;
-    int dropdownWidth = static_cast<int>(bounds.getWidth() * 0.25f); // 25% of width
-    
-    drumKitDropdown.setBounds(dropdownX, buttonY, dropdownWidth, buttonSize);
-    drumKitSelectedLabel.setBounds(dropdownX, buttonY, dropdownWidth, buttonSize);
+    drumKitDropdown.setBounds(currentX, buttonY, dropdownWidth, buttonSize);
+    drumKitSelectedLabel.setBounds(currentX, buttonY, dropdownWidth, buttonSize);
+    currentX += dropdownWidth + spacing;
     
     // Update dropdown font size responsively
     float dropdownFontSize = getResponsiveFontSize(14.0f);
@@ -303,16 +297,15 @@ void Row3Component::updateDrumKitLayout() {
     drumKitSelectedLabel.setFont(JUCE8_FONT(dropdownFontSize));
     
     // Right chevron
-    int rightChevronX = dropdownX + dropdownWidth + spacing;
-    drumKitRightChevron.setBounds(rightChevronX, buttonY, buttonSize, buttonSize);
+    drumKitRightChevron.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing;
     
     // Mixer button
-    int mixerButtonX = rightChevronX + buttonSize + spacing;
-    drumKitMixerButton.setBounds(mixerButtonX, buttonY, buttonSize, buttonSize);
+    drumKitMixerButton.setBounds(currentX, buttonY, buttonSize, buttonSize);
+    currentX += buttonSize + spacing;
     
     // Mute button
-    int muteButtonX = mixerButtonX + buttonSize + spacing;
-    drumKitMuteButton.setBounds(muteButtonX, buttonY, buttonSize, buttonSize);
+    drumKitMuteButton.setBounds(currentX, buttonY, buttonSize, buttonSize);
 }
 
 void Row3Component::updatePlayerNumberDisplay() {

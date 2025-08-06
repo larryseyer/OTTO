@@ -5,6 +5,7 @@
 #include "Animation/AnimationManager.h"
 #include "DragDrop/DragDropManager.h"
 #include "ResponsiveLayoutManager.h"
+#include "PopupWindows.h"
 
 Row4Component::Row4Component(MidiEngine& midiEngine,
                            ResponsiveLayoutManager& layoutManager,
@@ -70,25 +71,37 @@ bool Row4Component::isPatternGroupEditMode() const {
 }
 
 void Row4Component::navigatePatternGroup(bool isNext) {
-    int newIndex = currentPatternGroupIndex + (isNext ? 1 : -1);
+    // Issue 4.2 & 4.5: Left/Right Chevron Does Not Decrement/Increment Pattern Group Menu
+    // Ensure navigatePatternGroup properly decrements/increments as described in GUI_TWEAKS.md
+    int currentIndex = getCurrentPatternGroupIndex();
+    int maxGroups = patternGroupDropdown.getNumItems(); // Get from dropdown
     
-    // Wrap around logic
-    int maxIndex = patternGroupDropdown.getNumItems() - 1;
-    if (newIndex > maxIndex) {
-        newIndex = 0;
-    } else if (newIndex < 0) {
-        newIndex = maxIndex;
+    if (maxGroups == 0) return; // No groups available
+    
+    if (isNext) {
+        currentIndex = (currentIndex + 1) % maxGroups;
+    } else {
+        currentIndex = (currentIndex - 1 + maxGroups) % maxGroups;
     }
     
-    setCurrentPatternGroupIndex(newIndex);
+    setCurrentPatternGroupIndex(currentIndex);
+    animatePatternGroupChange(currentIndex);
+    updatePatternGroupButtonStates();
 }
 
 void Row4Component::togglePatternGroupFavorite() {
-    bool currentFavoriteState = patternGroupFavoriteButton.getToggleState();
-    patternGroupFavoriteButton.setToggleState(!currentFavoriteState, juce::dontSendNotification);
+    // Issue 4.6: Favorites Icon Does Not Toggle/Mark Current Group
+    // Implement togglePatternGroupFavorite method as described in GUI_TWEAKS.md
+    int currentIndex = getCurrentPatternGroupIndex();
+    bool isFavorite = isPatternGroupFavorite(currentIndex);
     
-    // Update favorite icon
-    patternGroupFavoriteButton.setIconName(currentFavoriteState ? "heart" : "heart-fill");
+    setPatternGroupFavorite(currentIndex, !isFavorite);
+    updateFavoriteButtonState();
+    
+    // TODO: Save to INI data when INIDataManager methods are available
+    // if (iniDataManager) {
+    //     iniDataManager->setPatternGroupFavorite(currentIndex, !isFavorite);
+    // }
 }
 
 int Row4Component::getCurrentPatternGroupIndex() const {
@@ -300,14 +313,29 @@ void Row4Component::setupPatternGroupDragDrop() {
 }
 
 void Row4Component::setupPatternGroupAnimations() {
+    // Issue 4.3: Pattern Group Dropdown Does Nothing
+    // Issue 4.4: Pattern Group Label Visibility Toggle
+    // Implement dropdown functionality as described in GUI_TWEAKS.md
     patternGroupDropdown.onChange = [this]() {
-        int selectedIndex = patternGroupDropdown.getSelectedItemIndex();
-        if (selectedIndex >= 0) {
-            if (animationManager && animationManager->shouldUseAnimations()) {
-                animatePatternGroupChange(selectedIndex);
-            } else {
-                setCurrentPatternGroupIndex(selectedIndex);
-            }
+        int selectedId = patternGroupDropdown.getSelectedId();
+        if (selectedId > 0) {
+            setCurrentPatternGroupIndex(selectedId - 1); // Convert to 0-based index
+            animatePatternGroupChange(selectedId - 1);
+            updatePatternGroupButtonStates();
+        }
+    };
+    
+    // Handle dropdown click for label/menu toggle
+    patternGroupDropdown.onClick = [this]() {
+        if (showingPatternGroupLabel) {
+            // First click: hide label, show menu
+            showingPatternGroupLabel = false;
+            // Hide label component if exists
+            patternGroupDropdown.showPopup();
+        } else {
+            // Second click: show label, hide menu
+            showingPatternGroupLabel = true;
+            // Show label component if exists
         }
     };
 }
@@ -424,30 +452,26 @@ float Row4Component::getResponsiveFontSize(float baseSize) const {
 //==============================================================================
 
 void Row4Component::showPatternGroupEditor() {
-    // Create pattern group editor window using PopupWindows system
-    auto editorWindow = std::make_unique<juce::AlertWindow>("Pattern Group Editor", 
-                                                           "Edit Pattern Group " + juce::String(currentPatternGroupIndex + 1),
-                                                           juce::AlertWindow::InfoIcon);
+    // Issue 4.1: Pattern Group Edit Icon Does Not Bring Up Editor
+    // Create pattern group editor window as described in GUI_TWEAKS.md
+    auto editorWindow = std::make_unique<PatternGroupEditorWindow>(
+        getCurrentPatternGroupIndex(),
+        iniDataManager,
+        colorScheme,
+        fontManager
+    );
+    editorWindow->setSize(900, 650);
+    editorWindow->centreWithSize(900, 650);
+    editorWindow->setVisible(true);
+    editorWindow->toFront(true);
     
-    editorWindow->addTextEditor("groupName", "Group " + juce::String(currentPatternGroupIndex + 1), "Group Name:");
-    editorWindow->addButton("Save", 1, juce::KeyPress(juce::KeyPress::returnKey));
-    editorWindow->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey));
+    // Set callback for pattern group changes
+    editorWindow->onPatternGroupChanged = [this](int newIndex) {
+        setCurrentPatternGroupIndex(newIndex);
+        animatePatternGroupChange(newIndex);
+    };
     
-    editorWindow->setSize(400, 200);
-    editorWindow->centreWithSize(400, 200);
-    
-    // Use async approach for JUCE 8 compatibility
-    editorWindow->enterModalState(true, juce::ModalCallbackFunction::create([this, editorWindow = editorWindow.get()](int result) {
-        if (result == 1) {
-            juce::String newName = editorWindow->getTextEditorContents("groupName");
-            // Update pattern group name in dropdown
-            if (currentPatternGroupIndex < patternGroupDropdown.getNumItems()) {
-                patternGroupDropdown.changeItemText(currentPatternGroupIndex, newName);
-            }
-        }
-    }));
-    
-    // Release ownership since the modal callback will handle cleanup
+    // Release ownership - window will manage itself
     editorWindow.release();
 }
 
@@ -496,7 +520,19 @@ void Row4Component::setPatternGroupFavorite(int index, bool favorite) {
 }
 
 void Row4Component::updateFavoriteButtonState() {
-    bool isFavorite = isPatternGroupFavorite(currentPatternGroupIndex);
+    // Issue 4.6: Favorites Icon Does Not Toggle/Mark Current Group
+    // Update visual appearance as described in GUI_TWEAKS.md
+    bool isFavorite = isPatternGroupFavorite(getCurrentPatternGroupIndex());
     patternGroupFavoriteButton.setToggleState(isFavorite, juce::dontSendNotification);
-    patternGroupFavoriteButton.setIconName(isFavorite ? "heart-fill" : "heart");
+    
+    // Update visual appearance
+    if (isFavorite) {
+        patternGroupFavoriteButton.setColour(juce::TextButton::buttonColourId,
+                                           colorScheme.getColor(ColorScheme::ColorRole::Accent));
+        patternGroupFavoriteButton.setIconName("heart-fill");
+    } else {
+        patternGroupFavoriteButton.setColour(juce::TextButton::buttonColourId,
+                                           colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
+        patternGroupFavoriteButton.setIconName("heart");
+    }
 }

@@ -143,3 +143,31 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GrooveAndFillsWindow)
 };
+
+class PatternGroupEditorWindow : public juce::DocumentWindow {
+public:
+    PatternGroupEditorWindow(int patternGroupIndex,
+                           INIDataManager* iniDataManager,
+                           ColorScheme& colorScheme,
+                           FontManager& fontManager);
+
+    ~PatternGroupEditorWindow() override;
+
+    void closeButtonPressed() override;
+
+    void saveStates(ComponentState& state);
+    void loadStates(const ComponentState& state);
+
+    std::function<void(int)> onPatternGroupChanged;
+
+private:
+    class PatternGroupEditorContent;
+    std::unique_ptr<PatternGroupEditorContent> content;
+    
+    int patternGroupIndex;
+    INIDataManager* iniDataManager;
+    ColorScheme& colorScheme;
+    FontManager& fontManager;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PatternGroupEditorWindow)
+};

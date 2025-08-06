@@ -21,6 +21,68 @@
 #include "PopupWindows.h"
 #include "CustomLookAndFeel.h"
 
+// OTTOSplashOverlay class for splash screen display
+class OTTOSplashOverlay : public juce::Component, private juce::Timer
+{
+public:
+    OTTOSplashOverlay(const juce::Image& image, float displayTime,
+                      std::function<void()> onComplete,
+                      const juce::Colour& backgroundColor)
+        : splashImage(image), totalTime(displayTime),
+          completionCallback(onComplete), bgColor(backgroundColor)
+    {
+        setOpaque(true);
+        startTimer(50);
+    }
+
+    void paint(juce::Graphics& g) override
+    {
+        g.fillAll(bgColor);
+        g.setOpacity(opacity);
+
+        auto bounds = getLocalBounds();
+        int imgX = (bounds.getWidth() - splashImage.getWidth()) / 2;
+        int imgY = (bounds.getHeight() - splashImage.getHeight()) / 2;
+
+        g.drawImageAt(splashImage, imgX, imgY);
+    }
+
+    void timerCallback() override
+    {
+        elapsed += 0.05f;
+
+        if (elapsed >= totalTime)
+        {
+            overallOpacity -= 0.1f;
+            if (overallOpacity <= 0.0f)
+            {
+                stopTimer();
+                setVisible(false);
+                if (completionCallback)
+                    completionCallback();
+                if (auto* parent = getParentComponent())
+                {
+                    parent->removeChildComponent(this);
+                }
+            }
+            else
+            {
+                setAlpha(overallOpacity);
+            }
+            repaint();
+        }
+    }
+
+private:
+    juce::Image splashImage;
+    float totalTime;
+    float elapsed = 0.0f;
+    float opacity = 1.0f;
+    float overallOpacity = 1.0f;
+    std::function<void()> completionCallback;
+    juce::Colour bgColor;
+};
+
 Row1Component::Row1Component(MidiEngine& midiEngine,
                            juce::AudioProcessorValueTreeState& valueTreeState,
                            ResponsiveLayoutManager& layoutManager,
@@ -1299,30 +1361,34 @@ void Row1Component::showSplashScreen() {
     }
     
     if (splashImage.isValid()) {
-        // Create a simple modal dialog to display the splash screen
-        auto splashWindow = std::make_unique<juce::AlertWindow>(
-            "OTTO Drum Machine",
-            "OTTO v1.0\n\nAdvanced Drum Machine & Sequencer\n\nBuilt with JUCE 8",
-            juce::MessageBoxIconType::InfoIcon);
-        
-        // Add the image to the alert window
-        auto imageComponent = std::make_unique<juce::ImageComponent>();
-        imageComponent->setImage(splashImage);
-        imageComponent->setImagePlacement(juce::RectanglePlacement::centred);
-        
-        // Set reasonable size for the image
-        int maxWidth = layoutManager.scaled(400);
-        int maxHeight = layoutManager.scaled(300);
-        int imageWidth = juce::jmin(splashImage.getWidth(), maxWidth);
-        int imageHeight = juce::jmin(splashImage.getHeight(), maxHeight);
-        
-        imageComponent->setSize(imageWidth, imageHeight);
-        splashWindow->addCustomComponent(imageComponent.release());
-        splashWindow->addButton("OK", 1);
-        
-        // Show the splash screen using JUCE 8 compatible method
-        splashWindow->enterModalState(true, nullptr, true);
-        
+        // Get the top-level component (main window)
+        auto* topLevelComponent = getTopLevelComponent();
+        if (topLevelComponent) {
+            // Use the same splash screen display time as startup (3 seconds)
+            float splashTime = 3.0f;
+            
+            // Get background color from color scheme
+            juce::Colour appBgColor = colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground);
+            
+            // Create the splash overlay using the same approach as startup
+            auto splashOverlay = std::make_unique<OTTOSplashOverlay>(
+                splashImage,
+                splashTime,
+                [topLevelComponent](){ 
+                    // Cleanup callback - the overlay removes itself
+                    topLevelComponent->repaint(); 
+                },
+                appBgColor
+            );
+            
+            // Add to top-level component and show
+            splashOverlay->setBounds(topLevelComponent->getLocalBounds());
+            topLevelComponent->addAndMakeVisible(splashOverlay.get());
+            splashOverlay->toFront(false);
+            
+            // Release ownership - the overlay will clean itself up
+            splashOverlay.release();
+        }
     } else {
         // Fallback to text message if image not found
         juce::AlertWindow::showMessageBoxAsync(

@@ -118,6 +118,8 @@ struct ThemeSettings {
     juce::String buttonColor = "#4A4A4A";
     juce::String buttonHoverColor = "#6A6A6A";
     juce::String buttonActiveColor = "#5A5A5A";
+    juce::String buttonTextColor = "#000000";
+    juce::String iconButtonTextColor = "#FFFFFF";
     juce::String sliderTrackColor = "#3A3A3A";
     juce::String sliderThumbColor = "#7A7A7A";
     juce::String meterColorLow = "#4CAF50";
@@ -146,6 +148,8 @@ struct ThemeSettings {
         buttonColor = "#4A4A4A";
         buttonHoverColor = "#6A6A6A";
         buttonActiveColor = "#5A5A5A";
+        buttonTextColor = "#000000";
+        iconButtonTextColor = "#FFFFFF";
         sliderTrackColor = "#3A3A3A";
         sliderThumbColor = "#7A7A7A";
         meterColorLow = "#4CAF50";
@@ -176,6 +180,8 @@ struct ThemeSettings {
         buttonColor = "#E0E0E0";
         buttonHoverColor = "#D0D0D0";
         buttonActiveColor = "#C0C0C0";
+        buttonTextColor = "#000000";
+        iconButtonTextColor = "#000000";
         sliderTrackColor = "#E0E0E0";
         sliderThumbColor = "#2196F3";
         meterColorLow = "#4CAF50";
@@ -206,6 +212,8 @@ struct ThemeSettings {
         buttonColor = "#5A5A5A";
         buttonHoverColor = "#7A7A7A";
         buttonActiveColor = "#6A6A6A";
+        buttonTextColor = "#000000";
+        iconButtonTextColor = "#FFFFFF";
         sliderTrackColor = "#505050";
         sliderThumbColor = "#FF8C00";
         meterColorLow = "#00FF00";
@@ -231,6 +239,8 @@ struct ThemeSettings {
                INIConfig::isValidHexColor(buttonColor) &&
                INIConfig::isValidHexColor(buttonHoverColor) &&
                INIConfig::isValidHexColor(buttonActiveColor) &&
+               INIConfig::isValidHexColor(buttonTextColor) &&
+               INIConfig::isValidHexColor(iconButtonTextColor) &&
                INIConfig::isValidHexColor(sliderTrackColor) &&
                INIConfig::isValidHexColor(sliderThumbColor) &&
                INIConfig::isValidHexColor(meterColorLow) &&

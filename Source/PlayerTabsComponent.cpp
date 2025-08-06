@@ -114,7 +114,7 @@ PlayerTabsComponent::PlayerTabsComponent(MidiEngine& midiEngine,
     playerNumber.setColour(juce::Label::backgroundColourId, 
                           colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
     playerNumber.setColour(juce::Label::textColourId, 
-                          colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+                          colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
     
 }
 
@@ -218,8 +218,8 @@ void PlayerTabsComponent::lookAndFeelChanged() {
     for (int i = 0; i < Row2::tabsCount; ++i) {
         tabs[i].setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         tabs[i].setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
-        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
-        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
         
         tabs[i].repaint();
     }
@@ -243,8 +243,8 @@ void PlayerTabsComponent::updateTabVisuals() {
         // Update colors using ColorScheme (fonts handled by LookAndFeel)
         tabs[i].setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         tabs[i].setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
-        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
-        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
     }
 }
 

@@ -99,8 +99,8 @@ void Row2Component::lookAndFeelChanged() {
     for (int i = 0; i < Row2::tabsCount; ++i) {
         tabs[i].setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         tabs[i].setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
-        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
-        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
         
         tabs[i].repaint();
     }
@@ -200,7 +200,7 @@ void Row2Component::setupPlayerTabsComponents() {
     playerNumber.setColour(juce::Label::backgroundColourId, 
                           colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
     playerNumber.setColour(juce::Label::textColourId, 
-                          colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+                          colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
 }
 
 void Row2Component::setupTabs() {
@@ -220,9 +220,9 @@ void Row2Component::setupTabs() {
         tabs[i].setColour(juce::TextButton::buttonOnColourId, 
                          colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
         tabs[i].setColour(juce::TextButton::textColourOnId, 
-                         colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+                         colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
         tabs[i].setColour(juce::TextButton::textColourOffId, 
-                         colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+                         colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
 
         // RADIO GROUP CONFIGURATION: Ensure single selection behavior
         tabs[i].setClickingTogglesState(true);                    // Enable toggle mode
@@ -247,8 +247,8 @@ void Row2Component::updateTabVisuals() {
         // Update colors using ColorScheme
         tabs[i].setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         tabs[i].setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackgroundToggled));
-        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
-        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
+        tabs[i].setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::IconButtonText));
     }
 }
 

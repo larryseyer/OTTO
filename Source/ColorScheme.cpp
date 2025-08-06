@@ -69,6 +69,8 @@ ColorScheme::ColorScheme() : currentThemeName("Dark")
     currentThemeSettings.buttonColor = "#5a5a5a";        // Default button state - mid-gray for neutral appearance
     currentThemeSettings.buttonHoverColor = "#6a6a6a";   // Hover state - lighter for feedback (used by CustomLookAndFeel.cpp)
     currentThemeSettings.buttonActiveColor = "#7a7a7a";  // Active/pressed state - lightest for strong feedback
+    currentThemeSettings.buttonTextColor = "#000000";    // Button text color - black for high contrast on button backgrounds
+    currentThemeSettings.iconButtonTextColor = "#ffffff"; // Icon button text color - white for visibility on dark backgrounds
     
     // TEXT AND ACCENT COLORS: High contrast for accessibility compliance
     currentThemeSettings.textColor = "#d0d0d0";          // Primary text - light gray for readability on dark backgrounds
@@ -278,6 +280,8 @@ juce::Colour ColorScheme::getColor(ColorRole role) const
     juce::Colour textColor = stringToColor(currentThemeSettings.textColor);
     juce::Colour buttonHoverColor = stringToColor(currentThemeSettings.buttonHoverColor);
     juce::Colour buttonActiveColor = stringToColor(currentThemeSettings.buttonActiveColor);
+    juce::Colour buttonTextColor = stringToColor(currentThemeSettings.buttonTextColor);
+    juce::Colour iconButtonTextColor = stringToColor(currentThemeSettings.iconButtonTextColor);
     juce::Colour sliderTrackColor = stringToColor(currentThemeSettings.sliderTrackColor);
     juce::Colour sliderThumbColor = stringToColor(currentThemeSettings.sliderThumbColor);
     juce::Colour accentColor = stringToColor(currentThemeSettings.accentColor);
@@ -303,7 +307,9 @@ juce::Colour ColorScheme::getColor(ColorRole role) const
         case ColorRole::ButtonBackgroundToggled:
             return isDark ? buttonColor.brighter(0.3f) : buttonColor.darker(0.2f);
         case ColorRole::ButtonText:
-            return textColor;
+            return buttonTextColor;
+        case ColorRole::IconButtonText:
+            return iconButtonTextColor;
         case ColorRole::SliderTrack:
             return sliderTrackColor;
         case ColorRole::SliderThumb:

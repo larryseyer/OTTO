@@ -175,6 +175,14 @@ void Row4Component::setupPatternGroupComponents() {
     patternGroupDropdown.setTextWhenNothingSelected("Select Pattern Group");
     patternGroupDropdown.setTextWhenNoChoicesAvailable("No Pattern Groups");
     
+    // Set dropdown text colors to avoid using ButtonText (which is now black)
+    patternGroupDropdown.setColour(juce::ComboBox::textColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    patternGroupDropdown.setColour(juce::ComboBox::backgroundColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
+    patternGroupDropdown.setColour(juce::ComboBox::outlineColourId, 
+                                  colorScheme.getColor(ColorScheme::ColorRole::Separator));
+    
     // Populate dropdown with default pattern groups
     populatePatternGroupDropdown();
 }

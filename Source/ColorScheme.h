@@ -17,6 +17,7 @@ public:
         ButtonBackgroundPressed,
         ButtonBackgroundToggled,
         ButtonText,
+        IconButtonText,
         SliderTrack,
         SliderThumb,
         Accent,

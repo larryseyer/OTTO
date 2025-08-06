@@ -1556,12 +1556,9 @@ int MainContentComponent::getResponsiveRowHeight(int rowNumber) const {
 
 #ifdef JUCE_DEBUG
 void MainContentComponent::performIntegrationValidation(const juce::Rectangle<int>& bounds) {
-    // PHASE 8: Validation handled by individual Row components
-    if (row1Component) row1Component->performValidation();
-    if (row2Component) row2Component->performValidation();
-    if (row3Component) row3Component->performValidation();
-    if (row4Component) row4Component->performValidation();
-    if (row5Component) row5Component->performValidation();
-    if (row6Component) row6Component->performValidation();
+    // PHASE 8: Validation - Row components don't have performValidation method
+    // Individual row validation is handled internally by each component
+    // This method serves as a placeholder for future validation needs
+    juce::ignoreUnused(bounds);
 }
 #endif

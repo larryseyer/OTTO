@@ -1,8 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "TopBarComponent.h"
-#include "PlayerTabsComponent.h"
+// TopBarComponent and PlayerTabsComponent includes removed - functionality now in MainContentComponent
 #include "PopupWindowsDrumKit.h"
 #include "ColorScheme.h"
 #include "ResponsiveLayoutManager.h"
@@ -39,8 +38,8 @@ private:
     std::unique_ptr<FontManager> fontManager;
     std::unique_ptr<INIDataManager> dataManager;
     std::unique_ptr<CustomLookAndFeel> customLookAndFeel;
-    std::unique_ptr<TopBarComponent> topBar;
-    std::unique_ptr<PlayerTabsComponent> playerTabs;
+    // TopBar and PlayerTabs functionality now handled by Row1Component and Row2Component in MainContentComponent
+    // Removed standalone component declarations to eliminate duplicate UI elements
     std::unique_ptr<DrumKitSelectionWindow> drumKitPopup;
     std::unique_ptr<MainContentComponent> mainContent;
     std::unique_ptr<juce::Component> splashOverlay;

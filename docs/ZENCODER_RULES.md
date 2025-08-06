@@ -7,7 +7,7 @@ This is a Cross Platform, Multiple Device JUCE 8 app using ProJucer and CMake.
 ISYSTEM DIRECTIVES - CRITICAL TO REMEMBER:
 ✅ JUCE 8 with ProJucer - Use JUCE 8 methods, protocols, and modern C++ patterns
 ✅ Unified CMake Build System - Configured for all platforms: Mac OSX Standalone, VST3, AUV3, Clap AU, Windows, Linux, iOS, Android
-✅ DO NOT MODIFY BUILD SYSTEM - Work within existing CMake configuration
+✅ DO NOT MODIFY BUILD SYSTEM - Work within existing CMake configuration Use our build system by doing this: cd /Users/larryseyer/AudioDevelopment/OTTO && ./scripts/build/build_macos.sh
 ✅ INI-Driven Layout Priority - All positioning must use INIConfig constants, no hardcoded values
 ✅ JUCE 8 Fonts/Colors/UI - Use proper JUCE 8 FontManager, ColorScheme integration
 ✅ All variables and settings must use INI-Driven file system
@@ -34,3 +34,4 @@ ISYSTEM DIRECTIVES - CRITICAL TO REMEMBER:
 🏗️ **OTTO JUCE 8 | CMake Build | INI-Driven Layout | FontManager/ColorScheme**
 
 **CONSTRAINTS**: Use INIConfig::LayoutConstants, FontManager, ColorScheme namespace
+

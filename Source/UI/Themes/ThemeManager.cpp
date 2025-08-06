@@ -129,6 +129,9 @@ ThemeManager::ThemeManager(ColorScheme& colorScheme)
     // Initialize built-in themes
     initializeBuiltInThemes();
     
+    // Initialize seasonal timer BEFORE loading state
+    seasonalTimer = std::make_unique<SeasonalUpdateTimer>(*this);
+    
     // Load state from INI
     ComponentState state;
     if (INIDataManager::loadComponentState("ThemeManager", state)) {
@@ -136,15 +139,6 @@ ThemeManager::ThemeManager(ColorScheme& colorScheme)
     } else {
         // Set default theme
         setCurrentTheme("Dark");
-    }
-    
-    // Initialize seasonal timer
-    seasonalTimer = std::make_unique<SeasonalUpdateTimer>(*this);
-    
-    // Start seasonal updates if enabled
-    if (seasonalSettings.enabled) {
-        seasonalTimer->startTimer(3600000); // Check every hour
-        updateSeasonalTheme();
     }
     
     // Sync with existing color scheme
@@ -636,6 +630,11 @@ juce::StringArray ThemeManager::getAccessibilityModeNames() const {
 
 void ThemeManager::setSeasonalSettings(const SeasonalSettings& settings) {
     seasonalSettings = settings;
+    
+    // Ensure timer is initialized before using it
+    if (!seasonalTimer) {
+        return;
+    }
     
     if (settings.enabled) {
         if (!seasonalTimer->isTimerRunning()) {

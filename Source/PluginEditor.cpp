@@ -188,7 +188,7 @@ OTTOAudioProcessorEditor::~OTTOAudioProcessorEditor()
     if (colorScheme)
         colorScheme->removeListener(this);
 
-    if (isInitialized && topBar && playerTabs && drumKitPopup && dataManager)
+    if (isInitialized && drumKitPopup && dataManager)
     {
         try {
             saveEditorState();
@@ -242,14 +242,7 @@ void OTTOAudioProcessorEditor::initializeManagers()
             
             // Notify all components that look and feel has changed to update fonts
             // This is crucial for JUCE 8 - components need to know when fonts change
-            if (topBar) {
-                topBar->lookAndFeelChanged();
-                topBar->resized();
-            }
-            if (playerTabs) {
-                playerTabs->lookAndFeelChanged();
-                playerTabs->resized();
-            }
+            // TopBar and PlayerTabs now handled by Row1Component and Row2Component in MainContentComponent
             // DrumKit popup is now handled separately - no main GUI updates needed
             if (mainContent) {
                 mainContent->lookAndFeelChanged();
@@ -343,53 +336,12 @@ void OTTOAudioProcessorEditor::createComponents()
     }
 
     try {
-        // Null-pointer safety: Create TopBarComponent with error handling
-        topBar = ErrorHandler::safeCreate<TopBarComponent>(
-            [&]() {
-                return std::make_unique<TopBarComponent>(
-                    audioProcessor.getMidiEngine(),
-                    audioProcessor.getValueTreeState(),
-                    *layoutManager,
-                    *fontManager,
-                    *colorScheme
-                );
-            },
-            "TopBarComponent"
-        );
-        
-        if (topBar) {
-            if (dataManager) {
-                topBar->setINIDataManager(dataManager.get());
-            }
-            ErrorHandler::safeExecute([&]() {
-                addAndMakeVisible(topBar.get());
-                // Refresh preset label font after fonts are loaded and component is visible
-                topBar->refreshPresetLabelFont();
-            }, "TopBar visibility");
-        } else {
-            DBG("PluginEditor: Failed to create TopBarComponent");
-        }
+        // TopBar functionality now handled by Row1Component in MainContentComponent
+        // Removed standalone TopBarComponent to eliminate duplicate UI elements
 
-        // Null-pointer safety: Create PlayerTabsComponent with error handling
-        playerTabs = ErrorHandler::safeCreate<PlayerTabsComponent>(
-            [&]() {
-                return std::make_unique<PlayerTabsComponent>(
-                    audioProcessor.getMidiEngine(),
-                    *layoutManager,
-                    *fontManager,
-                    *colorScheme
-                );
-            },
-            "PlayerTabsComponent"
-        );
-        
-        if (playerTabs) {
-            ErrorHandler::safeExecute([&]() {
-                addAndMakeVisible(playerTabs.get());
-            }, "PlayerTabs visibility");
-        } else {
-            DBG("PluginEditor: Failed to create PlayerTabsComponent");
-        }
+
+        // PlayerTabs functionality now handled by Row2Component in MainContentComponent
+        // Removed standalone PlayerTabsComponent to eliminate duplicate UI elements
 
         // Create DrumKit popup window (not added to main GUI)
         if (dataManager) {
@@ -450,35 +402,8 @@ void OTTOAudioProcessorEditor::createComponents()
 
 void OTTOAudioProcessorEditor::setupCallbacks()
 {
-    if (!topBar || !playerTabs) {
-        return;
-    }
-
-    topBar->onGearButtonClicked = [this]() {
-        showSettingsPanel();
-    };
-
-    topBar->onPlayStateChanged = [this](bool isPlaying) {
-        componentState.playState = isPlaying;
-        handleTransportStateChange();
-        saveEditorState();
-    };
-
-    topBar->onTempoChanged = [this](float newTempo) {
-        componentState.globalSettings.tempo = INIConfig::clampTempo(static_cast<int>(newTempo));
-        updateProcessorFromState();
-        saveEditorState();
-    };
-
-    topBar->onPresetChanged = [this](int presetIndex) {
-        componentState.globalSettings.presetID = INIConfig::clampPresetIndex(presetIndex);
-        saveEditorState();
-    };
-
-    playerTabs->onTabChanged = [this](int playerIndex) {
-        handlePlayerChange(playerIndex);
-        saveEditorState();
-    };
+    // TopBar and PlayerTabs callbacks now handled by Row1Component and Row2Component in MainContentComponent
+    // Removed standalone component callback setup to eliminate duplicate UI elements
 
     // Setup drumkit popup callbacks
     if (drumKitPopup) {
@@ -564,57 +489,10 @@ void OTTOAudioProcessorEditor::resized()
     }
 
     // ========================================================================
-    // CORRECTED: Use INI-driven Row system for consistent 6-row layout
-    // TopBar = Row 1, PlayerTabs = Row 2, MainContent handles Rows 3-6
+    // UPDATED: Row-based layout system - all 6 rows handled by MainContentComponent
+    // TopBar = Row 1, PlayerTabs = Row 2, MainContent handles all Rows 1-6
+    // Removed standalone TopBar and PlayerTabs components to eliminate duplicates
     // ========================================================================
-    
-    // Calculate actual dimensions using INI Row constants
-    const int topBarHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_1_HEIGHT) : 
-                             static_cast<int>(getHeight() * (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT / 100.0f));
-    const int playerTabsHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_2_HEIGHT) :
-                                static_cast<int>(getHeight() * (INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT / 100.0f));
-    
-    // ========================================================================
-    // CORRECTED: Use INI-driven minimum/maximum constraints for Row 1 & 2
-    // Ensure consistency with the 6-row system percentages
-    // ========================================================================
-    
-    // Minimum sizes based on INI defaults (scaled for current interface)
-    const int minTopBarHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_1_HEIGHT) : 
-                               static_cast<int>(INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT * (INIConfig::LayoutConstants::ROW_1_HEIGHT_PERCENT / 100.0f));
-    const int minPlayerTabsHeight = layoutManager ? layoutManager->scaled(INIConfig::LayoutConstants::ROW_2_HEIGHT) :
-                                   static_cast<int>(INIConfig::Defaults::DEFAULT_INTERFACE_HEIGHT * (INIConfig::LayoutConstants::ROW_2_HEIGHT_PERCENT / 100.0f));
-    
-    // Maximum sizes should respect INI constraints (allow some flexibility for larger screens)
-    const int maxTopBarHeight = static_cast<int>(minTopBarHeight * 1.5f);  // 50% larger than standard
-    const int maxPlayerTabsHeight = static_cast<int>(minPlayerTabsHeight * 1.5f);
-    
-    // Apply constraints
-    const int finalTopBarHeight = juce::jlimit(minTopBarHeight, maxTopBarHeight, topBarHeight);
-    const int finalPlayerTabsHeight = juce::jlimit(minPlayerTabsHeight, maxPlayerTabsHeight, playerTabsHeight);
-    
-    // Debug output for responsive layout (uncomment for debugging)
-    // DBG("Window: " << getWidth() << "x" << getHeight() << " | TopBar: " << finalTopBarHeight << " | PlayerTabs: " << finalPlayerTabsHeight << " | DrumKit: " << finalDrumKitWidth);
-
-    // Set TopBar bounds (top area, full width)
-    if (topBar && finalTopBarHeight > 0) {
-        auto topBarBounds = bounds.removeFromTop(finalTopBarHeight);
-        if (!topBarBounds.isEmpty()) {
-            topBar->setBounds(topBarBounds);
-            // Force the component to recalculate its internal layout
-            topBar->resized();
-        }
-    }
-
-    // Set PlayerTabs bounds (below top bar, full width)
-    if (playerTabs && finalPlayerTabsHeight > 0) {
-        auto playerTabsBounds = bounds.removeFromTop(finalPlayerTabsHeight);
-        if (!playerTabsBounds.isEmpty()) {
-            playerTabs->setBounds(playerTabsBounds);
-            // Force the component to recalculate its internal layout
-            playerTabs->resized();
-        }
-    }
 
     // Set MainContent bounds (remaining area after top bars - full width now)
     if (mainContent && !bounds.isEmpty()) {
@@ -693,12 +571,8 @@ void OTTOAudioProcessorEditor::saveEditorState()
 
 void OTTOAudioProcessorEditor::saveAllComponentStates()
 {
-    if (topBar)
-        topBar->saveStates(componentState);
-
-    if (playerTabs)
-        playerTabs->saveStates(componentState);
-
+    // TopBar and PlayerTabs state saving now handled by Row1Component and Row2Component in MainContentComponent
+    
     if (drumKitPopup)
         drumKitPopup->saveStates(componentState);
 
@@ -714,12 +588,8 @@ void OTTOAudioProcessorEditor::saveAllComponentStates()
 
 void OTTOAudioProcessorEditor::loadAllComponentStates()
 {
-    if (topBar)
-        topBar->loadStates(componentState);
-
-    if (playerTabs)
-        playerTabs->loadStates(componentState);
-
+    // TopBar and PlayerTabs state loading now handled by Row1Component and Row2Component in MainContentComponent
+    
     if (drumKitPopup)
         drumKitPopup->loadStates(componentState);
 
@@ -741,20 +611,14 @@ void OTTOAudioProcessorEditor::updateFromProcessor()
     if (isPlaying != componentState.playState)
     {
         componentState.playState = isPlaying;
-        if (topBar)
-        {
-            topBar->setPlayState(isPlaying);
-        }
+        // TopBar play state updates now handled by Row1Component in MainContentComponent
     }
 
     float currentTempo = audioProcessor.getMidiEngine().getTempo();
     if (std::abs(currentTempo - static_cast<float>(componentState.globalSettings.tempo)) > 0.01f)
     {
         componentState.globalSettings.tempo = INIConfig::clampTempo(static_cast<int>(currentTempo));
-        if (topBar)
-        {
-            topBar->setTempo(currentTempo);
-        }
+        // TopBar tempo updates now handled by Row1Component in MainContentComponent
     }
 }
 
@@ -775,8 +639,7 @@ void OTTOAudioProcessorEditor::applyColorScheme()
     {
         customLookAndFeel->forceRefreshFromColorScheme();
 
-        if (topBar) topBar->repaint();
-        if (playerTabs) playerTabs->repaint();
+        // TopBar and PlayerTabs repainting now handled by Row1Component and Row2Component in MainContentComponent
         // DrumKit popup handles its own repainting
         if (mainContent) mainContent->repaint();
 
@@ -839,16 +702,7 @@ void OTTOAudioProcessorEditor::updateUIFromState()
 
     setSize(componentState.interfaceWidth, componentState.interfaceHeight);
 
-    if (playerTabs)
-    {
-        playerTabs->setSelectedTab(componentState.currentPlayer);
-    }
-
-    if (topBar)
-    {
-        topBar->setPlayState(componentState.playState);
-        topBar->setTempo(static_cast<float>(componentState.globalSettings.tempo));
-    }
+    // PlayerTabs and TopBar UI updates now handled by Row2Component and Row1Component in MainContentComponent
 }
 
 void OTTOAudioProcessorEditor::showSettingsPanel()
@@ -874,8 +728,8 @@ void OTTOAudioProcessorEditor::showSettingsPanel()
 
         settingsPanel->onPhosphorWeightChanged = [this](FontManager::PhosphorWeight weight) {
             juce::ignoreUnused(weight);
-            if (topBar) topBar->repaint();
-            if (playerTabs) playerTabs->repaint();
+            // TopBar and PlayerTabs repainting now handled by Row1Component and Row2Component in MainContentComponent
+            if (mainContent) mainContent->repaint();
             // DrumKit is now in popup - no main GUI repaint needed
             saveEditorState();
         };

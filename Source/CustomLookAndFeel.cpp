@@ -100,7 +100,7 @@ CustomLookAndFeel::CustomLookAndFeel(FontManager& fontMgr, ColorScheme& colorSch
     // These images provide professional visual elements without external file dependencies
     // Used by: Custom button rendering, slider thumb graphics, application branding
     buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button100_png, BinaryData::Button100_pngSize);
-    sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
+    sliderImage = juce::ImageCache::getFromMemory(BinaryData::SliderKnob_png, BinaryData::SliderKnob_pngSize);
     splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
 }
 

@@ -27,7 +27,7 @@ class INIDataManager;
 
 
 class SceneLauncherComponent;
-class LoopSectionComponent;
+
 class Row1Component;
 class Row2Component;
 class Row3Component;
@@ -204,7 +204,7 @@ private:
 
 
     std::unique_ptr<SceneLauncherComponent> sceneLauncher;
-    std::unique_ptr<LoopSectionComponent> loopSection;
+
     std::unique_ptr<Row1Component> row1Component;
     std::unique_ptr<Row2Component> row2Component;
     std::unique_ptr<Row3Component> row3Component;

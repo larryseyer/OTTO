@@ -12,10 +12,7 @@ Row6Component::Row6Component(ResponsiveLayoutManager& layoutManager,
       colorScheme(colorScheme),
       loopSlider(layoutManager) {
     
-    // Issue 6.4: Apply custom look and feel to slider for rotated thumb
-    rotatedSliderLookAndFeel = std::make_unique<RotatedSliderLookAndFeel>();
-    loopSlider.setLookAndFeel(rotatedSliderLookAndFeel.get());
-    
+    // Issue 6.4: CustomLookAndFeel is inherited from parent and already handles rotated slider images
     setupLoopComponents();
 }
 
@@ -217,34 +214,4 @@ float Row6Component::getResponsiveFontSize(float baseSize) const {
     return ResponsiveComponent::getResponsiveFontSize(baseSize);
 }
 
-//==============================================================================
-// Issue 6.4: Custom LookAndFeel Implementation for Rotated Slider Thumb
-//==============================================================================
-
-void Row6Component::RotatedSliderLookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
-                                                              float sliderPos, float minSliderPos, float maxSliderPos,
-                                                              const juce::Slider::SliderStyle style, juce::Slider& slider) {
-    juce::ignoreUnused(minSliderPos, maxSliderPos, style);
-    
-    // Draw the track normally (horizontal)
-    juce::LookAndFeel_V4::drawLinearSlider(g, x, y, width, height, sliderPos, 
-                                          minSliderPos, maxSliderPos, style, slider);
-    
-    // Draw custom rotated thumb
-    float thumbX = x + sliderPos * (width - 20); // 20 = thumb width
-    float thumbY = y + (height - 30) / 2; // 30 = thumb height, center vertically
-    
-    // Save graphics state
-    juce::Graphics::ScopedSaveState saveState(g);
-    
-    // Rotate thumb image 90 degrees
-    g.addTransform(juce::AffineTransform::rotation(juce::MathConstants<float>::halfPi, 
-                                                  thumbX + 10, thumbY + 15));
-    
-    // Draw rotated thumb
-    juce::Rectangle<float> thumbBounds(thumbX, thumbY, 20, 30);
-    g.setColour(juce::Colours::lightgrey);
-    g.fillRoundedRectangle(thumbBounds, 3.0f);
-    g.setColour(juce::Colours::darkgrey);
-    g.drawRoundedRectangle(thumbBounds, 3.0f, 1.0f);
-}
+// Issue 6.4: Using existing CustomLookAndFeel which already handles rotated slider images

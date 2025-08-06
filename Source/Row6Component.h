@@ -39,15 +39,7 @@ private:
     FontManager& fontManager;
     ColorScheme& colorScheme;
     
-    // Issue 6.4: Custom LookAndFeel for rotated slider thumb
-    class RotatedSliderLookAndFeel : public juce::LookAndFeel_V4 {
-    public:
-        void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
-                             float sliderPos, float minSliderPos, float maxSliderPos,
-                             const juce::Slider::SliderStyle style, juce::Slider& slider) override;
-    };
-    
-    std::unique_ptr<RotatedSliderLookAndFeel> rotatedSliderLookAndFeel;
+    // Issue 6.4: Use existing CustomLookAndFeel which already handles rotated slider images
     
     void setupLoopComponents();
     void updateLoopLayout();

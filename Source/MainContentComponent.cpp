@@ -41,7 +41,7 @@
  * - Row4Component: Pattern controls + labels functionality
  * - Row5Component: Interactive controls functionality
  * - Row6Component: Loop controls functionality
- * - LoopSectionComponent: Legacy transport controls (being phased out)
+ * - LoopSectionComponent: Legacy transport controls (REMOVED - functionality moved to Row6Component)
  * - Various PhosphorIconButtons: Edit, navigation, and action controls
  * - SeparatorComponents: Visual row divisions using theme colors
  * 
@@ -57,7 +57,6 @@
 #include "JUCE8_CODING_STANDARDS.h"
 
 #include "SceneLauncherComponent.h"
-#include "LoopSectionComponent.h"
 #include "Row1Component.h"
 #include "Row2Component.h"
 #include "Row3Component.h"
@@ -149,11 +148,6 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     // PHASE 8: ROW COMPONENT CREATION - Clean row-based architecture
     // All legacy left/right sections removed - functionality moved to Row components
     
-    // LOOP SECTION: Transport controls and scene launching functionality
-    // Handles loop position, scene management, and performance controls
-    loopSection = std::make_unique<LoopSectionComponent>(
-        layoutManager, fontManager, colorScheme);
-
     // COMPONENT VISIBILITY SETUP: Add all components to JUCE's component hierarchy
     // This establishes parent-child relationships and enables automatic rendering
     
@@ -161,7 +155,7 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     addAndMakeVisible(rhythmLabel);     // "Rhythm" label for pattern identification
 
     // Major layout sections - Row components contain all interface functionality
-    addAndMakeVisible(*loopSection);    // Transport and scene launcher
+    // Note: Legacy loopSection removed - functionality moved to Row6Component
     
     // Create Row1Component if not already created
     if (!row1Component) {
@@ -1009,15 +1003,6 @@ void MainContentComponent::resized() {
         row6Component->setBounds(row6Area);
     }
     
-    // Legacy loop section positioning with responsive calculations
-    if (loopSection) {
-        int row6Y = getResponsiveRowHeight(1) + getResponsiveRowHeight(2) + 
-                   getResponsiveRowHeight(3) + getResponsiveRowHeight(4) + 
-                   getResponsiveRowHeight(5);
-        int row6Height = getResponsiveRowHeight(6);
-        loopSection->setBounds(0, row6Y, getLocalBounds().getWidth(), row6Height);
-    }
-    
     // PHASE 9D: Update visualization bounds
     updateVisualizationBounds();
     
@@ -1053,9 +1038,6 @@ void MainContentComponent::lookAndFeelChanged() {
     }
     if (row6Component) {
         row6Component->lookAndFeelChanged();
-    }
-    if (loopSection) {
-        loopSection->lookAndFeelChanged();
     }
 }
 

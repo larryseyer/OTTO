@@ -26,10 +26,18 @@ SettingsPanelWindow::SettingsPanelWindow(FontManager& fontManager,
 }
 
 SettingsPanelWindow::~SettingsPanelWindow() {
-    ComponentState state;
-    if (INIManager.loadAllSettings(state)) {
-        saveStates(state);
-        INIManager.saveAllSettings(state);
+    try {
+        ComponentState state;
+        if (INIManager.loadAllSettings(state)) {
+            saveStates(state);
+            INIManager.saveAllSettings(state);
+        }
+    } catch (const std::exception& e) {
+        // Log error but don't crash during destruction
+        DBG("Error saving settings in destructor: " << e.what());
+    } catch (...) {
+        // Catch any other exceptions during destruction
+        DBG("Unknown error saving settings in destructor");
     }
 }
 
@@ -169,15 +177,29 @@ void SettingsPanelWindow::mouseDown(const juce::MouseEvent& event) {
     auto panelBounds = bounds.withSizeKeepingCentre(layoutManager.scaled(INIConfig::LayoutConstants::settingsPanelWidth), layoutManager.scaled(INIConfig::LayoutConstants::settingsPanelHeight));
 
     if (!panelBounds.contains(event.getPosition())) {
-        ComponentState currentState;
-        if (INIManager.loadAllSettings(currentState)) {
-            saveStates(currentState);
-            INIManager.saveAllSettings(currentState);
+        // Save settings safely before closing
+        try {
+            ComponentState currentState;
+            if (INIManager.loadAllSettings(currentState)) {
+                saveStates(currentState);
+                INIManager.saveAllSettings(currentState);
+            }
+        } catch (const std::exception& e) {
+            // Log error but don't crash
+            DBG("Error saving settings: " << e.what());
+        } catch (...) {
+            // Catch any other exceptions
+            DBG("Unknown error saving settings");
         }
 
-        setVisible(false);
-        if (onClose) {
-            onClose();
+        // Close the window
+        if (auto* parentWindow = findParentComponentOfClass<juce::DialogWindow>()) {
+            parentWindow->exitModalState(0);
+        } else {
+            setVisible(false);
+            if (onClose) {
+                onClose();
+            }
         }
     }
 }

@@ -120,11 +120,7 @@ public:
     int getFavoritesSelection() const;
     void setFavoritesSelection(int selection);
 
-    void setINIDataManager(INIDataManager* manager) { 
-        iniDataManager = manager; 
-        // Initialize pattern groups when INI manager is available
-        initializePatternGroups();
-    }
+    void setINIDataManager(INIDataManager* manager);
     
     void setupRow4LabelIntegration();
 

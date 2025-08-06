@@ -19,6 +19,7 @@
 #include "UI/Themes/ThemeManager.h"
 #include "ResponsiveLayoutManager.h"
 #include "PopupWindows.h"
+#include "CustomLookAndFeel.h"
 
 Row1Component::Row1Component(MidiEngine& midiEngine,
                            juce::AudioProcessorValueTreeState& valueTreeState,
@@ -41,12 +42,18 @@ Row1Component::Row1Component(MidiEngine& midiEngine,
       overdubButton("stack-plus"),
       loopButton("repeat"),
       
+      presetsMenu(),
+      presetDisplayLabel(),
+      bpmLabel("bpm_label", INIConfig::Validation::MIN_TEMPO, INIConfig::Validation::MAX_TEMPO),
+      ottoLabel(),
+      versionLabel(),
+      clockSyncLabel(),
+      tapTempoLabel(),
+      bottomSeparator(colorScheme),
+      
       // PHASE 9D: Theme selector components
       themeButton("palette", FontManager::PhosphorWeight::Regular),
-      themeSelector(),
-      
-      bpmLabel("bpm_label", INIConfig::Validation::MIN_TEMPO, INIConfig::Validation::MAX_TEMPO),
-      bottomSeparator(colorScheme) {
+      themeSelector() {
     
     setupTopBarComponents();
     
@@ -1241,6 +1248,17 @@ float Row1Component::getResponsiveFontSize(float baseSize) const {
 }
 
 void Row1Component::showSettingsWindow() {
+    // Check if iniDataManager is valid before proceeding
+    if (iniDataManager == nullptr) {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::MessageBoxIconType::WarningIcon,
+            "Settings Error",
+            "Settings manager is not available. Please try again later.",
+            "OK"
+        );
+        return;
+    }
+    
     // Create a modal dialog window to contain the settings panel
     auto settingsPanel = std::make_unique<SettingsPanelWindow>(
         fontManager, 
@@ -1249,6 +1267,11 @@ void Row1Component::showSettingsWindow() {
         *iniDataManager,
         &midiEngine
     );
+    
+    // Set proper size using layout manager scaling
+    int settingsWidth = layoutManager.scaled(800);
+    int settingsHeight = layoutManager.scaled(600);
+    settingsPanel->setSize(settingsWidth, settingsHeight);
     
     // Create a dialog window to hold the settings panel
     juce::DialogWindow::LaunchOptions options;
@@ -1260,15 +1283,53 @@ void Row1Component::showSettingsWindow() {
     options.resizable = false;
     options.useBottomRightCornerResizer = false;
     
+    // Center the dialog on screen
+    options.content->centreWithSize(settingsWidth, settingsHeight);
+    
     options.launchAsync();
 }
 
 void Row1Component::showSplashScreen() {
-    // Create a simple splash screen using AlertWindow for now
-    juce::AlertWindow::showMessageBoxAsync(
-        juce::MessageBoxIconType::InfoIcon,
-        "OTTO Drum Machine",
-        "OTTO v1.0\n\nAdvanced Drum Machine & Sequencer\n\nBuilt with JUCE 8",
-        "OK"
-    );
+    // Get the splash screen image from CustomLookAndFeel (same as app startup)
+    auto* customLookAndFeel = dynamic_cast<CustomLookAndFeel*>(&getLookAndFeel());
+    juce::Image splashImage;
+    
+    if (customLookAndFeel) {
+        splashImage = customLookAndFeel->getSplashImage();
+    }
+    
+    if (splashImage.isValid()) {
+        // Create a simple modal dialog to display the splash screen
+        auto splashWindow = std::make_unique<juce::AlertWindow>(
+            "OTTO Drum Machine",
+            "OTTO v1.0\n\nAdvanced Drum Machine & Sequencer\n\nBuilt with JUCE 8",
+            juce::MessageBoxIconType::InfoIcon);
+        
+        // Add the image to the alert window
+        auto imageComponent = std::make_unique<juce::ImageComponent>();
+        imageComponent->setImage(splashImage);
+        imageComponent->setImagePlacement(juce::RectanglePlacement::centred);
+        
+        // Set reasonable size for the image
+        int maxWidth = layoutManager.scaled(400);
+        int maxHeight = layoutManager.scaled(300);
+        int imageWidth = juce::jmin(splashImage.getWidth(), maxWidth);
+        int imageHeight = juce::jmin(splashImage.getHeight(), maxHeight);
+        
+        imageComponent->setSize(imageWidth, imageHeight);
+        splashWindow->addCustomComponent(imageComponent.release());
+        splashWindow->addButton("OK", 1);
+        
+        // Show the splash screen using JUCE 8 compatible method
+        splashWindow->enterModalState(true, nullptr, true);
+        
+    } else {
+        // Fallback to text message if image not found
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::MessageBoxIconType::InfoIcon,
+            "OTTO Drum Machine",
+            "OTTO v1.0\n\nAdvanced Drum Machine & Sequencer\n\nBuilt with JUCE 8",
+            "OK"
+        );
+    }
 }

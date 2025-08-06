@@ -161,6 +161,10 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
     if (!row1Component) {
         row1Component = std::make_unique<Row1Component>(
             midiEngine, valueTreeState, layoutManager, fontManager, colorScheme);
+        // Pass INI data manager if available
+        if (iniDataManager) {
+            row1Component->setINIDataManager(iniDataManager);
+        }
     }
     addAndMakeVisible(*row1Component);  // TopBar functionality in row-based architecture
     
@@ -434,6 +438,16 @@ void MainContentComponent::setupVisualizationIntegration() {
     
     // PHASE 9D: Update performance metrics
     updatePhase9DPerformanceMetrics();
+}
+
+void MainContentComponent::setINIDataManager(INIDataManager* manager) { 
+    iniDataManager = manager; 
+    // Pass the manager to Row1Component so it can access settings
+    if (row1Component) {
+        row1Component->setINIDataManager(manager);
+    }
+    // Initialize pattern groups when INI manager is available
+    initializePatternGroups();
 }
 
 //==============================================================================

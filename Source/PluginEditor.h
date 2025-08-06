@@ -41,6 +41,8 @@ private:
     // TopBar and PlayerTabs functionality now handled by Row1Component and Row2Component in MainContentComponent
     // Removed standalone component declarations to eliminate duplicate UI elements
     std::unique_ptr<DrumKitSelectionWindow> drumKitPopup;
+    std::unique_ptr<DrumKitEditorWindow> drumKitEditorWindow;
+    std::unique_ptr<DrumKitMixerWindow> drumKitMixerWindow;
     std::unique_ptr<MainContentComponent> mainContent;
     std::unique_ptr<juce::Component> splashOverlay;
     ComponentState componentState;
@@ -48,7 +50,9 @@ private:
 
     void showSettingsPanel();
     void showDrumKitPopup();
-    void showMixerPopup();    int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
+    void showDrumKitEditorWindow();
+    void showMixerPopup();
+    int currentPlayerIndex = INIConfig::Defaults::DEFAULT_CURRENT_PLAYER;
     bool isInitialized = false;
     void initializeManagers();
     void createComponents();

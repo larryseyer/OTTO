@@ -273,6 +273,21 @@ MainContentComponent::MainContentComponent(MidiEngine& midiEngine,
 
     // PHASE 8: Row component callbacks - clean architecture using actual available callbacks
     
+    // Row3Component callbacks for drumkit editor and mixer windows
+    if (row3Component) {
+        row3Component->onEditModeChanged = [this](bool editMode) {
+            if (onEditModeChanged) onEditModeChanged(editMode);
+        };
+        
+        row3Component->onMixerRequested = [this]() {
+            if (onMixerPopupRequested) onMixerPopupRequested();
+        };
+        
+        row3Component->onDrumKitChanged = [this](const juce::String& drumKitName) {
+            if (onDrumKitChanged) onDrumKitChanged(drumKitName);
+        };
+    }
+    
     // Row5Component has onMidiFileChanged callback - set it up
     row5Component->onMidiFileChanged = [this](int playerIndex, const juce::String& midiFile) {
         if (onMidiFileChanged) onMidiFileChanged(playerIndex, midiFile);

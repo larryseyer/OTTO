@@ -435,6 +435,7 @@ void OTTOAudioProcessorEditor::setupCallbacks()
 
     if (mainContent) {
         mainContent->onEditModeChanged = [this](bool editMode) {
+            showDrumKitEditorWindow();
             saveEditorState();
         };
 
@@ -766,5 +767,43 @@ void OTTOAudioProcessorEditor::showMixerPopup()
 {
     // TODO: Implement mixer popup window
     // For now, show a debug message
-    DBG("Mixer popup requested - implementation needed");
+    if (!drumKitMixerWindow) {
+        drumKitMixerWindow = std::make_unique<DrumKitMixerWindow>(
+            audioProcessor.getMixer(),
+            audioProcessor.getSFZEngine(),
+            *colorScheme,
+            *fontManager,
+            *layoutManager,
+            *dataManager);
+        
+        drumKitMixerWindow->setSize(layoutManager->scaled(900), layoutManager->scaled(700));
+        drumKitMixerWindow->centreAroundComponent(this, drumKitMixerWindow->getWidth(), drumKitMixerWindow->getHeight());
+    }
+    
+    drumKitMixerWindow->setCurrentPlayerIndex(currentPlayerIndex);
+    
+    drumKitMixerWindow->setVisible(!drumKitMixerWindow->isVisible());
+    if (drumKitMixerWindow->isVisible()) {
+        drumKitMixerWindow->toFront(true);
+    }
+}
+
+void OTTOAudioProcessorEditor::showDrumKitEditorWindow()
+{
+    if (!drumKitEditorWindow) {
+        drumKitEditorWindow = std::make_unique<DrumKitEditorWindow>(
+            audioProcessor.getSFZEngine(),
+            *colorScheme,
+            *fontManager,
+            *layoutManager,
+            *dataManager);
+        
+        drumKitEditorWindow->setSize(layoutManager->scaled(800), layoutManager->scaled(600));
+        drumKitEditorWindow->centreAroundComponent(this, drumKitEditorWindow->getWidth(), drumKitEditorWindow->getHeight());
+    }
+    
+    drumKitEditorWindow->setVisible(!drumKitEditorWindow->isVisible());
+    if (drumKitEditorWindow->isVisible()) {
+        drumKitEditorWindow->toFront(true);
+    }
 }

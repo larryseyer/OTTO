@@ -327,6 +327,16 @@ void Row3Component::updateDrumKitDisplayToggle() {
 void Row3Component::toggleDrumKitDisplay() {
     showingDrumKitLabel = !showingDrumKitLabel;
     updateDrumKitDisplayToggle();
+    
+    // Issue 3.2: Fix drumkit menu immediate dropdown - show popup immediately when switching to dropdown
+    if (!showingDrumKitLabel && drumKitDropdown.isVisible()) {
+        // Use a timer to show popup after the component becomes visible
+        juce::Timer::callAfterDelay(10, [this]() {
+            if (drumKitDropdown.isVisible()) {
+                drumKitDropdown.showPopup();
+            }
+        });
+    }
 }
 
 void Row3Component::handleDrumKitChevrons(bool isRight) {

@@ -194,6 +194,78 @@
             file="Source/UtilityComponents.cpp"/>
       <FILE id="veUylL" name="UtilityComponents.h" compile="0" resource="0"
             file="Source/UtilityComponents.h"/>
+      <GROUP id="{UI_GROUP_ID}" name="UI">
+        <GROUP id="{UI_LAYOUT_GROUP}" name="Layout">
+          <FILE id="UILayBM1" name="BreakpointManager.cpp" compile="1" resource="0"
+                file="Source/UI/Layout/BreakpointManager.cpp"/>
+          <FILE id="UILayBM2" name="BreakpointManager.h" compile="0" resource="0"
+                file="Source/UI/Layout/BreakpointManager.h"/>
+        </GROUP>
+        <GROUP id="{UI_RESPONSIVE_GROUP}" name="Responsive">
+          <FILE id="UIResAL1" name="AdaptiveLayoutManager.cpp" compile="1" resource="0"
+                file="Source/UI/Responsive/AdaptiveLayoutManager.cpp"/>
+          <FILE id="UIResAL2" name="AdaptiveLayoutManager.h" compile="0" resource="0"
+                file="Source/UI/Responsive/AdaptiveLayoutManager.h"/>
+        </GROUP>
+        <GROUP id="{UI_CONTROLS_GROUP}" name="Controls">
+          <FILE id="UIConTO1" name="TouchOptimizedControls.cpp" compile="1" resource="0"
+                file="Source/UI/Controls/TouchOptimizedControls.cpp"/>
+          <FILE id="UIConTO2" name="TouchOptimizedControls.h" compile="0" resource="0"
+                file="Source/UI/Controls/TouchOptimizedControls.h"/>
+        </GROUP>
+        <GROUP id="{UI_FEEDBACK_GROUP}" name="Feedback">
+          <FILE id="UIFeeHF1" name="HapticFeedback.cpp" compile="1" resource="0"
+                file="Source/UI/Feedback/HapticFeedback.cpp"/>
+          <FILE id="UIFeeHF2" name="HapticFeedback.h" compile="0" resource="0"
+                file="Source/UI/Feedback/HapticFeedback.h"/>
+        </GROUP>
+        <GROUP id="{UI_TOUCH_GROUP}" name="Touch">
+          <FILE id="UITouGR1" name="GestureRecognizer.cpp" compile="1" resource="0"
+                file="Source/UI/Touch/GestureRecognizer.cpp"/>
+          <FILE id="UITouGR2" name="GestureRecognizer.h" compile="0" resource="0"
+                file="Source/UI/Touch/GestureRecognizer.h"/>
+        </GROUP>
+        <GROUP id="{UI_VISUALIZATIONS_GROUP}" name="Visualizations">
+          <FILE id="UIVisAS1" name="AudioScopeComponent.cpp" compile="1" resource="0"
+                file="Source/UI/Visualizations/AudioScopeComponent.cpp"/>
+          <FILE id="UIVisAS2" name="AudioScopeComponent.h" compile="0" resource="0"
+                file="Source/UI/Visualizations/AudioScopeComponent.h"/>
+          <FILE id="UIVisPV1" name="PatternVisualizer.cpp" compile="1" resource="0"
+                file="Source/UI/Visualizations/PatternVisualizer.cpp"/>
+          <FILE id="UIVisPV2" name="PatternVisualizer.h" compile="0" resource="0"
+                file="Source/UI/Visualizations/PatternVisualizer.h"/>
+          <FILE id="UIVisSA1" name="SpectrumAnalyzer.cpp" compile="1" resource="0"
+                file="Source/UI/Visualizations/SpectrumAnalyzer.cpp"/>
+          <FILE id="UIVisSA2" name="SpectrumAnalyzer.h" compile="0" resource="0"
+                file="Source/UI/Visualizations/SpectrumAnalyzer.h"/>
+          <FILE id="UIVisVU1" name="VUMeterAdvanced.cpp" compile="1" resource="0"
+                file="Source/UI/Visualizations/VUMeterAdvanced.cpp"/>
+          <FILE id="UIVisVU2" name="VUMeterAdvanced.h" compile="0" resource="0"
+                file="Source/UI/Visualizations/VUMeterAdvanced.h"/>
+          <FILE id="UIVisWD1" name="WaveformDisplay.cpp" compile="1" resource="0"
+                file="Source/UI/Visualizations/WaveformDisplay.cpp"/>
+          <FILE id="UIVisWD2" name="WaveformDisplay.h" compile="0" resource="0"
+                file="Source/UI/Visualizations/WaveformDisplay.h"/>
+        </GROUP>
+        <GROUP id="{UI_THEMES_GROUP}" name="Themes">
+          <FILE id="UITheTE1" name="ThemeEditor.cpp" compile="1" resource="0"
+                file="Source/UI/Themes/ThemeEditor.cpp"/>
+          <FILE id="UITheTE2" name="ThemeEditor.h" compile="0" resource="0"
+                file="Source/UI/Themes/ThemeEditor.h"/>
+          <FILE id="UITheTM1" name="ThemeManager.cpp" compile="1" resource="0"
+                file="Source/UI/Themes/ThemeManager.cpp"/>
+          <FILE id="UITheTM2" name="ThemeManager.h" compile="0" resource="0"
+                file="Source/UI/Themes/ThemeManager.h"/>
+          <FILE id="UITheTP1" name="ThemePresets.cpp" compile="1" resource="0"
+                file="Source/UI/Themes/ThemePresets.cpp"/>
+          <FILE id="UITheTP2" name="ThemePresets.h" compile="0" resource="0"
+                file="Source/UI/Themes/ThemePresets.h"/>
+          <FILE id="UITheTV1" name="ThemeValidator.cpp" compile="1" resource="0"
+                file="Source/UI/Themes/ThemeValidator.cpp"/>
+          <FILE id="UITheTV2" name="ThemeValidator.h" compile="0" resource="0"
+                file="Source/UI/Themes/ThemeValidator.h"/>
+        </GROUP>
+      </GROUP>
     </GROUP>
     <GROUP id="{60F382D5-C5BE-B7E6-6AF6-752131B0945B}" name="Assets">
       <GROUP id="{D93D645B-04E8-2773-DEC9-2A80BD66F942}" name="Docs">

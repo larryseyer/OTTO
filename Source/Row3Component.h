@@ -3,6 +3,8 @@
 #include "UI/Layout/BreakpointManager.h"
 #include "UtilityComponents.h"
 #include "INIConfig.h"
+#include "DrumkitEditorWindow.h"
+#include "MixerWindow.h"
 
 class MidiEngine;
 class Mixer;
@@ -52,6 +54,14 @@ public:
     void setMuteState(bool muted);
     bool isMuted() const;
     
+    // Window management methods
+    void toggleDrumkitEditor();
+    void toggleMixerWindow();
+    void showDrumkitEditor();
+    void hideDrumkitEditor();
+    void showMixerWindow();
+    void hideMixerWindow();
+    
     // PHASE 9D: WaveformDisplay integration
     void setWaveformDisplay(WaveformDisplay* waveformDisplay);
     void updateWaveformForCurrentSample();
@@ -89,6 +99,10 @@ private:
     // PHASE 9D: Visualization integration
     WaveformDisplay* waveformDisplay = nullptr;  // Non-owning pointer to visualization
     bool waveformVisible = false;
+    
+    // Window instances for GUI fixes
+    std::unique_ptr<DrumkitEditorWindow> drumkitEditorWindow;
+    std::unique_ptr<MixerWindow> mixerWindow;
     
     // Setup and update methods
     void setupDrumKitComponents();

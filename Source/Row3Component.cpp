@@ -49,6 +49,9 @@ Row3Component::Row3Component(MidiEngine& midiEngine,
       drumKitMuteButton("unmute", FontManager::PhosphorWeight::Regular),
       drumKitMixerButton("mixer", FontManager::PhosphorWeight::Regular) {
     
+    drumkitEditorWindow = std::make_unique<DrumkitEditorWindow>(layoutManager.getINIDataManager(), colorScheme, fontManager);
+    mixerWindow = std::make_unique<MixerWindow>(mixer, layoutManager.getINIDataManager(), colorScheme, fontManager);
+    
     setupDrumKitComponents();
 }
 
@@ -378,14 +381,13 @@ void Row3Component::handleEditButtonClick() {
     editMode = !editMode;
     drumKitEditButton.setToggleState(editMode, juce::dontSendNotification);
     
+    toggleDrumkitEditor();
+    
     // Issue 3.2: Edit Icon Does Not Bring Up Drumkit Edit Window
     // Use callback to notify parent component to show edit window
     if (onEditModeChanged) {
         onEditModeChanged(editMode);
     }
-    
-    // Note: The actual DrumKitEditorWindow creation should be handled by the parent component
-    // that has access to SFZEngine and INIDataManager dependencies
 }
 
 void Row3Component::handleMuteButtonClick() {
@@ -402,15 +404,87 @@ void Row3Component::handleMuteButtonClick() {
 }
 
 void Row3Component::handleMixerButtonClick() {
+    toggleMixerWindow();
+    
     // Issue 3.6: Mixer Icon Does Not Bring Up Mixer Window
     // Use callback to notify parent component to show mixer window
     if (onMixerRequested) {
         onMixerRequested();
     }
-    
-    // Note: The actual DrumKitMixerWindow creation should be handled by the parent component
-    // that has access to the required dependencies
 }
+
+void Row3Component::showDrumkitEditor() {
+    if (drumkitEditorWindow) {
+        drumkitEditorWindow->showEditor();
+    }
+}
+
+void Row3Component::hideDrumkitEditor() {
+    if (drumkitEditorWindow) {
+        drumkitEditorWindow->hideEditor();
+    }
+}
+
+void Row3Component::showMixerWindow() {
+    if (mixerWindow) {
+        mixerWindow->showMixer();
+    }
+}
+
+void Row3Component::hideMixerWindow() {
+    if (mixerWindow) {
+        mixerWindow->hideMixer();
+    }
+}
+
+
+void Row3Component::toggleDrumkitEditor() {
+    if (drumkitEditorWindow) {
+        if (drumkitEditorWindow->isEditorVisible()) {
+            hideDrumkitEditor();
+            editMode = false;
+        } else {
+            showDrumkitEditor();
+            editMode = true;
+        }
+        drumKitEditButton.setToggleState(editMode, juce::dontSendNotification);
+    }
+}
+
+void Row3Component::toggleMixerWindow() {
+    if (mixerWindow) {
+        if (mixerWindow->isMixerVisible()) {
+            hideMixerWindow();
+        } else {
+            showMixerWindow();
+        }
+    }
+}
+
+void Row3Component::showDrumkitEditor() {
+    if (drumkitEditorWindow) {
+        drumkitEditorWindow->showEditor();
+    }
+}
+
+void Row3Component::hideDrumkitEditor() {
+    if (drumkitEditorWindow) {
+        drumkitEditorWindow->hideEditor();
+    }
+}
+
+void Row3Component::showMixerWindow() {
+    if (mixerWindow) {
+        mixerWindow->showMixer();
+    }
+}
+
+void Row3Component::hideMixerWindow() {
+    if (mixerWindow) {
+        mixerWindow->hideMixer();
+    }
+}
+
 
 void Row3Component::handleDrumKitDropdownChange() {
     int selectedId = drumKitDropdown.getSelectedId();

@@ -990,7 +990,20 @@ void CustomLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int wi
 
     auto bounds = juce::Rectangle<float>(static_cast<float>(x), static_cast<float>(y),
                                        static_cast<float>(width), static_cast<float>(height));
-   auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / INIConfig::LayoutConstants::customLookFeelThumbDivisor;
+    auto angle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+
+    if (sliderImage.isValid()) {
+        auto knobSize = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.8f;
+        
+        auto rotation = juce::AffineTransform::rotation(angle + juce::MathConstants<float>::halfPi, centreX, centreY);
+        
+        auto imageScale = knobSize / static_cast<float>(juce::jmax(sliderImage.getWidth(), sliderImage.getHeight()));
+        auto transform = juce::AffineTransform::scale(imageScale, imageScale, centreX, centreY)
+                        .followedBy(rotation);
+        
+        g.drawImageTransformed(sliderImage, transform);
+    } else {
+        auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / INIConfig::LayoutConstants::customLookFeelThumbDivisor;
    auto centreX = bounds.getCentreX();
    auto centreY = bounds.getCentreY();
    auto rx = centreX - radius;
@@ -1117,7 +1130,7 @@ void CustomLookAndFeel::reloadImages() {
    }
 
    if (!sliderImage.isValid()) {
-       sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
+       sliderImage = juce::ImageCache::getFromMemory(BinaryData::SliderKnob_png, BinaryData::SliderKnob_pngSize);
    }
 
    if (!splashImage.isValid()) {

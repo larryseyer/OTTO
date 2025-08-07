@@ -461,8 +461,19 @@ void MainContentComponent::setINIDataManager(INIDataManager* manager) {
     if (row1Component) {
         row1Component->setINIDataManager(manager);
     }
+    if (row3Component) {
+        row3Component->setINIDataManager(manager);
+    }
     // Initialize pattern groups when INI manager is available
     initializePatternGroups();
+}
+
+void MainContentComponent::setSFZEngine(SFZEngine* engine) {
+    sfzEngine = engine;
+    
+    if (row3Component && sfzEngine) {
+        row3Component->setSFZEngine(*sfzEngine);
+    }
 }
 
 //==============================================================================

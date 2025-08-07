@@ -14,7 +14,6 @@ class Row3Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row3Component(MidiEngine& midiEngine,
                  Mixer& mixer,
-                 SFZEngine& sfzEngine,
                  ResponsiveLayoutManager& layoutManager,
                  FontManager& fontManager,
                  ColorScheme& colorScheme);
@@ -55,6 +54,9 @@ public:
     void setMuteState(bool muted);
     bool isMuted() const;
     
+    void setINIDataManager(INIDataManager* manager);
+    void setSFZEngine(SFZEngine& engine);
+    
     // Window management methods
     void toggleDrumkitEditor();
     void toggleMixerWindow();
@@ -75,10 +77,11 @@ public:
 private:
     MidiEngine& midiEngine;
     Mixer& mixer;
-    SFZEngine& sfzEngine;
     ResponsiveLayoutManager& layoutManager;
     FontManager& fontManager;
     ColorScheme& colorScheme;
+    SFZEngine* sfzEngine = nullptr;
+    INIDataManager* iniDataManager = nullptr;
     
     // Row 3 Components: DrumKit control buttons using Phosphor icon system
     PhosphorIconButton drumKitEditButton;        // Toggle edit mode for pattern editing

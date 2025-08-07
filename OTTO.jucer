@@ -67,34 +67,28 @@
             file="Source/MainContentComponent.cpp"/>
       <FILE id="mybpd9" name="MainContentComponent.h" compile="0" resource="0"
             file="Source/MainContentComponent.h"/>
-      <FILE id="R1comp" name="Row1Component.cpp" compile="1"
-            resource="0" file="Source/Row1Component.cpp"/>
-      <FILE id="R1head" name="Row1Component.h" compile="0"
-            resource="0" file="Source/Row1Component.h"/>
-      <FILE id="R2comp" name="Row2Component.cpp" compile="1"
-            resource="0" file="Source/Row2Component.cpp"/>
-      <FILE id="R2head" name="Row2Component.h" compile="0"
-            resource="0" file="Source/Row2Component.h"/>
-      <FILE id="R3comp" name="Row3Component.cpp" compile="1"
-            resource="0" file="Source/Row3Component.cpp"/>
-      <FILE id="R3head" name="Row3Component.h" compile="0"
-            resource="0" file="Source/Row3Component.h"/>
-      <FILE id="R4comp" name="Row4Component.cpp" compile="1"
-            resource="0" file="Source/Row4Component.cpp"/>
-      <FILE id="R4head" name="Row4Component.h" compile="0"
-            resource="0" file="Source/Row4Component.h"/>
-      <FILE id="R5comp" name="Row5Component.cpp" compile="1"
-            resource="0" file="Source/Row5Component.cpp"/>
-      <FILE id="R5head" name="Row5Component.h" compile="0"
-            resource="0" file="Source/Row5Component.h"/>
-      <FILE id="R6comp" name="Row6Component.cpp" compile="1"
-            resource="0" file="Source/Row6Component.cpp"/>
-      <FILE id="R6head" name="Row6Component.h" compile="0"
-            resource="0" file="Source/Row6Component.h"/>
-      <FILE id="RBcomp" name="RowComponentBase.cpp" compile="1"
-            resource="0" file="Source/RowComponentBase.cpp"/>
-      <FILE id="RBhead" name="RowComponentBase.h" compile="0"
-            resource="0" file="Source/RowComponentBase.h"/>
+      <FILE id="R1comp" name="Row1Component.cpp" compile="1" resource="0"
+            file="Source/Row1Component.cpp"/>
+      <FILE id="R1head" name="Row1Component.h" compile="0" resource="0" file="Source/Row1Component.h"/>
+      <FILE id="R2comp" name="Row2Component.cpp" compile="1" resource="0"
+            file="Source/Row2Component.cpp"/>
+      <FILE id="R2head" name="Row2Component.h" compile="0" resource="0" file="Source/Row2Component.h"/>
+      <FILE id="R3comp" name="Row3Component.cpp" compile="1" resource="0"
+            file="Source/Row3Component.cpp"/>
+      <FILE id="R3head" name="Row3Component.h" compile="0" resource="0" file="Source/Row3Component.h"/>
+      <FILE id="R4comp" name="Row4Component.cpp" compile="1" resource="0"
+            file="Source/Row4Component.cpp"/>
+      <FILE id="R4head" name="Row4Component.h" compile="0" resource="0" file="Source/Row4Component.h"/>
+      <FILE id="R5comp" name="Row5Component.cpp" compile="1" resource="0"
+            file="Source/Row5Component.cpp"/>
+      <FILE id="R5head" name="Row5Component.h" compile="0" resource="0" file="Source/Row5Component.h"/>
+      <FILE id="R6comp" name="Row6Component.cpp" compile="1" resource="0"
+            file="Source/Row6Component.cpp"/>
+      <FILE id="R6head" name="Row6Component.h" compile="0" resource="0" file="Source/Row6Component.h"/>
+      <FILE id="RBcomp" name="RowComponentBase.cpp" compile="1" resource="0"
+            file="Source/RowComponentBase.cpp"/>
+      <FILE id="RBhead" name="RowComponentBase.h" compile="0" resource="0"
+            file="Source/RowComponentBase.h"/>
       <FILE id="mWsoKt" name="MidiAnalysisTypes.h" compile="0" resource="0"
             file="Source/MidiAnalysisTypes.h"/>
       <FILE id="Grxf3M" name="MidiEngine.cpp" compile="1" resource="0" file="Source/MidiEngine.cpp"/>
@@ -250,8 +244,7 @@
         <GROUP id="{UI_THEMES_GROUP}" name="Themes">
           <FILE id="UITheTE1" name="ThemeEditor.cpp" compile="1" resource="0"
                 file="Source/UI/Themes/ThemeEditor.cpp"/>
-          <FILE id="UITheTE2" name="ThemeEditor.h" compile="0" resource="0"
-                file="Source/UI/Themes/ThemeEditor.h"/>
+          <FILE id="UITheTE2" name="ThemeEditor.h" compile="0" resource="0" file="Source/UI/Themes/ThemeEditor.h"/>
           <FILE id="UITheTM1" name="ThemeManager.cpp" compile="1" resource="0"
                 file="Source/UI/Themes/ThemeManager.cpp"/>
           <FILE id="UITheTM2" name="ThemeManager.h" compile="0" resource="0"
@@ -380,6 +373,8 @@
               file="Assets/GUI/OTTO Splash Screen.png"/>
         <FILE id="KjsTMY" name="OTTO_Button_Glyph.png" compile="0" resource="1"
               file="Assets/GUI/OTTO_Button_Glyph.png"/>
+        <FILE id="OmjqQJ" name="Pan100.png" compile="0" resource="1" file="Assets/GUI/Pan100.png"/>
+        <FILE id="uuUDed" name="PanKnob.png" compile="0" resource="1" file="Assets/GUI/PanKnob.png"/>
         <FILE id="dAeemD" name="Slider100.png" compile="0" resource="1" file="Assets/GUI/Slider100.png"/>
         <FILE id="zgoZm7" name="SliderKnob.png" compile="0" resource="1" file="Assets/GUI/SliderKnob.png"/>
       </GROUP>

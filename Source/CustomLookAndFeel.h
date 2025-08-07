@@ -21,6 +21,8 @@ public:
     };
 
     const juce::Image& getSplashImage() const { return splashImage; }
+    const juce::Image& getPanKnobImage() const { return panKnobImage; }
+    const juce::Image& getPan100Image() const { return pan100Image; }
 
     CustomLookAndFeel(FontManager& fontManager, ColorScheme& colorScheme);
     ~CustomLookAndFeel() override;
@@ -119,6 +121,8 @@ private:
     juce::Image buttonImage;
     juce::Image sliderImage;
     juce::Image splashImage;
+    juce::Image panKnobImage;
+    juce::Image pan100Image;
 
     void refreshColours();
     void syncWithColorScheme();

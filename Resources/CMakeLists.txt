@@ -10,6 +10,8 @@ juce_add_binary_data(OTTOBinaryData
         ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/Button080.png
         ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/SliderKnob.png
         ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/Slider100.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/PanKnob.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/Pan100.png
         ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/OTTO.icns
         ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/OTTO_Button_Glyph.png
         ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/GUI/NameBackground.png

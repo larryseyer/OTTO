@@ -102,6 +102,8 @@ CustomLookAndFeel::CustomLookAndFeel(FontManager& fontMgr, ColorScheme& colorSch
     buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button100_png, BinaryData::Button100_pngSize);
     sliderImage = juce::ImageCache::getFromMemory(BinaryData::SliderKnob_png, BinaryData::SliderKnob_pngSize);
     splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
+    panKnobImage = juce::ImageCache::getFromMemory(BinaryData::PanKnob_png, BinaryData::PanKnob_pngSize);
+    pan100Image = juce::ImageCache::getFromMemory(BinaryData::Pan100_png, BinaryData::Pan100_pngSize);
 }
 
 /**
@@ -1135,6 +1137,14 @@ void CustomLookAndFeel::reloadImages() {
 
    if (!splashImage.isValid()) {
        splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
+   }
+
+   if (!panKnobImage.isValid()) {
+       panKnobImage = juce::ImageCache::getFromMemory(BinaryData::PanKnob_png, BinaryData::PanKnob_pngSize);
+   }
+
+   if (!pan100Image.isValid()) {
+       pan100Image = juce::ImageCache::getFromMemory(BinaryData::Pan100_png, BinaryData::Pan100_pngSize);
    }
 }
 

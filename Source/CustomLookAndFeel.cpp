@@ -751,6 +751,12 @@ void CustomLookAndFeel::drawSliderWithImage(juce::Graphics& g, int x, int y, int
     float normalizedPos = (sliderPos - minSliderPos) / (maxSliderPos - minSliderPos);
     normalizedPos = juce::jlimit(0.0f, 1.0f, normalizedPos);
 
+    // For vertical sliders, invert the normalized position to match expected behavior
+    // (higher values should show higher image slices)
+    if (style == juce::Slider::LinearVertical) {
+        normalizedPos = 1.0f - normalizedPos;
+    }
+
     int totalSlices = INIConfig::LayoutConstants::customLookFeelSliderImageSlices;
     int sliceHeight = imageToUse.getHeight() / totalSlices;
 
@@ -759,12 +765,7 @@ void CustomLookAndFeel::drawSliderWithImage(juce::Graphics& g, int x, int y, int
         return;
     }
 
-    int sliceIndex;
-    if (style == juce::Slider::LinearVertical) {
-        sliceIndex = static_cast<int>(normalizedPos * (totalSlices - 1));
-    } else {
-        sliceIndex = static_cast<int>(normalizedPos * (totalSlices - 1));
-    }
+    int sliceIndex = static_cast<int>(normalizedPos * (totalSlices - 1));
 
     sliceIndex = juce::jlimit(0, totalSlices - 1, sliceIndex);
 

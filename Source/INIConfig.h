@@ -26,7 +26,7 @@
  * - ColorScheme.cpp: References theme defaults and alpha values
  * - CustomLookAndFeel.cpp: Uses font sizes, corner radii, and spacing constants
  * - MainContentComponent.cpp: Applies row-based layout system from LayoutConstants
- * - TopBarComponent.cpp: Uses Row1 constants for header positioning
+ * - Row1Component.cpp: Uses Row1 constants for header positioning
  * - PlayerTabsComponent.cpp: Uses Row2 constants for tab dimensions
  *
  * @author OTTO Development Team
@@ -239,7 +239,7 @@ namespace INIConfig {
         // ========================================================================
         // METRONOME AND TIMING SETTINGS
         // ========================================================================
-        // Used by: MidiEngine.cpp, TopBarComponent.cpp for tempo and timing
+        // Used by: MidiEngine.cpp, Row1Component.cpp for tempo and timing
 
         /** @brief Default metronome enabled state */
         static const bool DEFAULT_METRONOME_ENABLED = false;
@@ -645,7 +645,7 @@ namespace INIConfig {
  *
  * ROW ORGANIZATION:
  * =================
- * - Row 1 (10%): TopBarComponent - Settings, presets, transport controls
+ * - Row 1 (10%): Row1Component - Settings, presets, transport controls
  * - Row 2 (8%):  PlayerTabsComponent - Player selection tabs
  * - Row 3 (16%): DrumKit controls - Edit, navigation, kit selection
  * - Row 4 (14%): Pattern management - Groups, labels, status
@@ -655,7 +655,7 @@ namespace INIConfig {
  * USAGE IN COMPONENTS:
  * ====================
  * - MainContentComponent.cpp: Uses row heights and positioning
- * - TopBarComponent.cpp: References Row1 namespace constants
+ * - Row1Component.cpp: References Row1 namespace constants
  * - PlayerTabsComponent.cpp: Uses Row2 namespace for tab dimensions
  * - ResponsiveLayoutManager.cpp: Applies scaling factors to all constants
  * - CustomLookAndFeel.cpp: Uses spacing and sizing constants for consistency

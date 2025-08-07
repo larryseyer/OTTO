@@ -1,10 +1,10 @@
 /**
  * @file Row1Component.cpp
- * @brief Implementation of Row1Component - TopBar functionality in row-based architecture
+ * @brief Implementation of Row1Component - Top row functionality in row-based architecture
  *
- * This file implements the Row1Component class, which provides identical functionality
- * to TopBarComponent but within the new row-based architecture. It contains all
- * transport controls, settings, presets, and branding elements from the original TopBar.
+ * This file implements the Row1Component class, which provides the top row functionality
+ * within the new row-based architecture. It contains all
+ * transport controls, settings, presets, and branding elements.
  *
  * @author OTTO Development Team
  * @version 2.0
@@ -117,13 +117,13 @@ Row1Component::Row1Component(MidiEngine& midiEngine,
       themeButton("palette", FontManager::PhosphorWeight::Regular),
       themeSelector() {
     
-    setupTopBarComponents();
+    setupRow1Components();
     
     // PHASE 9D: Initialize theme selector
     setupThemeSelector();
 }
 
-void Row1Component::setupTopBarComponents() {
+void Row1Component::setupRow1Components() {
     addAndMakeVisible(gearButton);
     addAndMakeVisible(linkButton);
     addAndMakeVisible(cloudButton);

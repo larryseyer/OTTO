@@ -5,7 +5,7 @@
 #include "ProportionalScalingManager.h"
 #include "EnhancedProportionalEditor.h"
 #include "JUCE8Compatibility.h"
-#include "TopBarComponent.h"
+#include "Row1Component.h"
 #include "PlayerTabsComponent.h"
 #include "DrumKitSectionComponent.h"
 #include "ColorScheme.h"
@@ -85,7 +85,7 @@ private:
     std::unique_ptr<ProportionalComponentWrapper> mainContentWrapper;
     
     // Original components (for compatibility)
-    std::unique_ptr<TopBarComponent> topBar;
+    std::unique_ptr<Row1Component> topBar;
     std::unique_ptr<PlayerTabsComponent> playerTabs;
     std::unique_ptr<DrumKitSectionComponent> drumKitSection;
     std::unique_ptr<MainContentComponent> mainContent;

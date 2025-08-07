@@ -336,7 +336,7 @@ void OTTOAudioProcessorEditor::createComponents()
     }
 
     try {
-        // TopBar functionality now handled by Row1Component in MainContentComponent
+        // Row1 functionality now handled by Row1Component in MainContentComponent
         // Removed standalone TopBarComponent to eliminate duplicate UI elements
 
 

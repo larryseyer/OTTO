@@ -134,7 +134,7 @@ private:
     INIDataManager* iniDataManager = nullptr;
     juce::Array<PresetMenuMapping> presetMenuMapping;
 
-    void setupTopBarComponents();
+    void setupRow1Components();
     void setupPresets();
     void buildHierarchicalPresetMenu();
     void handlePresetMenuSelection(int result);

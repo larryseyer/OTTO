@@ -422,7 +422,7 @@ private:
 
    void testDialogWindowMemory() {
        // Test modal dialog window creation and automatic cleanup
-       // Simulate the corrected TopBarComponent dialog patterns
+       // Simulate the corrected Row1Component dialog patterns
        
        for (int i = 0; i < 50; ++i) {
            auto window = std::make_unique<juce::DialogWindow>("Test Dialog",

@@ -33,7 +33,7 @@
  * COMPONENT INTEGRATION POINTS:
  * ==============================
  * - MainContentComponent.cpp: Row-based layout scaling
- * - TopBarComponent.cpp: Icon and button scaling in Row 1
+ * - Row1Component.cpp: Icon and button scaling in Row 1
  * - PlayerTabsComponent.cpp: Tab width and height scaling in Row 2
  * - CustomLookAndFeel.cpp: Font size and visual element scaling
  * - All child components: Receive scaled dimensions for positioning

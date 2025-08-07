@@ -100,7 +100,7 @@ CustomLookAndFeel::CustomLookAndFeel(FontManager& fontMgr, ColorScheme& colorSch
     // These images provide professional visual elements without external file dependencies
     // Used by: Custom button rendering, slider thumb graphics, application branding
     buttonImage = juce::ImageCache::getFromMemory(BinaryData::Button100_png, BinaryData::Button100_pngSize);
-    sliderImage = juce::ImageCache::getFromMemory(BinaryData::SliderKnob_png, BinaryData::SliderKnob_pngSize);
+    sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
     splashImage = juce::ImageCache::getFromMemory(BinaryData::OTTO_Splash_Screen_png, BinaryData::OTTO_Splash_Screen_pngSize);
     panKnobImage = juce::ImageCache::getFromMemory(BinaryData::PanKnob_png, BinaryData::PanKnob_pngSize);
     pan100Image = juce::ImageCache::getFromMemory(BinaryData::Pan100_png, BinaryData::Pan100_pngSize);
@@ -702,7 +702,10 @@ void CustomLookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int wi
 
     sliderPos = juce::jlimit(minSliderPos, maxSliderPos, sliderPos);
 
-    if (!sliderImage.isNull() && sliderImage.isValid()) {
+    // Use Slider100 image for both vertical and horizontal faders
+    bool hasValidImage = (!sliderImage.isNull() && sliderImage.isValid());
+
+    if (hasValidImage) {
         drawSliderWithImage(g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
     } else {
         drawSliderFallback(g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
@@ -737,16 +740,19 @@ void CustomLookAndFeel::drawSliderWithImage(juce::Graphics& g, int x, int y, int
                                            const juce::Slider::SliderStyle style, juce::Slider& slider) {
     juce::ignoreUnused(slider);
 
+    // Use Slider100 image for both vertical and horizontal faders
     if (sliderImage.isNull() || !sliderImage.isValid() || sliderImage.getHeight() <= 0) {
         drawSliderFallback(g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
         return;
     }
 
+    juce::Image imageToUse = sliderImage;
+
     float normalizedPos = (sliderPos - minSliderPos) / (maxSliderPos - minSliderPos);
     normalizedPos = juce::jlimit(0.0f, 1.0f, normalizedPos);
 
     int totalSlices = INIConfig::LayoutConstants::customLookFeelSliderImageSlices;
-    int sliceHeight = sliderImage.getHeight() / totalSlices;
+    int sliceHeight = imageToUse.getHeight() / totalSlices;
 
     if (sliceHeight <= 0) {
         drawSliderFallback(g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
@@ -764,14 +770,14 @@ void CustomLookAndFeel::drawSliderWithImage(juce::Graphics& g, int x, int y, int
 
     int sourceY = sliceIndex * sliceHeight;
 
-    if (sourceY + sliceHeight > sliderImage.getHeight()) {
-        sourceY = sliderImage.getHeight() - sliceHeight;
+    if (sourceY + sliceHeight > imageToUse.getHeight()) {
+        sourceY = imageToUse.getHeight() - sliceHeight;
     }
 
-    juce::Rectangle<int> sourceRect(0, sourceY, sliderImage.getWidth(), sliceHeight);
+    juce::Rectangle<int> sourceRect(0, sourceY, imageToUse.getWidth(), sliceHeight);
 
     try {
-        juce::Image sliceImage = this->sliderImage.getClippedImage(sourceRect);
+        juce::Image sliceImage = imageToUse.getClippedImage(sourceRect);
 
         if (sliceImage.isValid() && !sliceImage.isNull()) {
             if (style == juce::Slider::LinearHorizontal) {
@@ -1132,7 +1138,7 @@ void CustomLookAndFeel::reloadImages() {
    }
 
    if (!sliderImage.isValid()) {
-       sliderImage = juce::ImageCache::getFromMemory(BinaryData::SliderKnob_png, BinaryData::SliderKnob_pngSize);
+       sliderImage = juce::ImageCache::getFromMemory(BinaryData::Slider100_png, BinaryData::Slider100_pngSize);
    }
 
    if (!splashImage.isValid()) {

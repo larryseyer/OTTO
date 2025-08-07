@@ -35,11 +35,12 @@
 
 Row3Component::Row3Component(MidiEngine& midiEngine,
                            Mixer& mixer,
+                           SFZEngine& sfzEngine,
                            ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
     : ResponsiveComponent(),
-      midiEngine(midiEngine), mixer(mixer),
+      midiEngine(midiEngine), mixer(mixer), sfzEngine(sfzEngine),
       layoutManager(layoutManager), fontManager(fontManager), colorScheme(colorScheme),
       
       // Initialize DrumKit control buttons using Phosphor icon system
@@ -49,8 +50,8 @@ Row3Component::Row3Component(MidiEngine& midiEngine,
       drumKitMuteButton("unmute", FontManager::PhosphorWeight::Regular),
       drumKitMixerButton("mixer", FontManager::PhosphorWeight::Regular) {
     
-    drumkitEditorWindow = std::make_unique<DrumkitEditorWindow>(layoutManager.getINIDataManager(), colorScheme, fontManager);
-    mixerWindow = std::make_unique<MixerWindow>(mixer, layoutManager.getINIDataManager(), colorScheme, fontManager);
+    drumkitEditorWindow = std::make_unique<DrumKitEditorWindow>(sfzEngine, colorScheme, fontManager, layoutManager, layoutManager.getINIDataManager());
+    mixerWindow = std::make_unique<DrumKitMixerWindow>(mixer, sfzEngine, colorScheme, fontManager, layoutManager, layoutManager.getINIDataManager());
     
     setupDrumKitComponents();
 }
@@ -415,32 +416,33 @@ void Row3Component::handleMixerButtonClick() {
 
 void Row3Component::showDrumkitEditor() {
     if (drumkitEditorWindow) {
-        drumkitEditorWindow->showEditor();
+        drumkitEditorWindow->setVisible(true);
+        drumkitEditorWindow->toFront(true);
     }
 }
 
 void Row3Component::hideDrumkitEditor() {
     if (drumkitEditorWindow) {
-        drumkitEditorWindow->hideEditor();
+        drumkitEditorWindow->setVisible(false);
     }
 }
 
 void Row3Component::showMixerWindow() {
     if (mixerWindow) {
-        mixerWindow->showMixer();
+        mixerWindow->setVisible(true);
+        mixerWindow->toFront(true);
     }
 }
 
 void Row3Component::hideMixerWindow() {
     if (mixerWindow) {
-        mixerWindow->hideMixer();
+        mixerWindow->setVisible(false);
     }
 }
 
-
 void Row3Component::toggleDrumkitEditor() {
     if (drumkitEditorWindow) {
-        if (drumkitEditorWindow->isEditorVisible()) {
+        if (drumkitEditorWindow->isVisible()) {
             hideDrumkitEditor();
             editMode = false;
         } else {
@@ -453,35 +455,11 @@ void Row3Component::toggleDrumkitEditor() {
 
 void Row3Component::toggleMixerWindow() {
     if (mixerWindow) {
-        if (mixerWindow->isMixerVisible()) {
+        if (mixerWindow->isVisible()) {
             hideMixerWindow();
         } else {
             showMixerWindow();
         }
-    }
-}
-
-void Row3Component::showDrumkitEditor() {
-    if (drumkitEditorWindow) {
-        drumkitEditorWindow->showEditor();
-    }
-}
-
-void Row3Component::hideDrumkitEditor() {
-    if (drumkitEditorWindow) {
-        drumkitEditorWindow->hideEditor();
-    }
-}
-
-void Row3Component::showMixerWindow() {
-    if (mixerWindow) {
-        mixerWindow->showMixer();
-    }
-}
-
-void Row3Component::hideMixerWindow() {
-    if (mixerWindow) {
-        mixerWindow->hideMixer();
     }
 }
 

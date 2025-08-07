@@ -3,17 +3,18 @@
 #include "UI/Layout/BreakpointManager.h"
 #include "UtilityComponents.h"
 #include "INIConfig.h"
-#include "DrumkitEditorWindow.h"
-#include "MixerWindow.h"
+#include "PopupWindows.h"
 
 class MidiEngine;
 class Mixer;
+class SFZEngine;
 class WaveformDisplay;
 
 class Row3Component : public OTTO::UI::Layout::ResponsiveComponent {
 public:
     Row3Component(MidiEngine& midiEngine,
                  Mixer& mixer,
+                 SFZEngine& sfzEngine,
                  ResponsiveLayoutManager& layoutManager,
                  FontManager& fontManager,
                  ColorScheme& colorScheme);
@@ -74,6 +75,7 @@ public:
 private:
     MidiEngine& midiEngine;
     Mixer& mixer;
+    SFZEngine& sfzEngine;
     ResponsiveLayoutManager& layoutManager;
     FontManager& fontManager;
     ColorScheme& colorScheme;
@@ -101,8 +103,8 @@ private:
     bool waveformVisible = false;
     
     // Window instances for GUI fixes
-    std::unique_ptr<DrumkitEditorWindow> drumkitEditorWindow;
-    std::unique_ptr<MixerWindow> mixerWindow;
+    std::unique_ptr<DrumKitEditorWindow> drumkitEditorWindow;
+    std::unique_ptr<DrumKitMixerWindow> mixerWindow;
     
     // Setup and update methods
     void setupDrumKitComponents();

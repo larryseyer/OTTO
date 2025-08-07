@@ -7,7 +7,7 @@
 ### Repository Structure
 ```
 OTTO/
-├── Source/                    # C++ source code and headers
+├── Source/                    # C++ source code and headers (has subfolders)
 ├── docs/                      # Project documentation
 ├── JUCE/                      # JUCE 8 framework (submodule)
 ├── cmake/                     # Platform-specific build configurations
@@ -207,7 +207,7 @@ Assets/
 
 ---
 
-**Repository URL**: `/Users/larryseyer/AudioDevelopment/OTTO`  
-**Last Updated**: Generated automatically from repository analysis  
-**Build Status**: ✅ All platforms building successfully  
+**Repository URL**: `/Users/larryseyer/AudioDevelopment/OTTO`
+**Last Updated**: Generated automatically from repository analysis
+**Build Status**: ✅ All platforms building successfully
 **Production Status**: ✅ Ready for end-user distribution

@@ -121,6 +121,7 @@ public:
     void setFavoritesSelection(int selection);
 
     void setINIDataManager(INIDataManager* manager);
+    void setSFZEngine(SFZEngine* engine);
     
     void setupRow4LabelIntegration();
 

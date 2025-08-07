@@ -35,12 +35,11 @@
 
 Row3Component::Row3Component(MidiEngine& midiEngine,
                            Mixer& mixer,
-                           SFZEngine& sfzEngine,
                            ResponsiveLayoutManager& layoutManager,
                            FontManager& fontManager,
                            ColorScheme& colorScheme)
     : ResponsiveComponent(),
-      midiEngine(midiEngine), mixer(mixer), sfzEngine(sfzEngine),
+      midiEngine(midiEngine), mixer(mixer),
       layoutManager(layoutManager), fontManager(fontManager), colorScheme(colorScheme),
       
       // Initialize DrumKit control buttons using Phosphor icon system
@@ -50,8 +49,8 @@ Row3Component::Row3Component(MidiEngine& midiEngine,
       drumKitMuteButton("unmute", FontManager::PhosphorWeight::Regular),
       drumKitMixerButton("mixer", FontManager::PhosphorWeight::Regular) {
     
-    drumkitEditorWindow = std::make_unique<DrumKitEditorWindow>(sfzEngine, colorScheme, fontManager, layoutManager, layoutManager.getINIDataManager());
-    mixerWindow = std::make_unique<DrumKitMixerWindow>(mixer, sfzEngine, colorScheme, fontManager, layoutManager, layoutManager.getINIDataManager());
+    // Initialize windows when both SFZEngine and INIDataManager are available
+    initializeWindows();
     
     setupDrumKitComponents();
 }
@@ -687,4 +686,21 @@ int Row3Component::getResponsiveSpacing() const {
 
 float Row3Component::getResponsiveFontSize(float baseSize) const {
     return ResponsiveComponent::getResponsiveFontSize(baseSize);
+}
+
+void Row3Component::setINIDataManager(INIDataManager* manager) {
+    iniDataManager = manager;
+    initializeWindows();
+}
+
+void Row3Component::setSFZEngine(SFZEngine& engine) {
+    sfzEngine = &engine;
+    initializeWindows();
+}
+
+void Row3Component::initializeWindows() {
+    if (sfzEngine && iniDataManager) {
+        drumkitEditorWindow = std::make_unique<DrumKitEditorWindow>(*sfzEngine, colorScheme, fontManager, layoutManager, *iniDataManager);
+        mixerWindow = std::make_unique<DrumKitMixerWindow>(mixer, *sfzEngine, colorScheme, fontManager, layoutManager, *iniDataManager);
+    }
 }

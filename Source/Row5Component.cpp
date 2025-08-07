@@ -297,25 +297,29 @@ void Row5Component::updateInteractiveLayout() {
     int spacing = getResponsiveSpacing();
     int margin = getResponsiveMargin(8);
     
-    // Issue 5.1: Use INIConfig constants for section allocation
-    int leftSectionWidth = static_cast<int>(bounds.getWidth() * (INIConfig::LayoutConstants::Row5::leftSectionWidthPercent / 100.0f));
+    // Issue 5.1: Use INIConfig constants for section allocation - exactly half for left section
+    int leftSectionWidth = static_cast<int>(bounds.getWidth() * 0.5f); // Exactly half
     int rightSectionWidth = static_cast<int>(bounds.getWidth() * (INIConfig::LayoutConstants::Row5::rightSectionWidthPercent / 100.0f));
     
-    // LEFT SECTION: 4x4 Drum Pattern Grid
+    // LEFT SECTION: 4x4 Drum Pattern Grid - Issue 5.1: Center and resize 2x larger
     auto leftSection = bounds.removeFromLeft(leftSectionWidth);
     leftSection = leftSection.reduced(margin);
     
-    // Position drum buttons in 4x4 grid with responsive sizing
-    int drumButtonSize = getResponsiveButtonSize();
+    // Issue 5.1: Make drum buttons 2x larger
+    int baseDrumButtonSize = getResponsiveButtonSize();
+    int drumButtonSize = baseDrumButtonSize * 2; // 2x larger buttons
+    
     // Ensure drum buttons fit in grid with proper spacing
     int maxButtonSize = std::min(leftSection.getWidth() / 4, leftSection.getHeight() / 4) - spacing;
     drumButtonSize = std::min(drumButtonSize, maxButtonSize);
     
+    // Issue 5.1: Center the grid in left section
     int gridStartX = leftSection.getX() + (leftSection.getWidth() - (drumButtonSize * 4 + spacing * 3)) / 2;
     int gridStartY = leftSection.getY() + (leftSection.getHeight() - (drumButtonSize * 4 + spacing * 3)) / 2;
     
-    // Update drum button font size responsively
-    float drumFontSize = getResponsiveFontSize(12.0f);
+    // Issue 5.3: Update drum button font size - 2x larger with buttonTextColor
+    float baseDrumFontSize = getResponsiveFontSize(12.0f);
+    float enlargedDrumFontSize = baseDrumFontSize * INIConfig::LayoutConstants::Row5::drumButtonFontMultiplier; // 2x larger
     
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
@@ -323,7 +327,12 @@ void Row5Component::updateInteractiveLayout() {
             int x = gridStartX + col * (drumButtonSize + spacing);
             int y = gridStartY + row * (drumButtonSize + spacing);
             drumButtons[buttonIndex].setBounds(x, y, drumButtonSize, drumButtonSize);
-            // Note: Font styling handled by LookAndFeel in JUCE 8
+            
+            // Issue 5.3: Apply 2x font size and buttonTextColor
+            drumButtons[buttonIndex].setColour(juce::TextButton::textColourOffId,
+                                             colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+            drumButtons[buttonIndex].setColour(juce::TextButton::textColourOnId,
+                                             colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
         }
     }
     
@@ -334,53 +343,74 @@ void Row5Component::updateInteractiveLayout() {
     // Skip margin
     bounds.removeFromLeft(margin);
     
-    // RIGHT SECTION: Interactive Controls
+    // RIGHT SECTION: Interactive Controls - Issue 5.4: Organize into 3 horizontal groups
     auto rightSection = bounds.removeFromLeft(rightSectionWidth);
     rightSection = rightSection.reduced(margin);
     
-    // Issue 5.4: Arrange toggle and fill buttons vertically using INIConfig constants
+    // Issue 5.4: Divide right section into 3 horizontal groups
+    int groupHeight = rightSection.getHeight() / 3;
     int controlButtonHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonHeight);
-    int controlButtonWidth = rightSection.getWidth() - layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonMargin * 2);
+    int controlButtonWidth = (rightSection.getWidth() - (spacing * 4)) / 5; // 5 buttons per row with spacing
     
-    // Update control font size responsively
-    float controlFontSize = getResponsiveFontSize(10.0f);
+    // Update control font size responsively - 2x larger
+    float baseControlFontSize = getResponsiveFontSize(10.0f);
+    float enlargedControlFontSize = baseControlFontSize * 2.0f; // 2x larger
     
-    // Toggle buttons - vertical arrangement
-    int toggleStartY = layoutManager.scaled(INIConfig::LayoutConstants::Row5::toggleStartY);
+    // GROUP 1: Toggle buttons - horizontal arrangement in top third
+    auto toggleGroup = rightSection.removeFromTop(groupHeight);
+    int toggleY = toggleGroup.getY() + (groupHeight - controlButtonHeight) / 2; // Center vertically
+    
     for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
-        int y = toggleStartY + i * (controlButtonHeight + spacing);
-        toggleButtons[i].setBounds(rightSection.getX() + layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonMargin), 
-                                  y, controlButtonWidth, controlButtonHeight);
-        toggleButtons[i].setButtonText(juce::String("Toggle ") + juce::String(i + 1));
+        int x = toggleGroup.getX() + i * (controlButtonWidth + spacing);
+        toggleButtons[i].setBounds(x, toggleY, controlButtonWidth, controlButtonHeight);
+        
+        // Issue 5.5: Use proper descriptive labels instead of "Toggle1-5"
+        juce::String toggleLabels[] = {"Kick", "Snare", "HiHat", "Crash", "Perc"};
+        toggleButtons[i].setButtonText(toggleLabels[i]);
+        
+        // Apply 2x font size and buttonTextColor
+        toggleButtons[i].setColour(juce::TextButton::textColourOffId,
+                                 colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        toggleButtons[i].setColour(juce::TextButton::textColourOnId,
+                                 colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
     }
     
-    // Fill buttons - vertical arrangement below toggles
-    int fillStartY = toggleStartY + (INIConfig::UI::MAX_TOGGLE_STATES * (controlButtonHeight + spacing)) + 
-                     layoutManager.scaled(INIConfig::LayoutConstants::Row5::fillButtonSpacing);
+    // GROUP 2: Fill buttons - horizontal arrangement in middle third
+    auto fillGroup = rightSection.removeFromTop(groupHeight);
+    int fillY = fillGroup.getY() + (groupHeight - controlButtonHeight) / 2; // Center vertically
+    
     for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
-        int y = fillStartY + i * (controlButtonHeight + spacing);
-        fillButtons[i].setBounds(rightSection.getX() + layoutManager.scaled(INIConfig::LayoutConstants::Row5::controlButtonMargin), 
-                                y, controlButtonWidth, controlButtonHeight);
-        fillButtons[i].setButtonText(juce::String("Fill ") + juce::String(i + 1));
+        int x = fillGroup.getX() + i * (controlButtonWidth + spacing);
+        fillButtons[i].setBounds(x, fillY, controlButtonWidth, controlButtonHeight);
+        
+        // Issue 5.5: Use proper descriptive labels instead of "Fill1-5"
+        juce::String fillLabels[] = {"Roll", "Flam", "Ghost", "Accent", "Choke"};
+        fillButtons[i].setButtonText(fillLabels[i]);
+        
+        // Apply 2x font size and buttonTextColor
+        fillButtons[i].setColour(juce::TextButton::textColourOffId,
+                                colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        fillButtons[i].setColour(juce::TextButton::textColourOnId,
+                                colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
     }
     
-    // Issue 5.5: Vertical sliders positioned below buttons using INIConfig constants
-    int slidersStartY = fillStartY + (INIConfig::UI::MAX_FILL_STATES * (controlButtonHeight + spacing)) + 
-                        layoutManager.scaled(INIConfig::LayoutConstants::Row5::sliderStartSpacing);
+    // GROUP 3: Sliders - horizontal arrangement in bottom third
+    auto sliderGroup = rightSection;
     int sliderWidth = layoutManager.scaled(INIConfig::LayoutConstants::Row5::verticalSliderWidth);
     int sliderHeight = layoutManager.scaled(INIConfig::LayoutConstants::Row5::verticalSliderHeight);
-    int sliderSpacing = (controlButtonWidth - (3 * sliderWidth)) / 4; // Even spacing
+    int sliderSpacing = (sliderGroup.getWidth() - (3 * sliderWidth)) / 4; // Even spacing for 3 sliders
+    int sliderY = sliderGroup.getY() + (groupHeight - sliderHeight) / 2; // Center vertically
     
     // Position three vertical sliders side by side
-    int sliderX = rightSection.getX() + sliderSpacing;
+    int sliderX = sliderGroup.getX() + sliderSpacing;
     
-    swingSlider.setBounds(sliderX, slidersStartY, sliderWidth, sliderHeight);
+    swingSlider.setBounds(sliderX, sliderY, sliderWidth, sliderHeight);
     sliderX += sliderWidth + sliderSpacing;
     
-    energySlider.setBounds(sliderX, slidersStartY, sliderWidth, sliderHeight);
+    energySlider.setBounds(sliderX, sliderY, sliderWidth, sliderHeight);
     sliderX += sliderWidth + sliderSpacing;
     
-    volumeSlider.setBounds(sliderX, slidersStartY, sliderWidth, sliderHeight);
+    volumeSlider.setBounds(sliderX, sliderY, sliderWidth, sliderHeight);
     
     // Right separator
     rightSeparator.setBounds(bounds.getRight() - separatorThickness, 0, 
@@ -407,19 +437,21 @@ void Row5Component::setupDrumGrid() {
 }
 
 void Row5Component::setupControlButtons() {
-    // Setup toggle buttons
+    // Issue 5.5: Setup toggle buttons with proper descriptive labels
+    juce::String toggleLabels[] = {"Kick", "Snare", "HiHat", "Crash", "Perc"};
     for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
         auto& button = toggleButtons[i];
-        button.setButtonText("T" + juce::String(i + 1));
+        button.setButtonText(toggleLabels[i]);
         button.setClickingTogglesState(true);
         button.setComponentID("toggle_button_" + juce::String(i));
         addAndMakeVisible(button);
     }
     
-    // Setup fill buttons
+    // Issue 5.5: Setup fill buttons with proper descriptive labels
+    juce::String fillLabels[] = {"Roll", "Flam", "Ghost", "Accent", "Choke"};
     for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
         auto& button = fillButtons[i];
-        button.setButtonText("F" + juce::String(i + 1));
+        button.setButtonText(fillLabels[i]);
         button.setClickingTogglesState(true);
         button.setComponentID("fill_button_" + juce::String(i));
         addAndMakeVisible(button);
@@ -533,31 +565,41 @@ void Row5Component::validateSliderValues() {
 }
 
 void Row5Component::updateFontsAndColors() {
-    // Apply consistent fonts and colors to all components
-    auto buttonFont = fontManager.getFont(FontManager::FontRole::Button, 12.0f);
+    // Issue 5.3: Apply consistent fonts and colors with 2x font sizes
+    float baseDrumFontSize = getResponsiveFontSize(12.0f);
+    float enlargedDrumFontSize = baseDrumFontSize * INIConfig::LayoutConstants::Row5::drumButtonFontMultiplier; // 2x larger
+    auto drumButtonFont = fontManager.getFont(FontManager::FontRole::Button, enlargedDrumFontSize);
+    
+    float baseControlFontSize = getResponsiveFontSize(10.0f);
+    float enlargedControlFontSize = baseControlFontSize * 2.0f; // 2x larger
+    auto controlButtonFont = fontManager.getFont(FontManager::FontRole::Button, enlargedControlFontSize);
+    
     auto sliderFont = fontManager.getFont(FontManager::FontRole::Body, 11.0f);
     
-    // Drum buttons
+    // Issue 5.3: Drum buttons with 2x font size and buttonTextColor
     for (int i = 0; i < INIConfig::Audio::NUM_DRUM_PADS; ++i) {
         auto& button = drumButtons[i];
         button.setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         button.setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        button.setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
         button.setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
     }
     
-    // Toggle buttons
+    // Issue 5.3: Toggle buttons with 2x font size and buttonTextColor
     for (int i = 0; i < INIConfig::UI::MAX_TOGGLE_STATES; ++i) {
         auto& button = toggleButtons[i];
         button.setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         button.setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        button.setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
         button.setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
     }
     
-    // Fill buttons
+    // Issue 5.3: Fill buttons with 2x font size and buttonTextColor
     for (int i = 0; i < INIConfig::UI::MAX_FILL_STATES; ++i) {
         auto& button = fillButtons[i];
         button.setColour(juce::TextButton::buttonColourId, colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         button.setColour(juce::TextButton::textColourOffId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
+        button.setColour(juce::TextButton::textColourOnId, colorScheme.getColor(ColorScheme::ColorRole::ButtonText));
         button.setColour(juce::TextButton::buttonOnColourId, colorScheme.getColor(ColorScheme::ColorRole::Accent));
     }
     

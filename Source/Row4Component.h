@@ -19,6 +19,7 @@ public:
     
     void paint(juce::Graphics& g) override;
     void resized() override;
+    void mouseDown(const juce::MouseEvent& event) override;
     void saveStates(ComponentState& state);
     void loadStates(const ComponentState& state);
     void updateFromState(const ComponentState& state);
@@ -43,12 +44,22 @@ public:
     int getCurrentPatternGroupIndex() const;
     void setCurrentPatternGroupIndex(int index);
     
+    // Pattern Group Label/Menu Toggle - Issue 4.2
+    void togglePatternGroupLabelMenu();
+    void showPatternGroupLabel();
+    void showPatternGroupMenu();
+    
     // Pattern Group Editor Window
     void showPatternGroupEditor();
     void populatePatternGroupDropdown();
     bool isPatternGroupFavorite(int index);
     void setPatternGroupFavorite(int index, bool favorite);
     void updateFavoriteButtonState();
+    
+    // Custom MIDI File Path Support - Issue 4.5
+    void addCustomMidiPath(const juce::File& customPath);
+    void removeCustomMidiPath(const juce::File& customPath);
+    juce::Array<juce::File> getCustomMidiPaths() const;
     
     // Label Update Interface - CRITICAL for Phase 5
     void updateLabelsFromControls();
@@ -75,6 +86,7 @@ private:
     PhosphorIconButton patternGroupEditButton;        // Edit/Pencil icon
     PhosphorIconButton patternGroupLeftChevron;       // Left chevron
     HierarchicalComboBox patternGroupDropdown;        // Pattern group dropdown
+    juce::Label patternGroupLabel;                    // Pattern group label (for label/menu toggle)
     PhosphorIconButton patternGroupRightChevron;      // Right chevron
     PhosphorIconButton patternGroupFavoriteButton;    // Favorite icon
     juce::Label togglesLabel;                         // Toggles label - MOVED FROM ROW 5
@@ -87,6 +99,9 @@ private:
     int currentPatternGroupIndex = 0;
     bool patternGroupEditMode = false;
     bool showingPatternGroupLabel = true;
+    
+    // Custom MIDI paths storage
+    juce::Array<juce::File> customMidiPaths;
     
     std::unique_ptr<PatternDragSource> patternDragSource;
     

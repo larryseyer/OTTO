@@ -37,6 +37,17 @@ void Row4Component::resized() {
     updatePatternGroupLayout();
 }
 
+void Row4Component::mouseDown(const juce::MouseEvent& event) {
+    // Handle label click for pattern group label/menu toggle - Issue 4.2
+    if (event.eventComponent == &patternGroupLabel) {
+        togglePatternGroupLabelMenu();
+        return;
+    }
+    
+    // Call parent for other mouse events
+    ResponsiveComponent::mouseDown(event);
+}
+
 void Row4Component::saveStates(ComponentState& state) {
     // Save pattern group state using dropdown selections map
     state.dropdownSelections["row4_pattern_group"] = currentPatternGroupIndex;
@@ -161,6 +172,7 @@ void Row4Component::setupPatternGroupComponents() {
     addAndMakeVisible(patternGroupEditButton);
     addAndMakeVisible(patternGroupLeftChevron);
     addAndMakeVisible(patternGroupDropdown);
+    addAndMakeVisible(patternGroupLabel);
     addAndMakeVisible(patternGroupRightChevron);
     addAndMakeVisible(patternGroupFavoriteButton);
     
@@ -168,6 +180,7 @@ void Row4Component::setupPatternGroupComponents() {
     patternGroupEditButton.setComponentID("pattern_group_edit");
     patternGroupLeftChevron.setComponentID("pattern_group_left");
     patternGroupDropdown.setComponentID("pattern_group_dropdown");
+    patternGroupLabel.setComponentID("pattern_group_label");
     patternGroupRightChevron.setComponentID("pattern_group_right");
     patternGroupFavoriteButton.setComponentID("pattern_group_favorite");
     
@@ -182,6 +195,17 @@ void Row4Component::setupPatternGroupComponents() {
                                   colorScheme.getColor(ColorScheme::ColorRole::ComponentBackground));
     patternGroupDropdown.setColour(juce::ComboBox::outlineColourId, 
                                   colorScheme.getColor(ColorScheme::ColorRole::Separator));
+    
+    // Configure pattern group label - Issue 4.2: Label/Menu Toggle System
+    patternGroupLabel.setText("Group 1", juce::dontSendNotification);
+    patternGroupLabel.setJustificationType(juce::Justification::centred);
+    patternGroupLabel.setFont(fontManager.getFont(FontManager::FontRole::Body, 
+                             getResponsiveFontSize(fontManager.getDefaultSize(FontManager::FontRole::Body))));
+    patternGroupLabel.setColour(juce::Label::textColourId, 
+                               colorScheme.getColor(ColorScheme::ColorRole::PrimaryText));
+    
+    // Set up label/menu toggle behavior - initially show label
+    showPatternGroupLabel();
     
     // Populate dropdown with default pattern groups
     populatePatternGroupDropdown();
@@ -248,6 +272,10 @@ void Row4Component::setupPatternGroupCallbacks() {
         togglePatternGroupFavorite();
     };
     
+    // Label click to toggle to menu - Issue 4.2
+    patternGroupLabel.setInterceptsMouseClicks(true, false);
+    patternGroupLabel.addMouseListener(this, false);
+    
     // Dropdown selection handled in setupPatternGroupAnimations()
 }
 
@@ -273,6 +301,14 @@ void Row4Component::updatePatternGroupLayout() {
     
     // Pattern group dropdown
     patternGroupDropdown.setBounds(
+        layoutManager.scaled(dropdownX),
+        layoutManager.scaled(dropdownY),
+        layoutManager.scaled(dropdownWidth),
+        layoutManager.scaled(dropdownHeight)
+    );
+    
+    // Pattern group label (same position as dropdown for toggle behavior)
+    patternGroupLabel.setBounds(
         layoutManager.scaled(dropdownX),
         layoutManager.scaled(dropdownY),
         layoutManager.scaled(dropdownWidth),
@@ -363,22 +399,14 @@ void Row4Component::setupPatternGroupAnimations() {
             setCurrentPatternGroupIndex(selectedId - 1); // Convert to 0-based index
             animatePatternGroupChange(selectedId - 1);
             updatePatternGroupButtonStates();
+            
+            // Update label text and switch back to label view
+            showPatternGroupLabel();
         }
     };
     
-    // Handle dropdown popup request for label/menu toggle
-    patternGroupDropdown.onPopupRequest = [this]() {
-        if (showingPatternGroupLabel) {
-            // First click: hide label, show menu
-            showingPatternGroupLabel = false;
-            // Hide label component if exists
-            patternGroupDropdown.showPopup();
-        } else {
-            // Second click: show label, hide menu
-            showingPatternGroupLabel = true;
-            // Show label component if exists
-        }
-    };
+    // Note: HierarchicalComboBox doesn't have onPopupMenuDismissed
+    // The label/menu toggle will be handled through mouse clicks and onChange
 }
 
 void Row4Component::animatePatternGroupChange(int newIndex) {
@@ -541,7 +569,7 @@ void Row4Component::populatePatternGroupDropdown() {
     }
 }
 
-bool Row4Component::isPatternGroupFavorite(int index) {
+bool Row4Component::isPatternGroupFavorite([[maybe_unused]] int index) {
     if (iniDataManager) {
         // TODO: Implement INI data loading when INIDataManager is available
         // return iniDataManager->isPatternGroupFavorite(index);
@@ -551,7 +579,7 @@ bool Row4Component::isPatternGroupFavorite(int index) {
     return false;
 }
 
-void Row4Component::setPatternGroupFavorite(int index, bool favorite) {
+void Row4Component::setPatternGroupFavorite([[maybe_unused]] int index, [[maybe_unused]] bool favorite) {
     if (iniDataManager) {
         // TODO: Implement INI data saving when INIDataManager is available
         // iniDataManager->setPatternGroupFavorite(index, favorite);
@@ -576,4 +604,100 @@ void Row4Component::updateFavoriteButtonState() {
                                            colorScheme.getColor(ColorScheme::ColorRole::ButtonBackground));
         patternGroupFavoriteButton.setIconName("heart");
     }
+}
+
+//==============================================================================
+// Custom MIDI File Path Support - Issue 4.5
+//==============================================================================
+
+void Row4Component::addCustomMidiPath(const juce::File& customPath) {
+    if (customPath.exists() && customPath.isDirectory()) {
+        // Check if path already exists
+        for (const auto& existingPath : customMidiPaths) {
+            if (existingPath.getFullPathName() == customPath.getFullPathName()) {
+                return; // Already exists
+            }
+        }
+        
+        customMidiPaths.add(customPath);
+        
+        // Scan the custom path for MIDI files and add to pattern groups
+        juce::Array<juce::File> midiFiles;
+        customPath.findChildFiles(midiFiles, juce::File::findFiles, true, "*.mid;*.MID;*.midi;*.MIDI");
+        
+        if (midiFiles.size() > 0) {
+            // Create a new pattern group from this custom path
+            juce::String groupName = "Custom: " + customPath.getFileName();
+            juce::Array<juce::String> fileNames;
+            
+            for (const auto& midiFile : midiFiles) {
+                fileNames.add(midiFile.getFileNameWithoutExtension());
+            }
+            
+            // Add to dropdown
+            patternGroupDropdown.addItem(groupName, patternGroupDropdown.getNumItems() + 1);
+            
+            // Save to INI if available
+            if (iniDataManager) {
+                // TODO: Save custom path to INI when INIDataManager methods are available
+            }
+        }
+    }
+}
+
+void Row4Component::removeCustomMidiPath(const juce::File& customPath) {
+    for (int i = customMidiPaths.size() - 1; i >= 0; --i) {
+        if (customMidiPaths[i].getFullPathName() == customPath.getFullPathName()) {
+            customMidiPaths.remove(i);
+            
+            // Remove corresponding pattern group from dropdown
+            juce::String groupName = "Custom: " + customPath.getFileName();
+            for (int j = 0; j < patternGroupDropdown.getNumItems(); ++j) {
+                if (patternGroupDropdown.getItemText(j) == groupName) {
+                    patternGroupDropdown.clear();
+                    populatePatternGroupDropdown(); // Rebuild dropdown without this item
+                    break;
+                }
+            }
+            
+            // Save to INI if available
+            if (iniDataManager) {
+                // TODO: Save updated custom paths to INI when INIDataManager methods are available
+            }
+            break;
+        }
+    }
+}
+
+juce::Array<juce::File> Row4Component::getCustomMidiPaths() const {
+    return customMidiPaths;
+}
+
+//==============================================================================
+// Pattern Group Label/Menu Toggle System - Issue 4.2
+//==============================================================================
+
+void Row4Component::togglePatternGroupLabelMenu() {
+    if (showingPatternGroupLabel) {
+        showPatternGroupMenu();
+    } else {
+        showPatternGroupLabel();
+    }
+}
+
+void Row4Component::showPatternGroupLabel() {
+    showingPatternGroupLabel = true;
+    patternGroupLabel.setVisible(true);
+    patternGroupDropdown.setVisible(false);
+    
+    // Update label text to show current selection
+    if (patternGroupDropdown.getSelectedItemIndex() >= 0) {
+        patternGroupLabel.setText(patternGroupDropdown.getText(), juce::dontSendNotification);
+    }
+}
+
+void Row4Component::showPatternGroupMenu() {
+    showingPatternGroupLabel = false;
+    patternGroupLabel.setVisible(false);
+    patternGroupDropdown.setVisible(true);
 }

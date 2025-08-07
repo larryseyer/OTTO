@@ -122,6 +122,7 @@ private:
     void handleMixerButtonClick();
     void handleDrumKitDropdownChange();
     void populateDrumKitDropdown();
+    void initializeWindows();
     
     // PHASE 9D: Visualization helper methods
     void setupWaveformIntegration();

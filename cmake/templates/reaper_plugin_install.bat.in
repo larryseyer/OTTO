@@ -1,0 +1,43 @@
+@echo off
+REM OTTO Phase 2.3.1 - Reaper Plugin Installation Script
+REM Generated automatically by CMake configuration
+
+echo 🎵 Installing OTTO Plugins for Reaper
+echo =====================================
+
+set "BUILD_DIR=@CMAKE_BINARY_DIR@"
+set "VST3_INSTALL_PATH=@OTTO_VST3_INSTALL_PATH@"
+set "CLAP_INSTALL_PATH=@OTTO_CLAP_INSTALL_PATH@"
+set "REAPER_PATH=@OTTO_REAPER_PATH@"
+
+echo 📁 Build Directory: %BUILD_DIR%
+echo 📁 VST3 Install Path: %VST3_INSTALL_PATH%
+echo 📁 CLAP Install Path: %CLAP_INSTALL_PATH%
+echo 📁 Reaper Path: %REAPER_PATH%
+
+echo.
+echo 🔌 Installing plugins...
+
+REM Install VST3
+if exist "%BUILD_DIR%\*_artefacts\Release\VST3\OTTO.vst3" (
+    echo   Installing VST3 plugin...
+    if not exist "%VST3_INSTALL_PATH%" mkdir "%VST3_INSTALL_PATH%"
+    xcopy "%BUILD_DIR%\*_artefacts\Release\VST3\OTTO.vst3" "%VST3_INSTALL_PATH%\OTTO.vst3" /E /I /Y
+    echo   ✅ VST3 installed
+) else (
+    echo   ⚠️  VST3 plugin not found
+)
+
+REM Install CLAP
+if exist "%BUILD_DIR%\*_artefacts\Release\CLAP\OTTO.clap" (
+    echo   Installing CLAP plugin...
+    if not exist "%CLAP_INSTALL_PATH%" mkdir "%CLAP_INSTALL_PATH%"
+    copy "%BUILD_DIR%\*_artefacts\Release\CLAP\OTTO.clap" "%CLAP_INSTALL_PATH%\OTTO.clap"
+    echo   ✅ CLAP installed
+) else (
+    echo   ⚠️  CLAP plugin not found
+)
+
+echo.
+echo ✨ Plugin installation complete!
+echo 💡 Launch Reaper to test the plugins

@@ -1,0 +1,147 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# debug information files
+*.dwo
+
+# Build directories and artifacts
+build-*/
+build/
+build-macos/
+build-ios-sim/
+cmake-build-*/
+Builds/Linux*/
+build_test/
+vscode-build-debug/
+
+# CMake build directories (keep ProJucer projects)
+Builds/*/CMake*
+Builds/CMake/
+
+# Build outputs (keep ProJucer project files)
+Builds/*/Release/
+Builds/*/Debug/
+Builds/*/build/
+
+# Xcode user-specific files
+Builds/*/*.xcodeproj/xcuserdata/
+Builds/*/*.xcworkspace/xcuserdata/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# Visual Studio user-specific files
+*.user
+*.sln.docstates
+*.suo
+*.userosscache
+*.sln.docstates
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+
+# Setup and development files (generated/temporary)
+.clang-tidy
+Makefile.linux
+simple_standalone.cpp
+Source/Main.cpp
+
+# Build scripts should be tracked for open source distribution
+# DO NOT ignore *.sh files - they are essential for building the project
+
+# JUCE Framework (untracked - users must download separately)
+JUCE/
+JuceLibraryCode/
+
+# Track cmake toolchain files but ignore generated cache files in cmake directory
+cmake/CMakeCache.txt
+cmake/CMakeFiles/
+cmake/cmake_install.cmake
+cmake/Makefile
+
+# Make sure our custom cmake toolchain files are tracked
+!cmake/*.cmake
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+compile_commands.json
+**/compile_commands.json
+
+# IDE files - CLion/IntelliJ
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# CLion
+cmake-build-*/
+
+#Safety Stuff
+OTTO copy.jucer
+
+#zencoder directives - REMOVED: ZENCODER_RULES.md is now essential project documentation
+
+#images for Zencoder
+HISE_Image.png
+JUCE_Image.png
+HISE Image.svg
+JUCE Image.svg
+
+#HISE CPP Source
+HISE_CPP_Source
+
+#logs
+build_test.log
+output.txt
+
+#Docker
+.docker-cache/juce-x86_64

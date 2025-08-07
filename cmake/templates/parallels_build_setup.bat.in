@@ -1,0 +1,47 @@
+@echo off
+REM OTTO Phase 2.3.1 - Parallels VM Build Environment Setup
+REM Generated automatically by CMake configuration
+
+echo 🪟 Setting up OTTO Parallels Build Environment
+echo ===============================================
+
+REM Set environment variables for Parallels build
+set "OTTO_BUILD_MODE=PARALLELS"
+set "OTTO_VM_OPTIMIZED=true"
+set "JUCE_PARALLELS_MODE=true"
+
+REM Configure Visual Studio for VM performance
+if exist "%ProgramFiles%\Microsoft Visual Studio\2022\*" (
+    echo 🔧 Configuring Visual Studio 2022 for Parallels...
+    
+    REM Set VS environment variables
+    set "VCINSTALLDIR=%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\"
+    set "VSINSTALLDIR=%ProgramFiles%\Microsoft Visual Studio\2022\Community\"
+    
+    REM Enable multi-processor compilation
+    set "CL=/MP"
+    set "MSBUILDOPTS=/m:4"
+    
+    echo   ✅ Visual Studio configured for Parallels
+)
+
+REM Set audio-specific environment
+echo 🎵 Configuring audio environment...
+set "JUCE_WASAPI_EXCLUSIVE_MODE=false"
+set "JUCE_WASAPI_EVENT_MODE=true"
+set "JUCE_DIRECTSOUND_BUFFER_SIZE=512"
+set "JUCE_DEFAULT_BUFFER_SIZE=512"
+
+echo   ✅ Audio environment configured
+
+REM Display configuration
+echo.
+echo 📋 Build Configuration:
+echo   Build Mode: %OTTO_BUILD_MODE%
+echo   VM Optimized: %OTTO_VM_OPTIMIZED%
+echo   JUCE Parallels Mode: %JUCE_PARALLELS_MODE%
+echo   Default Buffer Size: %JUCE_DEFAULT_BUFFER_SIZE%
+echo.
+
+echo ✨ Parallels build environment ready!
+echo 💡 Run build_windows.bat to start building OTTO

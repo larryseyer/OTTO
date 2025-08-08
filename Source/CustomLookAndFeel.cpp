@@ -801,17 +801,31 @@ void CustomLookAndFeel::drawSliderWithImage(juce::Graphics& g, int x, int y, int
 
                 rotG.drawImageTransformed(sliceImage, rotation);
 
-                auto scaledImage = rotatedImage.rescaled(width, height, juce::Graphics::highResamplingQuality);
+                // Reduce fader image size by 50%
+                int scaledWidth = static_cast<int>(width * 0.5f);
+                int scaledHeight = static_cast<int>(height * 0.5f);
+                
+                auto scaledImage = rotatedImage.rescaled(scaledWidth, scaledHeight, juce::Graphics::highResamplingQuality);
 
                 if (scaledImage.isValid()) {
-                    g.drawImageAt(scaledImage, x, y);
+                    // Center the smaller fader image within the original bounds
+                    int centeredX = x + (width - scaledWidth) / 2;
+                    int centeredY = y + (height - scaledHeight) / 2;
+                    g.drawImageAt(scaledImage, centeredX, centeredY);
                 } else {
                     drawSliderFallback(g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
                 }
             } else {
-                auto scaledImage = sliceImage.rescaled(width, height, juce::Graphics::highResamplingQuality);
+                // Reduce fader image size by 50%
+                int scaledWidth = static_cast<int>(width * 0.5f);
+                int scaledHeight = static_cast<int>(height * 0.5f);
+                
+                auto scaledImage = sliceImage.rescaled(scaledWidth, scaledHeight, juce::Graphics::highResamplingQuality);
                 if (scaledImage.isValid()) {
-                    g.drawImageAt(scaledImage, x, y);
+                    // Center the smaller fader image within the original bounds
+                    int centeredX = x + (width - scaledWidth) / 2;
+                    int centeredY = y + (height - scaledHeight) / 2;
+                    g.drawImageAt(scaledImage, centeredX, centeredY);
                 } else {
                     drawSliderFallback(g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
                 }

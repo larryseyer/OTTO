@@ -83,7 +83,6 @@ CTestTestfile.cmake
 
 # Setup and development files (generated/temporary)
 .clang-tidy
-Makefile.linux
 simple_standalone.cpp
 Source/Main.cpp
 

@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 #include "ComponentState.h"
-#include "INIDataManager.h"
+#include "INIConfig.h"
 
 class OTTOAudioProcessorEditor;
 class MidiFileManager;

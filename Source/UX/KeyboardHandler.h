@@ -1,6 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
-#include "../UtilityComponents.h"
+#include "UtilityComponents.h"
 
 class KeyboardHandler {
 public:

@@ -1,6 +1,6 @@
 #include "StateManager.h"
 #include "PluginEditor.h"
-#include "INIConfig.h"
+
 
 StateManager::StateManager() {
     createDefaultState();

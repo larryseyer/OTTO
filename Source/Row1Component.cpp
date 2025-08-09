@@ -730,8 +730,8 @@ void Row1Component::buildHierarchicalPresetMenu() {
             juce::String categoryCopy = categoryName;
 
             juce::String displayName = isCurrentSelection ?
-                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + presetCopy :
-                INIConfig::UI::MENU_NON_SELECTION_PADDING + presetCopy;
+                juce::String(INIConfig::UI::MENU_SELECTION_INDICATOR) + " " + presetCopy :
+                juce::String(INIConfig::UI::MENU_NON_SELECTION_PADDING) + presetCopy;
 
             subMenu.addItem(currentMenuId, displayName, true, false);
 
@@ -741,8 +741,8 @@ void Row1Component::buildHierarchicalPresetMenu() {
 
         if (presetsInCategory.size() > 0) {
             juce::String categoryDisplayName = categoryContainsCurrentPreset ?
-                INIConfig::UI::MENU_SELECTION_INDICATOR + " " + categoryName :
-                INIConfig::UI::MENU_NON_SELECTION_PADDING + categoryName;
+                juce::String(INIConfig::UI::MENU_SELECTION_INDICATOR) + " " + categoryName :
+                juce::String(INIConfig::UI::MENU_NON_SELECTION_PADDING) + categoryName;
 
             mainMenu.addSubMenu(categoryDisplayName, subMenu);
         }

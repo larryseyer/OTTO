@@ -38,6 +38,17 @@
 
 #include <JuceHeader.h>
 
+// ========================================================================
+// MODULAR HEADER INCLUDES
+// ========================================================================
+// Include all the modular INI configuration headers
+#include "INIValidation.h"
+#include "INIAudio.h"
+#include "INIMIDI.h"
+#include "INIUI.h"
+#include "INIFonts.h"
+#include "INIGMDrums.h"
+
 /**
  * @namespace INIConfig
  * @brief Root namespace containing all INI-driven configuration constants for OTTO
@@ -220,7 +231,6 @@ namespace INIConfig {
     /** @brief Theme registry and metadata */
     static const juce::String THEME_INDEX_FILE = "ThemeIndex.ini";
     static const juce::String DEFAULT_PRESET_FILE = "Default.ini";
-
 
     // ========================================================================
     // PLAYERS FOLDER FILES
@@ -1068,6 +1078,9 @@ namespace INIConfig {
         /** @brief Default play count */
         static const int DEFAULT_PLAY_COUNT = 0;
 
+        /** @brief Default player count */
+        static const int DEFAULT_PLAYER_COUNT = 8;
+
         /** @brief Default favorites state */
         static const bool DEFAULT_FAVORITES_STATE = false;
 
@@ -1703,7 +1716,6 @@ namespace LayoutConstants {
     constexpr int velocityEditorNumPoints = 128;
     constexpr float velocityEditorLineWidth = 2.0f;
 
-
     constexpr int padEditorTextSize = 16;
     constexpr float padEditorSmallTextSize = 12.0f;
 
@@ -2189,7 +2201,6 @@ namespace LayoutConstants {
        constexpr int activeSpacing = useCompactMode ? compactSpacing : buttonSpacing;
    }
 
-
    namespace Row4 {
 
        constexpr int height = ROW_4_HEIGHT;
@@ -2212,7 +2223,6 @@ namespace LayoutConstants {
        constexpr float labelHeightPercent = 70.0f;        // Labels: 70% of content height
        constexpr float dropdownHeightPercent = 80.0f;     // Dropdown: 80% of content height
 
-
        // Calculated dimensions
        constexpr int editIconWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (editIconWidthPercent / 100.0f));
        constexpr int chevronWidth = static_cast<int>(Defaults::DEFAULT_INTERFACE_WIDTH * (chevronWidthPercent / 100.0f));
@@ -2224,7 +2234,6 @@ namespace LayoutConstants {
        constexpr int iconHeight = static_cast<int>(contentHeight * (iconHeightPercent / 100.0f));
        constexpr int labelHeight = static_cast<int>(contentHeight * (labelHeightPercent / 100.0f));
        constexpr int dropdownHeight = static_cast<int>(contentHeight * (dropdownHeightPercent / 100.0f));
-
 
        // Layout positioning - left to right flow
        constexpr int startX = defaultMargin;
@@ -2405,402 +2414,5 @@ namespace LayoutConstants {
    // END OTTO GUI 6-ROW LAYOUT SYSTEM - PHASE 1
    // ========================================================================
 }
-
-   namespace GMDrums {
-       static const int ACOUSTIC_BASS_DRUM = 35;
-       static const int BASS_DRUM_1 = 36;
-       static const int SIDE_STICK = 37;
-       static const int ACOUSTIC_SNARE = 38;
-       static const int HAND_CLAP = 39;
-       static const int ELECTRIC_SNARE = 40;
-       static const int LOW_FLOOR_TOM = 41;
-       static const int CLOSED_HI_HAT = 42;
-       static const int HIGH_FLOOR_TOM = 43;
-       static const int PEDAL_HI_HAT = 44;
-       static const int LOW_TOM = 45;
-       static const int OPEN_HI_HAT = 46;
-       static const int LOW_MID_TOM = 47;
-       static const int HI_MID_TOM = 48;
-       static const int CRASH_CYMBAL_1 = 49;
-       static const int HIGH_TOM = 50;
-       static const int RIDE_CYMBAL_1 = 51;
-       static const int CHINESE_CYMBAL = 52;
-       static const int RIDE_BELL = 53;
-       static const int TAMBOURINE = 54;
-       static const int SPLASH_CYMBAL = 55;
-       static const int COWBELL = 56;
-       static const int CRASH_CYMBAL_2 = 57;
-       static const int VIBRASLAP = 58;
-       static const int RIDE_CYMBAL_2 = 59;
-       static const int HI_BONGO = 60;
-       static const int LOW_BONGO = 61;
-       static const int MUTE_HI_CONGA = 62;
-       static const int OPEN_HI_CONGA = 63;
-       static const int LOW_CONGA = 64;
-       static const int HIGH_TIMBALE = 65;
-       static const int LOW_TIMBALE = 66;
-       static const int HIGH_AGOGO = 67;
-       static const int LOW_AGOGO = 68;
-       static const int CABASA = 69;
-       static const int MARACAS = 70;
-       static const int SHORT_WHISTLE = 71;
-       static const int LONG_WHISTLE = 72;
-       static const int SHORT_GUIRO = 73;
-       static const int LONG_GUIRO = 74;
-       static const int CLAVES = 75;
-       static const int HI_WOOD_BLOCK = 76;
-       static const int LOW_WOOD_BLOCK = 77;
-       static const int MUTE_CUICA = 78;
-       static const int OPEN_CUICA = 79;
-       static const int MUTE_TRIANGLE = 80;
-       static const int OPEN_TRIANGLE = 81;
-   }
-
-   namespace Validation {
-       static const int MIN_THEME_ID = 1;
-       static const int MAX_THEME_ID = 99;
-       static const int MIN_SETTINGS_ID = 1;
-       static const int MAX_SETTINGS_ID = 999;
-       static const int MIN_PRESET_ID = 0;
-       static const int MAX_PRESET_ID = 999;
-       static const int MIN_AUDIO_SAMPLE_RATE = 44100;
-       static const int MAX_AUDIO_SAMPLE_RATE = 192000;
-       static const int MIN_BUFFER_SIZE = 32;
-       static const int MAX_BUFFER_SIZE = 2048;
-       static const int MIN_TEMPO = 30.0f;
-       static const int MAX_TEMPO = 300.0f;
-       static const float MIN_SWING = 0.0f;
-       static const float MAX_SWING = 100.0f;
-       static const float MIN_ENERGY = 0.0f;
-       static const float MAX_ENERGY = 100.0f;
-       static const int MIN_MIDI_NOTE = 0;
-       static const int MAX_MIDI_NOTE = 127;
-       static const int MIN_MIDI_CHANNEL = 1;
-       static const int MAX_MIDI_CHANNEL = 16;
-       static const int MIN_MIDI_VELOCITY = 0;
-       static const int MAX_MIDI_VELOCITY = 127;
-       static const int MIN_PATTERN_LENGTH = 1;
-       static const int MAX_PATTERN_LENGTH = 64;
-       static const int MIN_PATTERN_STEPS = 1;
-       static const int MAX_PATTERN_STEPS = 64;
-       static const float MIN_LOOP_POSITION = 0.0f;
-       static const float MAX_LOOP_POSITION = 100.0f;
-       static const float MIN_INTERFACE_SCALE = 0.75f;
-       static const float MAX_INTERFACE_SCALE = 3.0f;
-       static const float MIN_VOLUME = 0.0f;
-       static const float MAX_VOLUME = 1.0f;
-       static const int MIN_QUANTIZE_VALUE = 1;
-       static const int MAX_QUANTIZE_VALUE = 32;
-       static const int MIN_COUNT_IN_BARS = 0;
-       static const int MAX_COUNT_IN_BARS = 8;
-       static const int MIN_AUTO_SAVE_INTERVAL = 0;
-       static const int MAX_AUTO_SAVE_INTERVAL = 3600;
-       static const int MIN_PLAYER_INDEX = 0;
-       static const int MAX_PLAYER_INDEX = 7;
-       static const int MIN_ARRAY_INDEX = 0;
-       static const int MIN_BUTTON_INDEX = 0;
-       static const int MAX_BUTTON_INDEX = 15;
-       static const int MAX_THEME_NAME_LENGTH = 50;
-       static const int MIN_PHOSPHOR_WEIGHT = 0;
-       static const int MAX_PHOSPHOR_WEIGHT = 5;
-       static const int MIN_WINDOW_SIZE = 200;
-       static const int MAX_WINDOW_SIZE = 4000;
-       static const float MIN_EQ_FREQ = 20.0f;
-       static const float MAX_EQ_FREQ = 20000.0f;
-       static const float MIN_EQ_GAIN = -20.0f;
-       static const float MAX_EQ_GAIN = 20.0f;
-       static const float MIN_EQ_Q = 0.1f;
-       static const float MAX_EQ_Q = 10.0f;
-       static const float MIN_VOLUME_DB = -60.0f;
-       static const float MAX_VOLUME_DB = 12.0f;
-   };
-
-   // ========================================================================
-   // VALIDATION ARRAYS
-   // ========================================================================
-
-   static const juce::StringArray VALID_TIME_SIGNATURES = {"4/4", "3/4", "6/8", "2/4", "5/4", "7/8", "9/8", "12/8"};
-   static const juce::StringArray KIT_TYPES = {"Acoustic", "Electronic", "808", "909", "Vintage", "Custom"};
-   static const juce::StringArray MANUFACTURERS = {"Roland", "Native Instruments", "Ableton", "Custom", "User"};
-
-   inline int clampCountInBars(int bars) {
-       return juce::jlimit(Validation::MIN_COUNT_IN_BARS, Validation::MAX_COUNT_IN_BARS, bars);
-   }
-
-   inline juce::File getOTTODataDirectory() {
-       juce::File documentsDir = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory);
-       return documentsDir.getChildFile(DATABASE_ROOT_FOLDER);
-   }
-
-   inline juce::File getSettingsDirectory() {
-       return getOTTODataDirectory().getChildFile(SETTINGS_FOLDER);
-   }
-
-   inline juce::File getPerformanceDirectory() {
-       return getOTTODataDirectory().getChildFile(PERFORMANCE_FOLDER);
-   }
-
-   inline juce::File getPatternsDirectory() {
-       return getOTTODataDirectory().getChildFile(PATTERNS_FOLDER);
-   }
-
-   inline juce::File getKitsDirectory() {
-       return getOTTODataDirectory().getChildFile(KITS_FOLDER);
-   }
-
-   inline juce::File getMixingDirectory() {
-       return getOTTODataDirectory().getChildFile(MIX_FOLDER);
-   }
-
-   inline juce::File getSystemDirectory() {
-       return getOTTODataDirectory().getChildFile(SYSTEM_FOLDER);
-   }
-
-   inline juce::File getPresetsDirectory() {
-       return getOTTODataDirectory().getChildFile(PRESETS_FOLDER);
-   }
-
-   inline juce::File getINIFilePath(const juce::String& filename) {
-       if (filename == GLOBAL_SETTINGS_FILE ||
-           filename == AUDIO_SETTINGS_FILE ||
-           filename == MIDI_SETTINGS_FILE ||
-           filename == PERFORMANCE_SETTINGS_FILE ||
-           filename == KEYBOARD_SHORTCUTS_FILE) {
-           return getSettingsDirectory().getChildFile(filename);
-       }
-
-       if (filename == THEME_MANAGER_FILE ||
-           filename == WINDOW_LAYOUT_FILE ||
-           filename == SPECTRUM_ANALYZER_FILE ||
-           filename == WAVEFORM_DISPLAY_FILE ||
-           filename == ADAPTIVE_LAYOUT_MANAGER_FILE ||
-           filename == GESTURE_RECOGNIZER_FILE) {
-           return getSettingsDirectory().getChildFile(SETTINGS_UI_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == DEFAULT_THEME_FILE ||
-           filename == DARK_THEME_FILE ||
-           filename == LIGHT_THEME_FILE ||
-           filename == THEME_INDEX_FILE) {
-           return getOTTODataDirectory().getChildFile(THEMES_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == PLAYER_CONFIGS_FILE ||
-           filename == PLAYER_GROUPS_FILE ||
-           filename == GLOBAL_PLAYER_SETTINGS_FILE ||
-           filename == PLAYER_STATES_FILE) {
-           return getOTTODataDirectory().getChildFile(PLAYERS_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == DRUM_KITS_FILE ||
-           filename == KIT_CATEGORIES_FILE ||
-           filename == SAMPLE_MAPPINGS_FILE ||
-           filename == VELOCITY_MAPPINGS_FILE ||
-           filename == MIDI_MAPPINGS_FILE ||
-           filename == KIT_INDEX_FILE) {
-           return getKitsDirectory().getChildFile(filename);
-       }
-
-       if (filename == PATTERN_GROUPS_FILE ||
-           filename == PATTERN_METADATA_FILE ||
-           filename == PATTERN_CHAINS_FILE ||
-           filename == PATTERN_INDEX_FILE ||
-           filename == TEMPO_MAPS_FILE) {
-           return getPatternsDirectory().getChildFile(filename);
-       }
-
-       if (filename == EQ_PRESETS_FILE ||
-           filename == COMPRESSOR_PRESETS_FILE ||
-           filename == REVERB_PRESETS_FILE ||
-           filename == DELAY_PRESETS_FILE) {
-           return getMixingDirectory().getChildFile(MIX_PRESETS_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == CHANNEL_PRESETS_FILE ||
-           filename == CHANNEL_GROUPS_FILE ||
-           filename == BUS_CONFIGURATIONS_FILE ||
-           filename == ROUTING_PRESETS_FILE) {
-           return getMixingDirectory().getChildFile(MIX_CHANNELS_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == MASTER_CHANNEL_PRESETS_FILE ||
-           filename == MASTER_EQ_FILE ||
-           filename == MASTER_LIMITER_FILE ||
-           filename == MASTER_METERING_FILE) {
-           return getMixingDirectory().getChildFile(MIX_MASTER_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == MIXER_SNAPSHOTS_FILE) {
-           return getMixingDirectory().getChildFile(filename);
-       }
-
-       if (filename == PRESET_INDEX_FILE) {
-           return getPresetsDirectory().getChildFile(filename);
-       }
-
-       if (filename == PROJECT_TEMPLATES_FILE ||
-           filename == KIT_TEMPLATES_FILE ||
-           filename == PATTERN_TEMPLATES_FILE) {
-           return getPresetsDirectory().getChildFile(PRESETS_TEMPLATES_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == BLUES_PRESETS_FILE ||
-           filename == JAZZ_PRESETS_FILE ||
-           filename == SOUL_PRESETS_FILE ||
-           filename == FUNK_PRESETS_FILE ||
-           filename == EDM_PRESETS_FILE ||
-           filename == HIPHOP_PRESETS_FILE ||
-           filename == ROCK_PRESETS_FILE ||
-           filename == POP_PRESETS_FILE ||
-           filename == AMBIENT_PRESETS_FILE ||
-           filename == INDUSTRIAL_PRESETS_FILE ||
-           filename == GLITCH_PRESETS_FILE) {
-           return getPresetsDirectory().getChildFile(PRESETS_CATEGORIES_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == SESSIONS_FILE ||
-           filename == SET_LISTS_FILE ||
-           filename == MACRO_CONTROLS_FILE ||
-           filename == SCENE_CHANGES_FILE ||
-           filename == BACKUP_STATES_FILE) {
-           return getPerformanceDirectory().getChildFile(filename);
-       }
-
-       if (filename == SAMPLE_CACHE_FILE ||
-           filename == PATTERN_CACHE_FILE ||
-           filename == KIT_CACHE_FILE ||
-           filename == SEARCH_INDEX_FILE ||
-           filename == MIDI_ANALYSIS_CACHE_FILE) {
-           return getOTTODataDirectory().getChildFile(CACHE_FOLDER).getChildFile(filename);
-       }
-
-       if (filename == APPLICATION_FILE ||
-           filename == MIDI_DEVICES_FILE ||
-           filename == AUDIO_DEVICES_FILE ||
-           filename == EXTERNAL_FOLDERS_FILE ||
-           filename == FILE_INDEX_FILE ||
-           filename == LICENSING_FILE) {
-           return getSystemDirectory().getChildFile(filename);
-       }
-
-       return getOTTODataDirectory().getChildFile(filename);
-   }
-
-   inline juce::File getGlobalSettingsFile() {
-       return getSettingsDirectory().getChildFile(GLOBAL_SETTINGS_FILE);
-   }
-
-   inline juce::File getThemesFile() {
-       return getSettingsDirectory().getChildFile(THEMES_FILE);
-   }
-
-   inline juce::File getAudioSettingsFile() {
-       return getSettingsDirectory().getChildFile(AUDIO_SETTINGS_FILE);
-   }
-
-   inline juce::File getPlayersFile() {
-       return getPerformanceDirectory().getChildFile(PLAYERS_FILE);
-   }
-
-   inline juce::File getPatternGroupsFile() {
-       return getPatternsDirectory().getChildFile(PATTERN_GROUPS_FILE);
-   }
-
-   inline juce::File getPresetsFile() {
-       return getPresetsDirectory().getChildFile(PRESETS_FILE);
-   }
-
-   inline juce::File getDrumKitsFile() {
-       return getKitsDirectory().getChildFile(DRUM_KITS_FILE);
-   }
-
-   inline juce::File getMidiInLayoutFile() {
-       return getKitsDirectory().getChildFile(MIDI_IN_LAYOUT_FILE);
-   }
-
-   inline juce::File getMidiOutLayoutFile() {
-       return getKitsDirectory().getChildFile(MIDI_OUT_LAYOUT_FILE);
-   }
-
-   inline juce::File getChannelPresetGroupsFile() {
-       return getMixingDirectory().getChildFile(CHANNEL_PRESET_GROUPS_FILE);
-   }
-
-   inline juce::File getChannelPresetsFile() {
-       return getMixingDirectory().getChildFile(CHANNEL_PRESETS_FILE);
-   }
-
-   inline juce::File getEQPresetsFile() {
-       return getMixingDirectory().getChildFile(EQ_PRESETS_FILE);
-   }
-
-   inline juce::File getMasterChannelPresetsFile() {
-       return getMixingDirectory().getChildFile(MASTER_CHANNEL_PRESETS_FILE);
-   }
-
-   inline juce::File getMidiDevicesFile() {
-       return getSystemDirectory().getChildFile(MIDI_DEVICES_FILE);
-   }
-
-   inline juce::File getFileIndexFile() {
-       return getSystemDirectory().getChildFile(FILE_INDEX_FILE);
-   }
-
-   // ========================================================================
-   // MISSING NAMESPACES AND FUNCTIONS
-   // ========================================================================
-
-   namespace MIDI {
-       static const int STRING_LENGTH_SUBTRACT_ONE = 1;
-   }
-
-   namespace UI {
-       static const int LIGHT_THEME_ID = 1;
-       static const int CLASSIC_THEME_ID = 2;
-       static const float SPLASH_SCREEN_ON_TIME = 2.0f;
-   }
-
-   namespace Fonts {
-       static const float BODY_DEFAULT_SIZE = 14.0f;
-       static const float HEADER_DEFAULT_SIZE = 18.0f;
-       static const float MAX_FONT_SIZE = 72.0f;
-   }
-
-   // Validation functions
-   inline bool isValidSettingsID(const juce::String& settingsID) {
-       return settingsID.isNotEmpty() && settingsID.length() <= 50;
-   }
-
-   inline bool isValidThemeID(const juce::String& themeID) {
-       return themeID.isNotEmpty() && themeID.length() <= 50;
-   }
-
-   inline bool isValidTempo(float tempo) {
-       return tempo >= Defaults::DEFAULT_MIN_BPM && tempo <= Defaults::DEFAULT_MAX_BPM;
-   }
-
-   inline bool isValidInterfaceScale(float scale) {
-       return scale >= 0.5f && scale <= 3.0f;
-   }
-
-   inline bool isValidVolume(float volume) {
-       return volume >= 0.0f && volume <= 1.0f;
-   }
-
-   inline bool isValidQuantizeValue(int quantize) {
-       return quantize >= 1 && quantize <= 32;
-   }
-
-   inline bool isValidHexColor(const juce::String& color) {
-       if (color.isEmpty() || !color.startsWith("#")) return false;
-       if (color.length() != 7 && color.length() != 9) return false;
-       for (int i = 1; i < color.length(); ++i) {
-           char c = color[i];
-           if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))) {
-               return false;
-           }
-       }
-       return true;
-   }
-
 } // namespace INIConfig
+

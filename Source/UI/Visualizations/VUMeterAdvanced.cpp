@@ -1,6 +1,6 @@
 #include "VUMeterAdvanced.h"
 #include "JUCE8_CODING_STANDARDS.h"
-#include "../../INIDataManager.h"
+#include "INIDataManager.h"
 
 namespace OTTO {
 namespace UI {

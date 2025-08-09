@@ -56,9 +56,9 @@ public:
             }
 
             int equalsPos = trimmedLine.indexOf("=");
-            if (equalsPos > INIConfig::Validation::MIN_ARRAY_INDEX && currentSection.isNotEmpty()) {
-                juce::String key = trimmedLine.substring(INIConfig::Defaults::ZERO_VALUE, equalsPos).trim();
-                juce::String value = trimmedLine.substring(equalsPos + INIConfig::Defaults::ONE_VALUE).trim();
+            if (equalsPos > 0 && currentSection.isNotEmpty()) {
+                juce::String key = trimmedLine.substring(0, equalsPos).trim();
+                juce::String value = trimmedLine.substring(equalsPos + 1).trim();
                 data[currentSection][key] = value;
             }
         }
@@ -79,19 +79,19 @@ public:
     }
 
     static bool stringToBool(const juce::String& str) {
-        return str.getIntValue() != INIConfig::Defaults::ZERO_VALUE;
+        return str.getIntValue() != 0;
     }
 
-    static juce::String floatToString(float value, int precision = static_cast<int>(INIConfig::Defaults::SCURVE_FACTOR)) {
+    static juce::String floatToString(float value, int precision = 2) {
         return juce::String(value, precision);
     }
 
-    static float stringToFloat(const juce::String& str, float defaultValue = INIConfig::Validation::MIN_VOLUME) {
+    static float stringToFloat(const juce::String& str, float defaultValue = 0.0f) {
         float result = str.getFloatValue();
         return std::isfinite(result) ? result : defaultValue;
     }
 
-    static int stringToInt(const juce::String& str, int defaultValue = INIConfig::Defaults::ZERO_VALUE) {
+    static int stringToInt(const juce::String& str, int defaultValue = 0) {
         return str.isEmpty() ? defaultValue : str.getIntValue();
     }
 

@@ -2,8 +2,8 @@
 
 #include "JUCE8_CODING_STANDARDS.h"
 #include <JuceHeader.h>
-#include "../../ColorScheme.h"
-#include "../../INIConfig.h"
+#include "ColorScheme.h"
+#include "INIConfig.h"
 
 /**
  * @file VUMeterAdvanced.h

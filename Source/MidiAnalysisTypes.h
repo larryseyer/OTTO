@@ -5,7 +5,7 @@
 struct MidiGrooveAnalysis {
     float averageSwing = INIConfig::Defaults::SWING;
     float averageVelocity = static_cast<float>(INIConfig::Defaults::FIXED_VELOCITY);
-    float grooveTightness = INIConfig::Audio::DEFAULT_GROOVE_TIGHTNESS;
+    float grooveTightness = INIConfig::Defaults::DEFAULT_GROOVE_TIGHTNESS;
     int timeSignatureNumerator = INIConfig::Defaults::TIME_SIGNATURE_NUMERATOR;
     int timeSignatureDenominator = INIConfig::Defaults::TIME_SIGNATURE_DENOMINATOR;
     float tempo = INIConfig::Defaults::DEFAULT_TEMPO;

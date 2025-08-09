@@ -1,6 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "INIConfig.h"
+#include "INIValidation.h"
 #include "INIUtils.h"
 
 struct GlobalSettings {
@@ -61,7 +62,7 @@ struct GlobalSettings {
         metronomeSound = INIConfig::Defaults::DEFAULT_METRONOME_SOUND;
         quantizeValue = INIConfig::Defaults::DEFAULT_QUANTIZE_VALUE;
         countInBars = INIConfig::Defaults::DEFAULT_COUNT_IN_BARS;
-        audioSettingsID = INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID;
+        audioSettingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
         lastModified = juce::Time::getCurrentTime().toString(true, true);
         fileFormatVersion = INIConfig::FILE_FORMAT_VERSION;
         midiClockOut = INIConfig::Defaults::DEFAULT_MIDI_CLOCK_OUT;
@@ -84,7 +85,7 @@ struct GlobalSettings {
     }
 
     bool isValid() const {
-        return INIConfig::isValidSettingsID(settingsID) &&               INIConfig::isValidTempo(tempo) &&
+        return INIConfig::isValidSettingsID(settingsID) && INIConfig::isValidTempo(tempo) &&
                INIConfig::isValidInterfaceScale(interfaceScale) &&
                INIConfig::isValidVolume(metronomeVolume) &&
                INIConfig::isValidQuantizeValue(quantizeValue) &&
@@ -98,6 +99,7 @@ struct GlobalSettings {
 };
 
 struct ThemeSettings {
+    int themeID = INIConfig::UI::DARK_THEME_ID;
     juce::String themeName = "Dark";
     juce::String backgroundColor = "#2A2A2A";
     juce::String foregroundColor = "#FFFFFF";
@@ -264,7 +266,7 @@ struct AudioSettings {
     bool midiThru = false;
 
     void setDefaults() {
-        audioSettingsID = INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID;
+        audioSettingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
         settingsName = "Standard";
         sampleRate = INIConfig::Defaults::DEFAULT_SAMPLE_RATE;
         bufferSize = INIConfig::Defaults::DEFAULT_BUFFER_SIZE;
@@ -289,9 +291,7 @@ struct AudioSettings {
                inputChannels <= INIConfig::Validation::MAX_AUDIO_CHANNELS &&
                outputChannels >= INIConfig::Validation::MIN_AUDIO_CHANNELS &&
                outputChannels <= INIConfig::Validation::MAX_AUDIO_CHANNELS &&
-               (bitDepth == INIConfig::Audio::BIT_DEPTH_16 ||
-                bitDepth == INIConfig::Audio::BIT_DEPTH_24 ||
-                bitDepth == INIConfig::Audio::BIT_DEPTH_32);
+               (bitDepth == 16 || bitDepth == 24 || bitDepth == 32);
     }
 };
 
@@ -299,7 +299,7 @@ struct PlayerSettings {
     bool enabled = true;
     juce::String selectedDrumkit = INIConfig::Defaults::DEFAULT_DRUMKIT;
     float volume = INIConfig::Defaults::VOLUME;
-    float pan = INIConfig::Audio::DEFAULT_PAN;
+    float pan = INIConfig::Defaults::DEFAULT_PAN_POSITION;
     bool muted = false;
     bool soloed = false;
     int midiChannel = INIConfig::Validation::MIN_MIDI_CHANNEL;
@@ -322,7 +322,7 @@ struct PlayerSettings {
         enabled = INIConfig::Defaults::DEFAULT_PLAYER_ENABLED;
         selectedDrumkit = INIConfig::Defaults::DEFAULT_DRUMKIT;
         volume = INIConfig::Defaults::VOLUME;
-        pan = INIConfig::Audio::DEFAULT_PAN;
+        pan = INIConfig::Defaults::DEFAULT_PAN_POSITION;
         muted = false;
         soloed = false;
         midiChannel = INIConfig::Validation::MIN_MIDI_CHANNEL;
@@ -372,7 +372,7 @@ struct BeatsButtonGroup {
     float averageVelocity = INIConfig::Defaults::FIXED_VELOCITY / INIConfig::MIDI::VELOCITY_DIVISOR;
     int timeSignatureNumerator = INIConfig::Defaults::TIME_SIGNATURE_NUMERATOR;
     int timeSignatureDenominator = INIConfig::Defaults::TIME_SIGNATURE_DENOMINATOR;
-    float grooveTightness = INIConfig::Audio::DEFAULT_GROOVE_TIGHTNESS;
+    float grooveTightness = INIConfig::Defaults::DEFAULT_GROOVE_TIGHTNESS;
 
     BeatsButtonGroup() = default;
     BeatsButtonGroup(const juce::String& name) : groupName(name) {}

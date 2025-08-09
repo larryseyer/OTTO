@@ -1,4 +1,5 @@
 #include "PatternVisualizer.h"
+#include "../../INIConfig.h"
 #include "JUCE8_CODING_STANDARDS.h"
 #include "../../INIDataManager.h"
 

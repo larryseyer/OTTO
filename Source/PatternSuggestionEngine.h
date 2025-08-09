@@ -72,7 +72,7 @@ private:
         float avgSwing = INIConfig::Defaults::SWING;
         float avgVelocity = static_cast<float>(INIConfig::Defaults::FIXED_VELOCITY);
         float complexity = INIConfig::Defaults::DEFAULT_COMPLEXITY;
-        float grooveTightness = INIConfig::Audio::DEFAULT_GROOVE_TIGHTNESS;
+        float grooveTightness = INIConfig::Defaults::DEFAULT_GROOVE_TIGHTNESS;
         juce::Array<float> velocityDistribution;
         juce::Array<float> timingPatterns;
         juce::Array<int> commonNotes;

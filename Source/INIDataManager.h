@@ -136,7 +136,7 @@ private:
     juce::File getINIFilePath(const juce::String& filename) const;
 
     static juce::String getGlobalSettingsFilename() { return INIConfig::GLOBAL_SETTINGS_FILE; }
-    static juce::String getThemesFilename() { return INIConfig::THEMES_FILE; }
+    static juce::String getThemesFilename() { return INIConfig::THEME_INDEX_FILE; }
     static juce::String getAudioSettingsFilename() { return INIConfig::AUDIO_SETTINGS_FILE; }
     static juce::String getPlayersFilename() { return INIConfig::PLAYERS_FILE; }
     static juce::String getPatternGroupsFilename() { return INIConfig::PATTERN_GROUPS_FILE; }

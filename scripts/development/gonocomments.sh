@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Find all .h and .cpp files in current directory
-files=$(find . -maxdepth 1 -type f \( -name "*.h" -o -name "*.cpp" \))
+files=$(find . -type f \( -name "*.h" -o -name "*.cpp" \))
 
 # Check if any files found
 if [ -z "$files" ]; then

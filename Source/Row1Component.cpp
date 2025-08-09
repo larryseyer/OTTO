@@ -798,26 +798,27 @@ juce::Array<juce::String> Row1Component::getPresetCategoriesFromFilesystem() con
     juce::Array<juce::String> categories;
 
     auto presetsDir = INIConfig::getPresetsDirectory();
-    if (!presetsDir.exists()) {
-        categories.add("Defaults");
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    if (!categoriesDir.exists()) {
+        categories.add(INIConfig::PRESETS_USER_FOLDER);
         return categories;
     }
 
-    bool hasDefaults = false;
+    bool hasUser = false;
 
-    for (auto& file : presetsDir.findChildFiles(juce::File::findDirectories, false)) {
+    for (auto& file : categoriesDir.findChildFiles(juce::File::findDirectories, false)) {
         juce::String categoryName = file.getFileName();
-        if (categoryName == "Defaults") {
-            hasDefaults = true;
+        if (categoryName == INIConfig::PRESETS_USER_FOLDER) {
+            hasUser = true;
         } else {
             categories.add(categoryName);
         }
     }
 
-    if (hasDefaults) {
-        categories.insert(0, "Defaults");
+    if (hasUser) {
+        categories.insert(0, INIConfig::PRESETS_USER_FOLDER);
     } else {
-        categories.insert(0, "Defaults");
+        categories.insert(0, INIConfig::PRESETS_USER_FOLDER);
     }
 
     return categories;
@@ -827,10 +828,11 @@ juce::StringArray Row1Component::getPresetsInCategory(const juce::String& catego
     juce::StringArray presets;
 
     auto presetsDir = INIConfig::getPresetsDirectory();
-    auto categoryDir = presetsDir.getChildFile(categoryName);
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    auto categoryDir = categoriesDir.getChildFile(categoryName);
 
     if (!categoryDir.exists()) {
-        if (categoryName == "Defaults") {
+        if (categoryName == INIConfig::PRESETS_USER_FOLDER) {
             if (iniDataManager) {
                 iniDataManager->createDefaultPreset();
                 presets.add("Default");
@@ -844,7 +846,7 @@ juce::StringArray Row1Component::getPresetsInCategory(const juce::String& catego
         presets.add(presetName);
     }
 
-    if (presets.isEmpty() && categoryName == "Defaults") {
+    if (presets.isEmpty() && categoryName == INIConfig::PRESETS_USER_FOLDER) {
         if (iniDataManager) {
             iniDataManager->createDefaultPreset();
             presets.add("Default");
@@ -869,12 +871,13 @@ void Row1Component::ensureDefaultPresetStructure() const {
         presetsDir.createDirectory();
     }
 
-    auto defaultCategoryDir = presetsDir.getChildFile("Defaults");
+    auto defaultCategoryDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+                                         .getChildFile(INIConfig::PRESETS_USER_FOLDER);
     if (!defaultCategoryDir.exists()) {
         defaultCategoryDir.createDirectory();
     }
 
-    auto defaultPresetFile = defaultCategoryDir.getChildFile("Default.ini");
+    auto defaultPresetFile = defaultCategoryDir.getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     if (!defaultPresetFile.existsAsFile() && iniDataManager) {
         iniDataManager->createDefaultPreset();
     }
@@ -898,7 +901,8 @@ void Row1Component::createSamplePresetStructure() const {
     };
 
     for (const auto& category : sampleCategories) {
-        auto categoryDir = presetsDir.getChildFile(category.categoryName);
+        auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+        auto categoryDir = categoriesDir.getChildFile(category.categoryName);
         if (!categoryDir.exists()) {
             categoryDir.createDirectory();
         }
@@ -921,9 +925,10 @@ void Row1Component::createSamplePresetStructure() const {
 
                 iniDataManager->savePreset(presetName, sampleState);
 
-                auto userDir = presetsDir.getChildFile("User");
+                auto userDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+                                          .getChildFile(INIConfig::PRESETS_USER_FOLDER);
                 auto wrongFile = userDir.getChildFile(presetName + ".ini");
-                if (wrongFile.existsAsFile() && category.categoryName != "User") {
+                if (wrongFile.existsAsFile() && category.categoryName != INIConfig::PRESETS_USER_FOLDER) {
                     wrongFile.moveFileTo(presetFile);
                 }
             }

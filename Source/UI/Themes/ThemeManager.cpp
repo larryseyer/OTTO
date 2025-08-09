@@ -903,8 +903,7 @@ void ThemeManager::removeListener(Listener* listener) {
 //==============================================================================
 
 juce::File ThemeManager::getThemesDirectory() const {
-    auto appDataDir = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory);
-    return appDataDir.getChildFile("OTTO").getChildFile("Themes");
+    return INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER);
 }
 
 juce::File ThemeManager::getThemeFile(const juce::String& name) const {

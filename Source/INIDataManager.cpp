@@ -104,7 +104,7 @@ bool INIDataManager::createDirectoryStructure() {
     // ========================================================================
 
     // Settings/UI subfolder
-    auto settingsUIDir = settingsDir.getChildFile("UI");
+    auto settingsUIDir = settingsDir.getChildFile(INIConfig::SETTINGS_UI_FOLDER);
     if (!settingsUIDir.exists()) {
         auto result = settingsUIDir.createDirectory();
         if (!result.wasOk()) {
@@ -114,7 +114,7 @@ bool INIDataManager::createDirectoryStructure() {
     }
 
     // Themes/User subfolder
-    auto themesDir = INIConfig::getOTTODataDirectory().getChildFile("Themes");
+    auto themesDir = INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER);
     if (!themesDir.exists()) {
         auto result = themesDir.createDirectory();
         if (!result.wasOk()) {
@@ -123,7 +123,7 @@ bool INIDataManager::createDirectoryStructure() {
         }
     }
 
-    auto themesUserDir = themesDir.getChildFile("User");
+    auto themesUserDir = themesDir.getChildFile(INIConfig::THEMES_USER_FOLDER);
     if (!themesUserDir.exists()) {
         auto result = themesUserDir.createDirectory();
         if (!result.wasOk()) {
@@ -133,7 +133,7 @@ bool INIDataManager::createDirectoryStructure() {
     }
 
     // Mix subfolders
-    auto mixPresetsDir = mixingDir.getChildFile("Presets");
+    auto mixPresetsDir = mixingDir.getChildFile(INIConfig::MIX_PRESETS_FOLDER);
     if (!mixPresetsDir.exists()) {
         auto result = mixPresetsDir.createDirectory();
         if (!result.wasOk()) {
@@ -142,7 +142,7 @@ bool INIDataManager::createDirectoryStructure() {
         }
     }
 
-    auto mixChannelsDir = mixingDir.getChildFile("Channels");
+    auto mixChannelsDir = mixingDir.getChildFile(INIConfig::MIX_CHANNELS_FOLDER);
     if (!mixChannelsDir.exists()) {
         auto result = mixChannelsDir.createDirectory();
         if (!result.wasOk()) {
@@ -151,7 +151,7 @@ bool INIDataManager::createDirectoryStructure() {
         }
     }
 
-    auto mixMasterDir = mixingDir.getChildFile("Master");
+    auto mixMasterDir = mixingDir.getChildFile(INIConfig::MIX_MASTER_FOLDER);
     if (!mixMasterDir.exists()) {
         auto result = mixMasterDir.createDirectory();
         if (!result.wasOk()) {
@@ -161,7 +161,7 @@ bool INIDataManager::createDirectoryStructure() {
     }
 
     // Presets subfolders
-    auto presetsCategoriesDir = presetsDir.getChildFile("Categories");
+    auto presetsCategoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
     if (!presetsCategoriesDir.exists()) {
         auto result = presetsCategoriesDir.createDirectory();
         if (!result.wasOk()) {
@@ -171,7 +171,12 @@ bool INIDataManager::createDirectoryStructure() {
     }
 
     // Create style subfolders
-    juce::StringArray styleSubfolders = {"Vintage", "Modern", "Experimental", "User"};
+    juce::StringArray styleSubfolders = {
+        INIConfig::PRESETS_VINTAGE_FOLDER,
+        INIConfig::PRESETS_MODERN_FOLDER,
+        INIConfig::PRESETS_EXPERIMENTAL_FOLDER,
+        INIConfig::PRESETS_USER_FOLDER
+    };
     for (const auto& styleFolder : styleSubfolders) {
         auto styleFolderDir = presetsCategoriesDir.getChildFile(styleFolder);
         if (!styleFolderDir.exists()) {
@@ -183,7 +188,7 @@ bool INIDataManager::createDirectoryStructure() {
         }
     }
 
-    auto presetsTemplatesDir = presetsDir.getChildFile("Templates");
+    auto presetsTemplatesDir = presetsDir.getChildFile(INIConfig::PRESETS_TEMPLATES_FOLDER);
     if (!presetsTemplatesDir.exists()) {
         auto result = presetsTemplatesDir.createDirectory();
         if (!result.wasOk()) {
@@ -193,7 +198,7 @@ bool INIDataManager::createDirectoryStructure() {
     }
 
     // Cache folder
-    auto cacheDir = INIConfig::getOTTODataDirectory().getChildFile("Cache");
+    auto cacheDir = INIConfig::getOTTODataDirectory().getChildFile(INIConfig::CACHE_FOLDER);
     if (!cacheDir.exists()) {
         auto result = cacheDir.createDirectory();
         if (!result.wasOk()) {
@@ -206,7 +211,6 @@ bool INIDataManager::createDirectoryStructure() {
 }
 
 bool INIDataManager::directoryStructureExists() const {
-    // Check primary directories
     bool primaryDirsExist = INIConfig::getOTTODataDirectory().exists() &&
                            INIConfig::getSettingsDirectory().exists() &&
                            INIConfig::getPerformanceDirectory().exists() &&
@@ -216,16 +220,15 @@ bool INIDataManager::directoryStructureExists() const {
                            INIConfig::getSystemDirectory().exists() &&
                            INIConfig::getPresetsDirectory().exists();
 
-    // Check enhanced subdirectories
-    bool enhancedDirsExist = INIConfig::getSettingsDirectory().getChildFile("UI").exists() &&
-                            INIConfig::getOTTODataDirectory().getChildFile("Themes").exists() &&
-                            INIConfig::getOTTODataDirectory().getChildFile("Themes").getChildFile("User").exists() &&
-                            INIConfig::getMixingDirectory().getChildFile("Presets").exists() &&
-                            INIConfig::getMixingDirectory().getChildFile("Channels").exists() &&
-                            INIConfig::getMixingDirectory().getChildFile("Master").exists() &&
-                            INIConfig::getPresetsDirectory().getChildFile("Categories").exists() &&
-                            INIConfig::getPresetsDirectory().getChildFile("Templates").exists() &&
-                            INIConfig::getOTTODataDirectory().getChildFile("Cache").exists();
+    bool enhancedDirsExist = INIConfig::getSettingsDirectory().getChildFile(INIConfig::SETTINGS_UI_FOLDER).exists() &&
+                            INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER).exists() &&
+                            INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER).getChildFile(INIConfig::THEMES_USER_FOLDER).exists() &&
+                            INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_PRESETS_FOLDER).exists() &&
+                            INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_CHANNELS_FOLDER).exists() &&
+                            INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_MASTER_FOLDER).exists() &&
+                            INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER).exists() &&
+                            INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESETS_TEMPLATES_FOLDER).exists() &&
+                            INIConfig::getOTTODataDirectory().getChildFile(INIConfig::CACHE_FOLDER).exists();
 
     return primaryDirsExist && enhancedDirsExist;
 }
@@ -236,7 +239,10 @@ bool INIDataManager::allFilesExist() const {
                         getINIFilePath(getAudioSettingsFilename()).existsAsFile();
 
     // Check if Default preset exists, and if not, try to create it
-    auto defaultPresetFile = INIConfig::getPresetsDirectory().getChildFile("Defaults").getChildFile("Default.ini");
+    auto defaultPresetFile = INIConfig::getPresetsDirectory()
+        .getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+        .getChildFile(INIConfig::PRESETS_USER_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     bool defaultPresetExists = defaultPresetFile.existsAsFile();
     if (!defaultPresetExists) {
         // Try to create the Default preset (cast away const for this critical operation)
@@ -262,76 +268,61 @@ bool INIDataManager::allFilesExist() const {
     bool systemExist = getINIFilePath(INIConfig::MIDI_DEVICES_FILE).existsAsFile() &&
                        getINIFilePath(INIConfig::FILE_INDEX_FILE).existsAsFile();
 
-    // ========================================================================
-    // ENHANCED DATABASE FILE CHECKS
-    // ========================================================================
+    bool enhancedSystemExist = INIConfig::getSystemDirectory().getChildFile(INIConfig::APPLICATION_FILE).existsAsFile() &&
+                              INIConfig::getSystemDirectory().getChildFile(INIConfig::AUDIO_DEVICES_FILE).existsAsFile() &&
+                              INIConfig::getSystemDirectory().getChildFile(INIConfig::MIDI_DEVICES_FILE).existsAsFile();
 
-    // Check enhanced system files
-    bool enhancedSystemExist = INIConfig::getSystemDirectory().getChildFile("Application.ini").existsAsFile() &&
-                              INIConfig::getSystemDirectory().getChildFile("AudioDevices.ini").existsAsFile() &&
-                              INIConfig::getSystemDirectory().getChildFile("MidiDevices.ini").existsAsFile();
+    bool enhancedSettingsExist = INIConfig::getSettingsDirectory().getChildFile(INIConfig::MIDI_SETTINGS_FILE).existsAsFile() &&
+                                INIConfig::getSettingsDirectory().getChildFile(INIConfig::PERFORMANCE_SETTINGS_FILE).existsAsFile() &&
+                                INIConfig::getSettingsDirectory().getChildFile(INIConfig::KEYBOARD_SHORTCUTS_FILE).existsAsFile();
 
-    // Check enhanced settings files
-    bool enhancedSettingsExist = INIConfig::getSettingsDirectory().getChildFile("MidiSettings.ini").existsAsFile() &&
-                                INIConfig::getSettingsDirectory().getChildFile("Performance.ini").existsAsFile() &&
-                                INIConfig::getSettingsDirectory().getChildFile("KeyboardShortcuts.ini").existsAsFile();
+    bool enhancedUIExist = INIConfig::getSettingsDirectory().getChildFile(INIConfig::SETTINGS_UI_FOLDER).getChildFile(INIConfig::THEME_MANAGER_FILE).existsAsFile() &&
+                          INIConfig::getSettingsDirectory().getChildFile(INIConfig::SETTINGS_UI_FOLDER).getChildFile(INIConfig::WINDOW_LAYOUT_FILE).existsAsFile();
 
-    // Check enhanced UI settings files
-    bool enhancedUIExist = INIConfig::getSettingsDirectory().getChildFile("UI").getChildFile("ThemeManager.ini").existsAsFile() &&
-                          INIConfig::getSettingsDirectory().getChildFile("UI").getChildFile("WindowLayout.ini").existsAsFile();
+    bool enhancedThemesExist = INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER).getChildFile(INIConfig::DEFAULT_THEME_FILE).existsAsFile() &&
+                              INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER).getChildFile(INIConfig::DARK_THEME_FILE).existsAsFile() &&
+                              INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER).getChildFile(INIConfig::LIGHT_THEME_FILE).existsAsFile() &&
+                              INIConfig::getOTTODataDirectory().getChildFile(INIConfig::THEMES_FOLDER).getChildFile(INIConfig::THEME_INDEX_FILE).existsAsFile();
 
-    // Check enhanced themes files
-    bool enhancedThemesExist = INIConfig::getOTTODataDirectory().getChildFile("Themes").getChildFile("Default.ini").existsAsFile() &&
-                              INIConfig::getOTTODataDirectory().getChildFile("Themes").getChildFile("Dark.ini").existsAsFile() &&
-                              INIConfig::getOTTODataDirectory().getChildFile("Themes").getChildFile("Light.ini").existsAsFile() &&
-                              INIConfig::getOTTODataDirectory().getChildFile("Themes").getChildFile("ThemeIndex.ini").existsAsFile();
+    bool enhancedPlayersExist = INIConfig::getOTTODataDirectory().getChildFile(INIConfig::PLAYERS_FOLDER).getChildFile(INIConfig::PLAYER_CONFIGS_FILE).existsAsFile() &&
+                               INIConfig::getOTTODataDirectory().getChildFile(INIConfig::PLAYERS_FOLDER).getChildFile(INIConfig::PLAYER_GROUPS_FILE).existsAsFile() &&
+                               INIConfig::getOTTODataDirectory().getChildFile(INIConfig::PLAYERS_FOLDER).getChildFile(INIConfig::GLOBAL_PLAYER_SETTINGS_FILE).existsAsFile() &&
+                               INIConfig::getOTTODataDirectory().getChildFile(INIConfig::PLAYERS_FOLDER).getChildFile(INIConfig::PLAYER_STATES_FILE).existsAsFile();
 
-    // Check enhanced players files
-    bool enhancedPlayersExist = INIConfig::getOTTODataDirectory().getChildFile("Players").getChildFile("PlayerConfigs.ini").existsAsFile() &&
-                               INIConfig::getOTTODataDirectory().getChildFile("Players").getChildFile("PlayerGroups.ini").existsAsFile() &&
-                               INIConfig::getOTTODataDirectory().getChildFile("Players").getChildFile("GlobalPlayerSettings.ini").existsAsFile() &&
-                               INIConfig::getOTTODataDirectory().getChildFile("Players").getChildFile("PlayerStates.ini").existsAsFile();
+    bool enhancedKitsExist = INIConfig::getKitsDirectory().getChildFile(INIConfig::KIT_CATEGORIES_FILE).existsAsFile() &&
+                            INIConfig::getKitsDirectory().getChildFile(INIConfig::SAMPLE_MAPPINGS_FILE).existsAsFile() &&
+                            INIConfig::getKitsDirectory().getChildFile(INIConfig::VELOCITY_MAPPINGS_FILE).existsAsFile() &&
+                            INIConfig::getKitsDirectory().getChildFile(INIConfig::MIDI_MAPPINGS_FILE).existsAsFile() &&
+                            INIConfig::getKitsDirectory().getChildFile(INIConfig::KIT_INDEX_FILE).existsAsFile();
 
-    // Check enhanced kits files
-    bool enhancedKitsExist = INIConfig::getKitsDirectory().getChildFile("KitCategories.ini").existsAsFile() &&
-                            INIConfig::getKitsDirectory().getChildFile("SampleMappings.ini").existsAsFile() &&
-                            INIConfig::getKitsDirectory().getChildFile("VelocityMappings.ini").existsAsFile() &&
-                            INIConfig::getKitsDirectory().getChildFile("MidiMappings.ini").existsAsFile() &&
-                            INIConfig::getKitsDirectory().getChildFile("KitIndex.ini").existsAsFile();
+    bool enhancedPatternsExist = INIConfig::getPatternsDirectory().getChildFile(INIConfig::PATTERN_METADATA_FILE).existsAsFile() &&
+                                INIConfig::getPatternsDirectory().getChildFile(INIConfig::PATTERN_CHAINS_FILE).existsAsFile() &&
+                                INIConfig::getPatternsDirectory().getChildFile(INIConfig::PATTERN_INDEX_FILE).existsAsFile() &&
+                                INIConfig::getPatternsDirectory().getChildFile(INIConfig::TEMPO_MAPS_FILE).existsAsFile();
 
-    // Check enhanced patterns files
-    bool enhancedPatternsExist = INIConfig::getPatternsDirectory().getChildFile("PatternMetadata.ini").existsAsFile() &&
-                                INIConfig::getPatternsDirectory().getChildFile("PatternChains.ini").existsAsFile() &&
-                                INIConfig::getPatternsDirectory().getChildFile("PatternIndex.ini").existsAsFile() &&
-                                INIConfig::getPatternsDirectory().getChildFile("TempoMaps.ini").existsAsFile();
+    bool enhancedMixExist = INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_PRESETS_FOLDER).getChildFile(INIConfig::EQ_PRESETS_FILE).existsAsFile() &&
+                           INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_PRESETS_FOLDER).getChildFile(INIConfig::COMPRESSOR_PRESETS_FILE).existsAsFile() &&
+                           INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_PRESETS_FOLDER).getChildFile(INIConfig::REVERB_PRESETS_FILE).existsAsFile() &&
+                           INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_PRESETS_FOLDER).getChildFile(INIConfig::DELAY_PRESETS_FILE).existsAsFile() &&
+                           INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_CHANNELS_FOLDER).getChildFile(INIConfig::CHANNEL_PRESETS_FILE).existsAsFile() &&
+                           INIConfig::getMixingDirectory().getChildFile(INIConfig::MIX_MASTER_FOLDER).getChildFile(INIConfig::MASTER_CHANNEL_PRESETS_FILE).existsAsFile() &&
+                           INIConfig::getMixingDirectory().getChildFile(INIConfig::MIXER_SNAPSHOTS_FILE).existsAsFile();
 
-    // Check enhanced mix files
-    bool enhancedMixExist = INIConfig::getMixingDirectory().getChildFile("Presets").getChildFile("EQPresets.ini").existsAsFile() &&
-                           INIConfig::getMixingDirectory().getChildFile("Presets").getChildFile("CompressorPresets.ini").existsAsFile() &&
-                           INIConfig::getMixingDirectory().getChildFile("Presets").getChildFile("ReverbPresets.ini").existsAsFile() &&
-                           INIConfig::getMixingDirectory().getChildFile("Presets").getChildFile("DelayPresets.ini").existsAsFile() &&
-                           INIConfig::getMixingDirectory().getChildFile("Channels").getChildFile("ChannelPresets.ini").existsAsFile() &&
-                           INIConfig::getMixingDirectory().getChildFile("Master").getChildFile("MasterChannelPresets.ini").existsAsFile() &&
-                           INIConfig::getMixingDirectory().getChildFile("MixerSnapshots.ini").existsAsFile();
+    bool enhancedPerformanceExist = INIConfig::getPerformanceDirectory().getChildFile(INIConfig::SESSIONS_FILE).existsAsFile() &&
+                                   INIConfig::getPerformanceDirectory().getChildFile(INIConfig::SET_LISTS_FILE).existsAsFile() &&
+                                   INIConfig::getPerformanceDirectory().getChildFile(INIConfig::MACRO_CONTROLS_FILE).existsAsFile() &&
+                                   INIConfig::getPerformanceDirectory().getChildFile(INIConfig::SCENE_CHANGES_FILE).existsAsFile() &&
+                                   INIConfig::getPerformanceDirectory().getChildFile(INIConfig::BACKUP_STATES_FILE).existsAsFile();
 
-    // Check enhanced performance files
-    bool enhancedPerformanceExist = INIConfig::getPerformanceDirectory().getChildFile("Sessions.ini").existsAsFile() &&
-                                   INIConfig::getPerformanceDirectory().getChildFile("SetLists.ini").existsAsFile() &&
-                                   INIConfig::getPerformanceDirectory().getChildFile("MacroControls.ini").existsAsFile() &&
-                                   INIConfig::getPerformanceDirectory().getChildFile("SceneChanges.ini").existsAsFile() &&
-                                   INIConfig::getPerformanceDirectory().getChildFile("BackupStates.ini").existsAsFile();
+    bool enhancedCacheExist = INIConfig::getOTTODataDirectory().getChildFile(INIConfig::CACHE_FOLDER).getChildFile(INIConfig::SAMPLE_CACHE_FILE).existsAsFile() &&
+                             INIConfig::getOTTODataDirectory().getChildFile(INIConfig::CACHE_FOLDER).getChildFile(INIConfig::PATTERN_CACHE_FILE).existsAsFile() &&
+                             INIConfig::getOTTODataDirectory().getChildFile(INIConfig::CACHE_FOLDER).getChildFile(INIConfig::KIT_CACHE_FILE).existsAsFile() &&
+                             INIConfig::getOTTODataDirectory().getChildFile(INIConfig::CACHE_FOLDER).getChildFile(INIConfig::SEARCH_INDEX_FILE).existsAsFile();
 
-    // Check enhanced cache files
-    bool enhancedCacheExist = INIConfig::getOTTODataDirectory().getChildFile("Cache").getChildFile("SampleCache.ini").existsAsFile() &&
-                             INIConfig::getOTTODataDirectory().getChildFile("Cache").getChildFile("PatternCache.ini").existsAsFile() &&
-                             INIConfig::getOTTODataDirectory().getChildFile("Cache").getChildFile("KitCache.ini").existsAsFile() &&
-                             INIConfig::getOTTODataDirectory().getChildFile("Cache").getChildFile("SearchIndex.ini").existsAsFile();
-
-    // Check enhanced presets files
-    bool enhancedPresetsExist = INIConfig::getPresetsDirectory().getChildFile("PresetIndex.ini").existsAsFile() &&
-                               INIConfig::getPresetsDirectory().getChildFile("Templates").getChildFile("ProjectTemplates.ini").existsAsFile() &&
-                               INIConfig::getPresetsDirectory().getChildFile("Templates").getChildFile("KitTemplates.ini").existsAsFile() &&
-                               INIConfig::getPresetsDirectory().getChildFile("Templates").getChildFile("PatternTemplates.ini").existsAsFile();
+    bool enhancedPresetsExist = INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESET_INDEX_FILE).existsAsFile() &&
+                               INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESETS_TEMPLATES_FOLDER).getChildFile(INIConfig::PROJECT_TEMPLATES_FILE).existsAsFile() &&
+                               INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESETS_TEMPLATES_FOLDER).getChildFile(INIConfig::KIT_TEMPLATES_FILE).existsAsFile() &&
+                               INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESETS_TEMPLATES_FOLDER).getChildFile(INIConfig::PATTERN_TEMPLATES_FILE).existsAsFile();
 
     return settingsExist && performanceExist && patternsExist &&
            kitsExist && mixingExist && systemExist &&
@@ -371,7 +362,10 @@ bool INIDataManager::createAllRequiredFiles() {
         success = success && createSamplePlayerSettings();
     }
 
-    auto defaultPresetFile = INIConfig::getPresetsDirectory().getChildFile("Defaults").getChildFile("Default.ini");
+    auto defaultPresetFile = INIConfig::getPresetsDirectory()
+        .getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+        .getChildFile(INIConfig::PRESETS_USER_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     if (!defaultPresetFile.existsAsFile()) {
         success = success && createDefaultPreset();
     }
@@ -2558,11 +2552,10 @@ bool INIDataManager::savePreset(const juce::String& presetName, const ComponentS
         return false;
     }
 
-    // Determine category - Default preset goes in "Defaults" folder, others in "User" folder
-    juce::String categoryName = (presetName == "Default") ? "Defaults" : "User";
-    
     auto presetsDir = INIConfig::getPresetsDirectory();
-    auto categoryDir = presetsDir.getChildFile(categoryName);
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    juce::String categoryName = INIConfig::PRESETS_USER_FOLDER;
+    auto categoryDir = categoriesDir.getChildFile(categoryName);
     
     // Ensure category directory exists
     if (!categoryDir.exists()) {
@@ -2659,16 +2652,15 @@ bool INIDataManager::loadPreset(const juce::String& presetName, ComponentState& 
     juce::File presetFile;
     bool found = false;
     
-    // Check default category first
-    juce::String categoryName = (presetName == "Default") ? "Defaults" : "User";
-    auto categoryDir = presetsDir.getChildFile(categoryName);
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    juce::String categoryName = INIConfig::PRESETS_USER_FOLDER;
+    auto categoryDir = categoriesDir.getChildFile(categoryName);
     presetFile = categoryDir.getChildFile(presetName + ".ini");
     
     if (presetFile.existsAsFile()) {
         found = true;
     } else {
-        // Search all category directories for the preset
-        for (auto& dir : presetsDir.findChildFiles(juce::File::findDirectories, false)) {
+        for (auto& dir : categoriesDir.findChildFiles(juce::File::findDirectories, false)) {
             presetFile = dir.getChildFile(presetName + ".ini");
             if (presetFile.existsAsFile()) {
                 found = true;
@@ -2844,15 +2836,14 @@ juce::StringArray INIDataManager::getAvailablePresetNames() {
     juce::StringArray defaultPresets;
     juce::StringArray userPresets;
     
-    // Scan through all category directories
-    for (auto& categoryDir : presetsDir.findChildFiles(juce::File::findDirectories, false)) {
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    for (auto& categoryDir : categoriesDir.findChildFiles(juce::File::findDirectories, false)) {
         juce::String categoryName = categoryDir.getFileName();
         
-        // Find all .ini files in this category
         for (auto& presetFile : categoryDir.findChildFiles(juce::File::findFiles, false, "*.ini")) {
             juce::String presetName = presetFile.getFileNameWithoutExtension();
             
-            if (categoryName == "Defaults") {
+            if (categoryName == INIConfig::PRESETS_USER_FOLDER) {
                 defaultPresets.add(presetName);
             } else {
                 userPresets.add(presetName);
@@ -2884,9 +2875,9 @@ juce::StringArray INIDataManager::getAvailablePresetNames() {
 }
 
 bool INIDataManager::createDefaultPreset() {
-    // Ensure Defaults directory exists
     auto presetsDir = INIConfig::getPresetsDirectory();
-    auto defaultsDir = presetsDir.getChildFile("Defaults");
+    auto defaultsDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+                                 .getChildFile(INIConfig::PRESETS_USER_FOLDER);
     
     if (!defaultsDir.exists()) {
         auto result = defaultsDir.createDirectory();
@@ -2919,7 +2910,10 @@ bool INIDataManager::createDefaultPreset() {
 }
 
 bool INIDataManager::ensureDefaultPresetExists() {
-    auto defaultPresetFile = INIConfig::getPresetsDirectory().getChildFile("Defaults").getChildFile("Default.ini");
+    auto defaultPresetFile = INIConfig::getPresetsDirectory()
+        .getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+        .getChildFile(INIConfig::PRESETS_USER_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     
     if (!defaultPresetFile.existsAsFile()) {
         // Default preset is missing - recreate it immediately
@@ -3027,7 +3021,7 @@ bool INIDataManager::saveComponentState(const juce::String& componentName, const
 
 bool INIDataManager::createEnhancedSystemFiles() {
     bool success = true;
-    auto applicationFile = INIConfig::getSystemDirectory().getChildFile("Application.ini");
+    auto applicationFile = INIConfig::getSystemDirectory().getChildFile(INIConfig::APPLICATION_FILE);
     if (!applicationFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3042,7 +3036,7 @@ bool INIDataManager::createEnhancedSystemFiles() {
 
 bool INIDataManager::createEnhancedSettingsFiles() {
     bool success = true;
-    auto performanceFile = INIConfig::getSettingsDirectory().getChildFile("Performance.ini");
+    auto performanceFile = INIConfig::getSettingsDirectory().getChildFile(INIConfig::PERFORMANCE_SETTINGS_FILE);
     if (!performanceFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3057,7 +3051,9 @@ bool INIDataManager::createEnhancedSettingsFiles() {
 
 bool INIDataManager::createEnhancedUIFiles() {
     bool success = true;
-    auto themeManagerFile = INIConfig::getSettingsDirectory().getChildFile("UI").getChildFile("ThemeManager.ini");
+    auto themeManagerFile = INIConfig::getSettingsDirectory()
+        .getChildFile(INIConfig::SETTINGS_UI_FOLDER)
+        .getChildFile(INIConfig::THEME_MANAGER_FILE);
     if (!themeManagerFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3071,7 +3067,9 @@ bool INIDataManager::createEnhancedUIFiles() {
 
 bool INIDataManager::createEnhancedThemesFiles() {
     bool success = true;
-    auto defaultThemeFile = INIConfig::getOTTODataDirectory().getChildFile("Themes").getChildFile("Default.ini");
+    auto defaultThemeFile = INIConfig::getOTTODataDirectory()
+        .getChildFile(INIConfig::THEMES_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_THEME_FILE);
     if (!defaultThemeFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3086,7 +3084,9 @@ bool INIDataManager::createEnhancedThemesFiles() {
 
 bool INIDataManager::createEnhancedPlayersFiles() {
     bool success = true;
-    auto playerConfigsFile = INIConfig::getOTTODataDirectory().getChildFile("Players").getChildFile("PlayerConfigs.ini");
+    auto playerConfigsFile = INIConfig::getOTTODataDirectory()
+        .getChildFile(INIConfig::PLAYERS_FOLDER)
+        .getChildFile(INIConfig::PLAYER_CONFIGS_FILE);
     if (!playerConfigsFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3103,7 +3103,7 @@ bool INIDataManager::createEnhancedPlayersFiles() {
 
 bool INIDataManager::createEnhancedKitsFiles() {
     bool success = true;
-    auto kitIndexFile = INIConfig::getKitsDirectory().getChildFile("KitIndex.ini");
+    auto kitIndexFile = INIConfig::getKitsDirectory().getChildFile(INIConfig::KIT_INDEX_FILE);
     if (!kitIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3117,7 +3117,7 @@ bool INIDataManager::createEnhancedKitsFiles() {
 
 bool INIDataManager::createEnhancedPatternsFiles() {
     bool success = true;
-    auto patternIndexFile = INIConfig::getPatternsDirectory().getChildFile("PatternIndex.ini");
+    auto patternIndexFile = INIConfig::getPatternsDirectory().getChildFile(INIConfig::PATTERN_INDEX_FILE);
     if (!patternIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3131,7 +3131,7 @@ bool INIDataManager::createEnhancedPatternsFiles() {
 
 bool INIDataManager::createEnhancedMixFiles() {
     bool success = true;
-    auto mixerSnapshotsFile = INIConfig::getMixingDirectory().getChildFile("MixerSnapshots.ini");
+    auto mixerSnapshotsFile = INIConfig::getMixingDirectory().getChildFile(INIConfig::MIXER_SNAPSHOTS_FILE);
     if (!mixerSnapshotsFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3145,7 +3145,7 @@ bool INIDataManager::createEnhancedMixFiles() {
 
 bool INIDataManager::createEnhancedPerformanceFiles() {
     bool success = true;
-    auto backupStatesFile = INIConfig::getPerformanceDirectory().getChildFile("BackupStates.ini");
+    auto backupStatesFile = INIConfig::getPerformanceDirectory().getChildFile(INIConfig::BACKUP_STATES_FILE);
     if (!backupStatesFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3159,7 +3159,9 @@ bool INIDataManager::createEnhancedPerformanceFiles() {
 
 bool INIDataManager::createEnhancedCacheFiles() {
     bool success = true;
-    auto searchIndexFile = INIConfig::getOTTODataDirectory().getChildFile("Cache").getChildFile("SearchIndex.ini");
+    auto searchIndexFile = INIConfig::getOTTODataDirectory()
+        .getChildFile(INIConfig::CACHE_FOLDER)
+        .getChildFile(INIConfig::SEARCH_INDEX_FILE);
     if (!searchIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3173,7 +3175,7 @@ bool INIDataManager::createEnhancedCacheFiles() {
 
 bool INIDataManager::createEnhancedPresetsFiles() {
     bool success = true;
-    auto presetIndexFile = INIConfig::getPresetsDirectory().getChildFile("PresetIndex.ini");
+    auto presetIndexFile = INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESET_INDEX_FILE);
     if (!presetIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";

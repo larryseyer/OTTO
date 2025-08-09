@@ -111,6 +111,8 @@ namespace INIConfig {
     /** @brief Master channel settings subfolder */
     static const juce::String MIX_MASTER_FOLDER = "Master";
 
+    static const juce::String THEMES_USER_FOLDER = "User";
+
     // ========================================================================
     // PRESETS SUBFOLDERS
     // ========================================================================
@@ -217,6 +219,8 @@ namespace INIConfig {
 
     /** @brief Theme registry and metadata */
     static const juce::String THEME_INDEX_FILE = "ThemeIndex.ini";
+    static const juce::String DEFAULT_PRESET_FILE = "Default.ini";
+
 
     // ========================================================================
     // PLAYERS FOLDER FILES
@@ -2557,6 +2561,128 @@ namespace LayoutConstants {
    }
 
    inline juce::File getINIFilePath(const juce::String& filename) {
+       if (filename == GLOBAL_SETTINGS_FILE ||
+           filename == AUDIO_SETTINGS_FILE ||
+           filename == MIDI_SETTINGS_FILE ||
+           filename == PERFORMANCE_SETTINGS_FILE ||
+           filename == KEYBOARD_SHORTCUTS_FILE) {
+           return getSettingsDirectory().getChildFile(filename);
+       }
+
+       if (filename == THEME_MANAGER_FILE ||
+           filename == WINDOW_LAYOUT_FILE ||
+           filename == SPECTRUM_ANALYZER_FILE ||
+           filename == WAVEFORM_DISPLAY_FILE ||
+           filename == ADAPTIVE_LAYOUT_MANAGER_FILE ||
+           filename == GESTURE_RECOGNIZER_FILE) {
+           return getSettingsDirectory().getChildFile(SETTINGS_UI_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == DEFAULT_THEME_FILE ||
+           filename == DARK_THEME_FILE ||
+           filename == LIGHT_THEME_FILE ||
+           filename == THEME_INDEX_FILE) {
+           return getOTTODataDirectory().getChildFile(THEMES_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == PLAYER_CONFIGS_FILE ||
+           filename == PLAYER_GROUPS_FILE ||
+           filename == GLOBAL_PLAYER_SETTINGS_FILE ||
+           filename == PLAYER_STATES_FILE) {
+           return getOTTODataDirectory().getChildFile(PLAYERS_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == DRUM_KITS_FILE ||
+           filename == KIT_CATEGORIES_FILE ||
+           filename == SAMPLE_MAPPINGS_FILE ||
+           filename == VELOCITY_MAPPINGS_FILE ||
+           filename == MIDI_MAPPINGS_FILE ||
+           filename == KIT_INDEX_FILE) {
+           return getKitsDirectory().getChildFile(filename);
+       }
+
+       if (filename == PATTERN_GROUPS_FILE ||
+           filename == PATTERN_METADATA_FILE ||
+           filename == PATTERN_CHAINS_FILE ||
+           filename == PATTERN_INDEX_FILE ||
+           filename == TEMPO_MAPS_FILE) {
+           return getPatternsDirectory().getChildFile(filename);
+       }
+
+       if (filename == EQ_PRESETS_FILE ||
+           filename == COMPRESSOR_PRESETS_FILE ||
+           filename == REVERB_PRESETS_FILE ||
+           filename == DELAY_PRESETS_FILE) {
+           return getMixingDirectory().getChildFile(MIX_PRESETS_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == CHANNEL_PRESETS_FILE ||
+           filename == CHANNEL_GROUPS_FILE ||
+           filename == BUS_CONFIGURATIONS_FILE ||
+           filename == ROUTING_PRESETS_FILE) {
+           return getMixingDirectory().getChildFile(MIX_CHANNELS_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == MASTER_CHANNEL_PRESETS_FILE ||
+           filename == MASTER_EQ_FILE ||
+           filename == MASTER_LIMITER_FILE ||
+           filename == MASTER_METERING_FILE) {
+           return getMixingDirectory().getChildFile(MIX_MASTER_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == MIXER_SNAPSHOTS_FILE) {
+           return getMixingDirectory().getChildFile(filename);
+       }
+
+       if (filename == PRESET_INDEX_FILE) {
+           return getPresetsDirectory().getChildFile(filename);
+       }
+
+       if (filename == PROJECT_TEMPLATES_FILE ||
+           filename == KIT_TEMPLATES_FILE ||
+           filename == PATTERN_TEMPLATES_FILE) {
+           return getPresetsDirectory().getChildFile(PRESETS_TEMPLATES_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == BLUES_PRESETS_FILE ||
+           filename == JAZZ_PRESETS_FILE ||
+           filename == SOUL_PRESETS_FILE ||
+           filename == FUNK_PRESETS_FILE ||
+           filename == EDM_PRESETS_FILE ||
+           filename == HIPHOP_PRESETS_FILE ||
+           filename == ROCK_PRESETS_FILE ||
+           filename == POP_PRESETS_FILE ||
+           filename == AMBIENT_PRESETS_FILE ||
+           filename == INDUSTRIAL_PRESETS_FILE ||
+           filename == GLITCH_PRESETS_FILE) {
+           return getPresetsDirectory().getChildFile(PRESETS_CATEGORIES_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == SESSIONS_FILE ||
+           filename == SET_LISTS_FILE ||
+           filename == MACRO_CONTROLS_FILE ||
+           filename == SCENE_CHANGES_FILE ||
+           filename == BACKUP_STATES_FILE) {
+           return getPerformanceDirectory().getChildFile(filename);
+       }
+
+       if (filename == SAMPLE_CACHE_FILE ||
+           filename == PATTERN_CACHE_FILE ||
+           filename == KIT_CACHE_FILE ||
+           filename == SEARCH_INDEX_FILE ||
+           filename == MIDI_ANALYSIS_CACHE_FILE) {
+           return getOTTODataDirectory().getChildFile(CACHE_FOLDER).getChildFile(filename);
+       }
+
+       if (filename == APPLICATION_FILE ||
+           filename == MIDI_DEVICES_FILE ||
+           filename == AUDIO_DEVICES_FILE ||
+           filename == EXTERNAL_FOLDERS_FILE ||
+           filename == FILE_INDEX_FILE ||
+           filename == LICENSING_FILE) {
+           return getSystemDirectory().getChildFile(filename);
+       }
+
        return getOTTODataDirectory().getChildFile(filename);
    }
 

@@ -869,12 +869,13 @@ void Row1Component::ensureDefaultPresetStructure() const {
         presetsDir.createDirectory();
     }
 
-    auto defaultCategoryDir = presetsDir.getChildFile("Defaults");
+    auto defaultCategoryDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+                                         .getChildFile(INIConfig::PRESETS_USER_FOLDER);
     if (!defaultCategoryDir.exists()) {
         defaultCategoryDir.createDirectory();
     }
 
-    auto defaultPresetFile = defaultCategoryDir.getChildFile("Default.ini");
+    auto defaultPresetFile = defaultCategoryDir.getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     if (!defaultPresetFile.existsAsFile() && iniDataManager) {
         iniDataManager->createDefaultPreset();
     }
@@ -921,7 +922,8 @@ void Row1Component::createSamplePresetStructure() const {
 
                 iniDataManager->savePreset(presetName, sampleState);
 
-                auto userDir = presetsDir.getChildFile("User");
+                auto userDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+                                          .getChildFile(INIConfig::PRESETS_USER_FOLDER);
                 auto wrongFile = userDir.getChildFile(presetName + ".ini");
                 if (wrongFile.existsAsFile() && category.categoryName != "User") {
                     wrongFile.moveFileTo(presetFile);

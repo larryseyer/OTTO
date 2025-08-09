@@ -219,6 +219,8 @@ namespace INIConfig {
 
     /** @brief Theme registry and metadata */
     static const juce::String THEME_INDEX_FILE = "ThemeIndex.ini";
+    static const juce::String DEFAULT_PRESET_FILE = "Default.ini";
+
 
     // ========================================================================
     // PLAYERS FOLDER FILES

@@ -3015,7 +3015,7 @@ bool INIDataManager::saveComponentState(const juce::String& componentName, const
 
 bool INIDataManager::createEnhancedSystemFiles() {
     bool success = true;
-    auto applicationFile = INIConfig::getSystemDirectory().getChildFile("Application.ini");
+    auto applicationFile = INIConfig::getSystemDirectory().getChildFile(INIConfig::APPLICATION_FILE);
     if (!applicationFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3030,7 +3030,7 @@ bool INIDataManager::createEnhancedSystemFiles() {
 
 bool INIDataManager::createEnhancedSettingsFiles() {
     bool success = true;
-    auto performanceFile = INIConfig::getSettingsDirectory().getChildFile("Performance.ini");
+    auto performanceFile = INIConfig::getSettingsDirectory().getChildFile(INIConfig::PERFORMANCE_SETTINGS_FILE);
     if (!performanceFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3045,7 +3045,9 @@ bool INIDataManager::createEnhancedSettingsFiles() {
 
 bool INIDataManager::createEnhancedUIFiles() {
     bool success = true;
-    auto themeManagerFile = INIConfig::getSettingsDirectory().getChildFile("UI").getChildFile("ThemeManager.ini");
+    auto themeManagerFile = INIConfig::getSettingsDirectory()
+        .getChildFile(INIConfig::SETTINGS_UI_FOLDER)
+        .getChildFile(INIConfig::THEME_MANAGER_FILE);
     if (!themeManagerFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3059,7 +3061,9 @@ bool INIDataManager::createEnhancedUIFiles() {
 
 bool INIDataManager::createEnhancedThemesFiles() {
     bool success = true;
-    auto defaultThemeFile = INIConfig::getOTTODataDirectory().getChildFile("Themes").getChildFile("Default.ini");
+    auto defaultThemeFile = INIConfig::getOTTODataDirectory()
+        .getChildFile(INIConfig::THEMES_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_THEME_FILE);
     if (!defaultThemeFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3074,7 +3078,9 @@ bool INIDataManager::createEnhancedThemesFiles() {
 
 bool INIDataManager::createEnhancedPlayersFiles() {
     bool success = true;
-    auto playerConfigsFile = INIConfig::getOTTODataDirectory().getChildFile("Players").getChildFile("PlayerConfigs.ini");
+    auto playerConfigsFile = INIConfig::getOTTODataDirectory()
+        .getChildFile(INIConfig::PLAYERS_FOLDER)
+        .getChildFile(INIConfig::PLAYER_CONFIGS_FILE);
     if (!playerConfigsFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3091,7 +3097,7 @@ bool INIDataManager::createEnhancedPlayersFiles() {
 
 bool INIDataManager::createEnhancedKitsFiles() {
     bool success = true;
-    auto kitIndexFile = INIConfig::getKitsDirectory().getChildFile("KitIndex.ini");
+    auto kitIndexFile = INIConfig::getKitsDirectory().getChildFile(INIConfig::KIT_INDEX_FILE);
     if (!kitIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3105,7 +3111,7 @@ bool INIDataManager::createEnhancedKitsFiles() {
 
 bool INIDataManager::createEnhancedPatternsFiles() {
     bool success = true;
-    auto patternIndexFile = INIConfig::getPatternsDirectory().getChildFile("PatternIndex.ini");
+    auto patternIndexFile = INIConfig::getPatternsDirectory().getChildFile(INIConfig::PATTERN_INDEX_FILE);
     if (!patternIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3119,7 +3125,7 @@ bool INIDataManager::createEnhancedPatternsFiles() {
 
 bool INIDataManager::createEnhancedMixFiles() {
     bool success = true;
-    auto mixerSnapshotsFile = INIConfig::getMixingDirectory().getChildFile("MixerSnapshots.ini");
+    auto mixerSnapshotsFile = INIConfig::getMixingDirectory().getChildFile(INIConfig::MIXER_SNAPSHOTS_FILE);
     if (!mixerSnapshotsFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3133,7 +3139,7 @@ bool INIDataManager::createEnhancedMixFiles() {
 
 bool INIDataManager::createEnhancedPerformanceFiles() {
     bool success = true;
-    auto backupStatesFile = INIConfig::getPerformanceDirectory().getChildFile("BackupStates.ini");
+    auto backupStatesFile = INIConfig::getPerformanceDirectory().getChildFile(INIConfig::BACKUP_STATES_FILE);
     if (!backupStatesFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3147,7 +3153,9 @@ bool INIDataManager::createEnhancedPerformanceFiles() {
 
 bool INIDataManager::createEnhancedCacheFiles() {
     bool success = true;
-    auto searchIndexFile = INIConfig::getOTTODataDirectory().getChildFile("Cache").getChildFile("SearchIndex.ini");
+    auto searchIndexFile = INIConfig::getOTTODataDirectory()
+        .getChildFile(INIConfig::CACHE_FOLDER)
+        .getChildFile(INIConfig::SEARCH_INDEX_FILE);
     if (!searchIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";
@@ -3161,7 +3169,7 @@ bool INIDataManager::createEnhancedCacheFiles() {
 
 bool INIDataManager::createEnhancedPresetsFiles() {
     bool success = true;
-    auto presetIndexFile = INIConfig::getPresetsDirectory().getChildFile("PresetIndex.ini");
+    auto presetIndexFile = INIConfig::getPresetsDirectory().getChildFile(INIConfig::PRESET_INDEX_FILE);
     if (!presetIndexFile.existsAsFile()) {
         juce::PropertiesFile::Options options;
         options.applicationName = "OTTO";

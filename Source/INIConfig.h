@@ -48,100 +48,393 @@
 namespace INIConfig {
 
     // ============================================================================
-    // FOLDER STRUCTURE CONSTANTS
+    // ENHANCED DATABASE ROOT STRUCTURE CONSTANTS
     // ============================================================================
-    // These constants define the hierarchical folder structure for OTTO's data storage.
+    // These constants define the comprehensive hierarchical folder structure for OTTO's
+    // professional database system following the enhanced schema.
     // Used by: INIDataManager.cpp, StateManager.cpp, PresetManager.cpp
 
     /** @brief Root folder name for all OTTO application data */
-    static const juce::String OTTO_DATA_FOLDER = "OTTO_Data";
+    static const juce::String DATABASE_ROOT_FOLDER = "DatabaseRoot";
 
-    /** @brief Subfolder for user interface and application settings */
-    static const juce::String SETTINGS_FOLDER = "Settings";
+    // ========================================================================
+    // PRIMARY DATABASE FOLDERS
+    // ========================================================================
 
-    /** @brief Subfolder for performance monitoring and optimization data */
-    static const juce::String PERFORMANCE_FOLDER = "Performance";
-
-    /** @brief Subfolder for drum patterns and sequences */
-    static const juce::String PATTERNS_FOLDER = "Patterns";
-
-    /** @brief Subfolder for drum kit samples and configurations */
-    static const juce::String KITS_FOLDER = "Kits";
-
-    /** @brief Subfolder for mixer settings and channel configurations */
-    static const juce::String MIXING_FOLDER = "Mix";
-
-    /** @brief Subfolder for system-level configuration files */
+    /** @brief System-level configuration and device management */
     static const juce::String SYSTEM_FOLDER = "System";
 
-    /** @brief Subfolder for user and factory presets */
+    /** @brief Application settings and user preferences */
+    static const juce::String SETTINGS_FOLDER = "Settings";
+
+    /** @brief UI themes and visual configurations */
+    static const juce::String THEMES_FOLDER = "Themes";
+
+    /** @brief Player configurations and states */
+    static const juce::String PLAYERS_FOLDER = "Players";
+
+    /** @brief Drum kit definitions and sample mappings */
+    static const juce::String KITS_FOLDER = "Kits";
+
+    /** @brief Pattern definitions and arrangements */
+    static const juce::String PATTERNS_FOLDER = "Patterns";
+
+    /** @brief Mixer settings and effects configurations */
+    static const juce::String MIX_FOLDER = "Mix";
+
+    /** @brief User and factory presets organized by category */
     static const juce::String PRESETS_FOLDER = "Presets";
 
+    /** @brief Performance session and live configurations */
+    static const juce::String PERFORMANCE_FOLDER = "Performance";
+
+    /** @brief Cache files for optimization */
+    static const juce::String CACHE_FOLDER = "Cache";
+
+    // ========================================================================
+    // SETTINGS SUBFOLDERS
+    // ========================================================================
+
+    /** @brief UI-specific settings subfolder */
+    static const juce::String SETTINGS_UI_FOLDER = "UI";
+
+    // ========================================================================
+    // MIX SUBFOLDERS
+    // ========================================================================
+
+    /** @brief Effect presets subfolder */
+    static const juce::String MIX_PRESETS_FOLDER = "Presets";
+
+    /** @brief Channel configurations subfolder */
+    static const juce::String MIX_CHANNELS_FOLDER = "Channels";
+
+    /** @brief Master channel settings subfolder */
+    static const juce::String MIX_MASTER_FOLDER = "Master";
+
+    // ========================================================================
+    // PRESETS SUBFOLDERS
+    // ========================================================================
+
+    /** @brief Preset categories subfolder */
+    static const juce::String PRESETS_CATEGORIES_FOLDER = "Categories";
+
+    /** @brief Project templates subfolder */
+    static const juce::String PRESETS_TEMPLATES_FOLDER = "Templates";
+
+    /** @brief User-created presets subfolder */
+    static const juce::String PRESETS_USER_FOLDER = "User";
+
+    /** @brief Vintage style presets subfolder */
+    static const juce::String PRESETS_VINTAGE_FOLDER = "Vintage";
+
+    /** @brief Modern style presets subfolder */
+    static const juce::String PRESETS_MODERN_FOLDER = "Modern";
+
+    /** @brief Experimental style presets subfolder */
+    static const juce::String PRESETS_EXPERIMENTAL_FOLDER = "Experimental";
+
     // ============================================================================
-    // INI FILE NAME CONSTANTS
+    // ENHANCED INI FILE NAME CONSTANTS
     // ============================================================================
-    // These constants define the specific .ini filenames for different data categories.
+    // These constants define the comprehensive .ini filenames for the enhanced database system.
     // Used by: INIDataManager.cpp for file I/O operations across the application
 
-    /** @brief Main application settings file (interface, window position, etc.) */
-    static const juce::String GLOBAL_SETTINGS_FILE = "Global.ini";
+    // ========================================================================
+    // SYSTEM FOLDER FILES
+    // ========================================================================
 
-    /** @brief Color schemes and visual theme configurations */
-    static const juce::String THEMES_FILE = "Themes.ini";
+    /** @brief Application version, build info, startup settings */
+    static const juce::String APPLICATION_FILE = "Application.ini";
 
-    /** @brief Audio device settings, sample rates, buffer sizes, etc. */
-    static const juce::String AUDIO_SETTINGS_FILE = "AudioSettings.ini";
-
-    /** @brief User-created and factory preset configurations */
-    static const juce::String PRESETS_FILE = "Presets.ini";
-
-    /** @brief Individual player/track configurations and states */
-    static const juce::String PLAYERS_FILE = "Players.ini";
-
-    /** @brief Pattern chain sequences and arrangements */
-    static const juce::String PATTERN_CHAINS_FILE = "PatternChains.ini";
-
-    /** @brief Pattern group organization and categorization */
-    static const juce::String PATTERN_GROUPS_FILE = "PatternGroups.ini";
-
-    /** @brief Drum kit definitions, sample mappings, and configurations */
-    static const juce::String DRUM_KITS_FILE = "DrumKits.ini";
-
-    /** @brief MIDI input device layout and channel assignments */
-    static const juce::String MIDI_IN_LAYOUT_FILE = "MidiInLayout.ini";
-
-    /** @brief MIDI output device layout and channel assignments */
-    static const juce::String MIDI_OUT_LAYOUT_FILE = "MidiOutLayout.ini";
-
-    /** @brief Mixer channel preset group organization */
-    static const juce::String CHANNEL_PRESET_GROUPS_FILE = "ChannelPresetGroups.ini";
-
-    /** @brief Individual mixer channel preset configurations */
-    static const juce::String CHANNEL_PRESETS_FILE = "ChannelPresets.ini";
-
-    /** @brief EQ preset configurations for mixer channels */
-    static const juce::String EQ_PRESETS_FILE = "EQPresets.ini";
-
-    /** @brief Master channel preset configurations and settings */
-    static const juce::String MASTER_CHANNEL_PRESETS_FILE = "MasterChannelPresets.ini";
-
-    /** @brief MIDI device detection and configuration cache */
+    /** @brief MIDI input/output device configurations */
     static const juce::String MIDI_DEVICES_FILE = "MidiDevices.ini";
 
-    /** @brief File system index for quick asset location */
+    /** @brief Audio interface settings and routing */
+    static const juce::String AUDIO_DEVICES_FILE = "AudioDevices.ini";
+
+    /** @brief User-defined sample/kit/pattern directories */
+    static const juce::String EXTERNAL_FOLDERS_FILE = "ExternalFolders.ini";
+
+    /** @brief File system indexing and caching */
     static const juce::String FILE_INDEX_FILE = "FileIndex.ini";
+
+    /** @brief License keys, registration data */
+    static const juce::String LICENSING_FILE = "Licensing.ini";
+
+    // ========================================================================
+    // SETTINGS FOLDER FILES
+    // ========================================================================
+
+    /** @brief Application-wide preferences */
+    static const juce::String GLOBAL_SETTINGS_FILE = "Global.ini";
+
+    /** @brief Buffer sizes, sample rates, latency */
+    static const juce::String AUDIO_SETTINGS_FILE = "AudioSettings.ini";
+
+    /** @brief MIDI timing, sync, clock settings */
+    static const juce::String MIDI_SETTINGS_FILE = "MidiSettings.ini";
+
+    /** @brief CPU usage limits, threading options */
+    static const juce::String PERFORMANCE_SETTINGS_FILE = "Performance.ini";
+
+    /** @brief Custom key bindings */
+    static const juce::String KEYBOARD_SHORTCUTS_FILE = "KeyboardShortcuts.ini";
+
+    // ========================================================================
+    // SETTINGS/UI FOLDER FILES
+    // ========================================================================
+
+    /** @brief Active theme, color schemes */
+    static const juce::String THEME_MANAGER_FILE = "ThemeManager.ini";
+
+    /** @brief Window positions, sizes, docking */
+    static const juce::String WINDOW_LAYOUT_FILE = "WindowLayout.ini";
+
+    /** @brief Analyzer display settings */
+    static const juce::String SPECTRUM_ANALYZER_FILE = "SpectrumAnalyzer.ini";
+
+    /** @brief Waveform visualization options */
+    static const juce::String WAVEFORM_DISPLAY_FILE = "WaveformDisplay.ini";
+
+    /** @brief Responsive UI configurations */
+    static const juce::String ADAPTIVE_LAYOUT_MANAGER_FILE = "AdaptiveLayoutManager.ini";
+
+    /** @brief Touch/mouse gesture mappings */
+    static const juce::String GESTURE_RECOGNIZER_FILE = "GestureRecognizer.ini";
+
+    // ========================================================================
+    // THEMES FOLDER FILES
+    // ========================================================================
+
+    /** @brief Built-in default theme */
+    static const juce::String DEFAULT_THEME_FILE = "Default.ini";
+
+    /** @brief Dark mode theme */
+    static const juce::String DARK_THEME_FILE = "Dark.ini";
+
+    /** @brief Light mode theme */
+    static const juce::String LIGHT_THEME_FILE = "Light.ini";
+
+    /** @brief Theme registry and metadata */
+    static const juce::String THEME_INDEX_FILE = "ThemeIndex.ini";
+
+    // ========================================================================
+    // PLAYERS FOLDER FILES
+    // ========================================================================
+
+    /** @brief Individual player settings */
+    static const juce::String PLAYER_CONFIGS_FILE = "PlayerConfigs.ini";
+
+    /** @brief Player grouping and routing */
+    static const juce::String PLAYER_GROUPS_FILE = "PlayerGroups.ini";
+
+    /** @brief Default player parameters */
+    static const juce::String GLOBAL_PLAYER_SETTINGS_FILE = "GlobalPlayerSettings.ini";
+
+    /** @brief Runtime states (play, mute, solo) */
+    static const juce::String PLAYER_STATES_FILE = "PlayerStates.ini";
+
+    // ========================================================================
+    // KITS FOLDER FILES
+    // ========================================================================
+
+    /** @brief Drum kit definitions and metadata */
+    static const juce::String DRUM_KITS_FILE = "DrumKits.ini";
+
+    /** @brief Kit organization and tagging */
+    static const juce::String KIT_CATEGORIES_FILE = "KitCategories.ini";
+
+    /** @brief SFZ file associations */
+    static const juce::String SAMPLE_MAPPINGS_FILE = "SampleMappings.ini";
+
+    /** @brief Velocity layer configurations */
+    static const juce::String VELOCITY_MAPPINGS_FILE = "VelocityMappings.ini";
+
+    /** @brief MIDI note assignments */
+    static const juce::String MIDI_MAPPINGS_FILE = "MidiMappings.ini";
+
+    /** @brief Fast lookup and search index */
+    static const juce::String KIT_INDEX_FILE = "KitIndex.ini";
+
+    // ========================================================================
+    // PATTERNS FOLDER FILES
+    // ========================================================================
+
+    /** @brief Pattern group definitions */
+    static const juce::String PATTERN_GROUPS_FILE = "PatternGroups.ini";
+
+    /** @brief Pattern properties and tags */
+    static const juce::String PATTERN_METADATA_FILE = "PatternMetadata.ini";
+
+    /** @brief Song arrangement chains */
+    static const juce::String PATTERN_CHAINS_FILE = "PatternChains.ini";
+
+    /** @brief Pattern search and categorization */
+    static const juce::String PATTERN_INDEX_FILE = "PatternIndex.ini";
+
+    /** @brief Tempo changes within patterns */
+    static const juce::String TEMPO_MAPS_FILE = "TempoMaps.ini";
+
+    // ========================================================================
+    // MIX FOLDER FILES
+    // ========================================================================
+
+    /** @brief EQ curve presets */
+    static const juce::String EQ_PRESETS_FILE = "EQPresets.ini";
+
+    /** @brief Compression settings */
+    static const juce::String COMPRESSOR_PRESETS_FILE = "CompressorPresets.ini";
+
+    /** @brief Reverb configurations */
+    static const juce::String REVERB_PRESETS_FILE = "ReverbPresets.ini";
+
+    /** @brief Delay/echo presets */
+    static const juce::String DELAY_PRESETS_FILE = "DelayPresets.ini";
+
+    /** @brief Complete effect chain presets */
+    static const juce::String EFFECT_CHAIN_PRESETS_FILE = "EffectChainPresets.ini";
+
+    /** @brief Individual channel presets */
+    static const juce::String CHANNEL_PRESETS_FILE = "ChannelPresets.ini";
+
+    /** @brief Channel grouping presets */
+    static const juce::String CHANNEL_GROUPS_FILE = "ChannelGroups.ini";
+
+    /** @brief Auxiliary bus setups */
+    static const juce::String BUS_CONFIGURATIONS_FILE = "BusConfigurations.ini";
+
+    /** @brief Signal routing presets */
+    static const juce::String ROUTING_PRESETS_FILE = "RoutingPresets.ini";
+
+    /** @brief Master channel configurations */
+    static const juce::String MASTER_CHANNEL_PRESETS_FILE = "MasterChannelPresets.ini";
+
+    /** @brief Master EQ settings */
+    static const juce::String MASTER_EQ_FILE = "MasterEQ.ini";
+
+    /** @brief Master limiting presets */
+    static const juce::String MASTER_LIMITER_FILE = "MasterLimiter.ini";
+
+    /** @brief Master metering configurations */
+    static const juce::String MASTER_METERING_FILE = "MasterMetering.ini";
+
+    /** @brief MIDI input layout file */
+    static const juce::String MIDI_IN_LAYOUT_FILE = "MidiInLayout.ini";
+
+    /** @brief MIDI output layout file */
+    static const juce::String MIDI_OUT_LAYOUT_FILE = "MidiOutLayout.ini";
+
+    /** @brief Channel preset groups file */
+    static const juce::String CHANNEL_PRESET_GROUPS_FILE = "ChannelPresetGroups.ini";
+
+    /** @brief Complete mixer state snapshots */
+    static const juce::String MIXER_SNAPSHOTS_FILE = "MixerSnapshots.ini";
+
+    // ========================================================================
+    // PRESETS FOLDER FILES
+    // ========================================================================
+
+    /** @brief Blues style presets */
+    static const juce::String BLUES_PRESETS_FILE = "Blues.ini";
+
+    /** @brief Jazz style presets */
+    static const juce::String JAZZ_PRESETS_FILE = "Jazz.ini";
+
+    /** @brief Soul style presets */
+    static const juce::String SOUL_PRESETS_FILE = "Soul.ini";
+
+    /** @brief Funk style presets */
+    static const juce::String FUNK_PRESETS_FILE = "Funk.ini";
+
+    /** @brief EDM style presets */
+    static const juce::String EDM_PRESETS_FILE = "EDM.ini";
+
+    /** @brief Hip-Hop style presets */
+    static const juce::String HIPHOP_PRESETS_FILE = "HipHop.ini";
+
+    /** @brief Rock style presets */
+    static const juce::String ROCK_PRESETS_FILE = "Rock.ini";
+
+    /** @brief Pop style presets */
+    static const juce::String POP_PRESETS_FILE = "Pop.ini";
+
+    /** @brief Ambient style presets */
+    static const juce::String AMBIENT_PRESETS_FILE = "Ambient.ini";
+
+    /** @brief Industrial style presets */
+    static const juce::String INDUSTRIAL_PRESETS_FILE = "Industrial.ini";
+
+    /** @brief Glitch style presets */
+    static const juce::String GLITCH_PRESETS_FILE = "Glitch.ini";
+
+    /** @brief Complete project setups */
+    static const juce::String PROJECT_TEMPLATES_FILE = "ProjectTemplates.ini";
+
+    /** @brief Kit configuration templates */
+    static const juce::String KIT_TEMPLATES_FILE = "KitTemplates.ini";
+
+    /** @brief Pattern structure templates */
+    static const juce::String PATTERN_TEMPLATES_FILE = "PatternTemplates.ini";
+
+    /** @brief Preset search and metadata */
+    static const juce::String PRESET_INDEX_FILE = "PresetIndex.ini";
+
+    // ========================================================================
+    // PERFORMANCE FOLDER FILES
+    // ========================================================================
+
+    /** @brief Performance session configurations */
+    static const juce::String SESSIONS_FILE = "Sessions.ini";
+
+    /** @brief Organized preset/pattern lists */
+    static const juce::String SET_LISTS_FILE = "SetLists.ini";
+
+    /** @brief MIDI controller mappings */
+    static const juce::String MACRO_CONTROLS_FILE = "MacroControls.ini";
+
+    /** @brief Automated scene transitions */
+    static const juce::String SCENE_CHANGES_FILE = "SceneChanges.ini";
+
+    /** @brief Emergency backup configurations */
+    static const juce::String BACKUP_STATES_FILE = "BackupStates.ini";
+
+    // ========================================================================
+    // CACHE FOLDER FILES
+    // ========================================================================
+
+    /** @brief Sample loading optimization */
+    static const juce::String SAMPLE_CACHE_FILE = "SampleCache.ini";
+
+    /** @brief Pattern parsing cache */
+    static const juce::String PATTERN_CACHE_FILE = "PatternCache.ini";
+
+    /** @brief Kit loading cache */
+    static const juce::String KIT_CACHE_FILE = "KitCache.ini";
+
+    /** @brief Global search indexing */
+    static const juce::String SEARCH_INDEX_FILE = "SearchIndex.ini";
 
     /** @brief Cached MIDI file analysis data for performance optimization */
     static const juce::String MIDI_ANALYSIS_CACHE_FILE = "MidiAnalysisCache.ini";
 
-    /** @brief Hardware controller preset configurations */
-    static const juce::String CONTROLLER_PRESETS_FILE  = "ControllerPresets.ini";
+    // ========================================================================
+    // LEGACY COMPATIBILITY FILES
+    // ========================================================================
 
-    /** @brief MIDI control change mappings to application parameters */
-    static const juce::String MIDI_MAPPINGS_FILE       = "MidiMappings.ini";
+    /** @brief Legacy themes file for backward compatibility */
+    static const juce::String THEMES_FILE = "Themes.ini";
+
+    /** @brief Legacy presets file for backward compatibility */
+    static const juce::String PRESETS_FILE = "Presets.ini";
+
+    /** @brief Legacy players file for backward compatibility */
+    static const juce::String PLAYERS_FILE = "Players.ini";
+
+    /** @brief Hardware controller preset configurations */
+    static const juce::String CONTROLLER_PRESETS_FILE = "ControllerPresets.ini";
 
     /** @brief Groove template definitions for swing and timing variations */
-    static const juce::String GROOVE_TEMPLATES_FILE    = "GrooveTemplates.ini";
+    static const juce::String GROOVE_TEMPLATES_FILE = "GrooveTemplates.ini";
 
     // ============================================================================
     // VERSION CONTROL
@@ -526,6 +819,8 @@ namespace INIConfig {
         static const float DEFAULT_PITCH_DETECTION_THRESHOLD = 0.1f;
         static const int DEFAULT_AUTOCORRELATION_SIZE = 2048;
         static const float DEFAULT_TUNING_REFERENCE = 440.0f;
+        static const float DEFAULT_MIN_BPM = 60.0f;
+        static const float DEFAULT_MAX_BPM = 200.0f;
         static const int DEFAULT_MIDI_LEARN_TIMEOUT = 5000;
         static const float DEFAULT_PARAMETER_SMOOTHING = 0.05f;
         static const int DEFAULT_PRESET_MORPH_TIME = 1000;
@@ -627,6 +922,343 @@ namespace INIConfig {
         static const float DEFAULT_TALKBOX_RESONANCE = 0.9f;
         static const float DEFAULT_TALKBOX_DAMPING = 0.1f;
         static const int DEFAULT_TALKBOX_CARRIERS = 64;
+
+        // ========================================================================
+        // ENHANCED DATABASE SYSTEM DEFAULTS
+        // ========================================================================
+        // These defaults support the comprehensive database structure with metadata,
+        // indexing, caching, and professional features.
+
+        // ========================================================================
+        // SYSTEM CONFIGURATION DEFAULTS
+        // ========================================================================
+
+        /** @brief Default application version string */
+        static const juce::String DEFAULT_APPLICATION_VERSION = "8.0.1";
+
+        /** @brief Default build number */
+        static const juce::String DEFAULT_BUILD_NUMBER = "2024080801";
+
+        /** @brief Default crash reports enabled state */
+        static const bool DEFAULT_CRASH_REPORTS_ENABLED = true;
+
+        /** @brief Default auto-update enabled state */
+        static const bool DEFAULT_AUTO_UPDATE_ENABLED = true;
+
+        /** @brief Default data path location */
+        static const juce::String DEFAULT_DATA_PATH = "%DOCUMENTS%/DrumMachine/Data";
+
+        // ========================================================================
+        // ENHANCED PLAYER DEFAULTS
+        // ========================================================================
+
+        /** @brief Default player ID format */
+        static const juce::String DEFAULT_PLAYER_ID_FORMAT = "001";
+
+        /** @brief Default player name format */
+        static const juce::String DEFAULT_PLAYER_NAME = "Main Kit";
+
+        /** @brief Default selected flag state */
+        static const bool DEFAULT_SELECTED_FLAG = true;
+
+        /** @brief Default solo state */
+        static const bool DEFAULT_SOLO_STATE = false;
+
+        /** @brief Default mute state */
+        static const bool DEFAULT_MUTE_STATE = false;
+
+        /** @brief Default drumkit ID */
+        static const juce::String DEFAULT_DRUMKIT_ID = "KIT_001";
+
+        /** @brief Default pattern group ID */
+        static const juce::String DEFAULT_PATTERN_GROUP_ID = "PG_001";
+
+        /** @brief Default current pattern ID */
+        static const juce::String DEFAULT_CURRENT_PATTERN_ID = "PAT_001";
+
+        /** @brief Default pan position (center) */
+        static const float DEFAULT_PAN_POSITION = 0.0f;
+
+        /** @brief Default swing value (16th note swing) */
+        static const int DEFAULT_SWING_VALUE = 16;
+
+        /** @brief Default swing amount percentage */
+        static const float DEFAULT_SWING_AMOUNT = 0.15f;
+
+        /** @brief Default energy value (0-1 range) */
+        static const float DEFAULT_ENERGY_VALUE = 0.75f;
+
+        /** @brief Default velocity offset */
+        static const int DEFAULT_VELOCITY_OFFSET = 0;
+
+        /** @brief Default pitch offset */
+        static const int DEFAULT_PITCH_OFFSET = 0;
+
+        /** @brief Default MIDI channel (channel 10 for drums) */
+        static const int DEFAULT_MIDI_CHANNEL = 10;
+
+        /** @brief Default MIDI input enabled state */
+        static const bool DEFAULT_MIDI_INPUT_ENABLED = true;
+
+        /** @brief Default audio output bus */
+        static const juce::String DEFAULT_AUDIO_OUTPUT = "Main_Bus";
+
+        /** @brief Default reverb send level */
+        static const float DEFAULT_SEND_TO_REVERB = 0.25f;
+
+        /** @brief Default delay send level */
+        static const float DEFAULT_SEND_TO_DELAY = 0.10f;
+
+        /** @brief Default effect chain ID */
+        static const juce::String DEFAULT_EFFECT_CHAIN_ID = "EC_001";
+
+        /** @brief Default MIDI note filter range */
+        static const juce::String DEFAULT_MIDI_NOTE_FILTER = "36-81";
+
+        /** @brief Default velocity curve type */
+        static const juce::String DEFAULT_VELOCITY_CURVE = "Linear";
+
+        /** @brief Default humanize amount */
+        static const float DEFAULT_HUMANIZE_AMOUNT = 0.05f;
+
+        // ========================================================================
+        // ENHANCED DRUMKIT DEFAULTS
+        // ========================================================================
+
+        /** @brief Default drumkit category */
+        static const juce::String DEFAULT_DRUMKIT_CATEGORY = "Vintage";
+
+        /** @brief Default drumkit subcategory */
+        static const juce::String DEFAULT_DRUMKIT_SUBCATEGORY = "Rock";
+
+        /** @brief Default drumkit manufacturer */
+        static const juce::String DEFAULT_DRUMKIT_MANUFACTURER = "Classic Drums Co";
+
+        /** @brief Default drumkit description */
+        static const juce::String DEFAULT_DRUMKIT_DESCRIPTION = "Warm vintage rock sound with natural room ambience";
+
+        /** @brief Default drumkit author */
+        static const juce::String DEFAULT_DRUMKIT_AUTHOR = "Studio Engineer";
+
+        /** @brief Default drumkit version */
+        static const juce::String DEFAULT_DRUMKIT_VERSION = "2.1";
+
+        /** @brief Default sample count */
+        static const int DEFAULT_SAMPLE_COUNT = 128;
+
+        /** @brief Default velocity layers */
+        static const int DEFAULT_VELOCITY_LAYERS = 8;
+
+        /** @brief Default round-robin samples */
+        static const int DEFAULT_ROUND_ROBIN_SAMPLES = 4;
+
+        /** @brief Default BPM optimization */
+        static const int DEFAULT_BPM_OPTIMIZED = 120;
+
+        /** @brief Default drumkit tags */
+        static const juce::String DEFAULT_DRUMKIT_TAGS = "vintage,rock,natural,warm,70s";
+
+        /** @brief Default drumkit rating (0-5 stars) */
+        static const float DEFAULT_DRUMKIT_RATING = 4.5f;
+
+        /** @brief Default play count */
+        static const int DEFAULT_PLAY_COUNT = 0;
+
+        /** @brief Default favorites state */
+        static const bool DEFAULT_FAVORITES_STATE = false;
+
+        // ========================================================================
+        // ENHANCED PATTERN DEFAULTS
+        // ========================================================================
+
+        /** @brief Default pattern category */
+        static const juce::String DEFAULT_PATTERN_CATEGORY = "Basic";
+
+        /** @brief Default custom pattern flag */
+        static const bool DEFAULT_IS_CUSTOM_PATTERN = false;
+
+        /** @brief Default template pattern flag */
+        static const bool DEFAULT_IS_TEMPLATE_PATTERN = false;
+
+        /** @brief Default favorite pattern flag */
+        static const bool DEFAULT_IS_FAVORITE_PATTERN = true;
+
+        /** @brief Default pattern creator */
+        static const juce::String DEFAULT_PATTERN_CREATED_BY = "System";
+
+        /** @brief Default time signature numerator */
+        static const int DEFAULT_TIME_SIGNATURE_NUM = 4;
+
+        /** @brief Default time signature denominator */
+        static const int DEFAULT_TIME_SIGNATURE_DEN = 4;
+
+        /** @brief Default BPM range minimum */
+        static const int DEFAULT_BPM_RANGE_MIN = 100;
+
+        /** @brief Default BPM range maximum */
+        static const int DEFAULT_BPM_RANGE_MAX = 140;
+
+        /** @brief Default groove tightness */
+        static const float DEFAULT_GROOVE_TIGHTNESS = 0.85f;
+
+        /** @brief Default quantization setting */
+        static const juce::String DEFAULT_QUANTIZATION = "16th";
+
+        /** @brief Default pattern length */
+        static const juce::String DEFAULT_PATTERN_LENGTH = "4_bars";
+
+        /** @brief Default average velocity */
+        static const int DEFAULT_AVERAGE_VELOCITY = 85;
+
+        /** @brief Default velocity range minimum */
+        static const int DEFAULT_VELOCITY_RANGE_MIN = 45;
+
+        /** @brief Default velocity range maximum */
+        static const int DEFAULT_VELOCITY_RANGE_MAX = 120;
+
+        /** @brief Default pattern complexity (1-10) */
+        static const int DEFAULT_PATTERN_COMPLEXITY = 3;
+
+        /** @brief Default pattern energy (1-10) */
+        static const int DEFAULT_PATTERN_ENERGY = 7;
+
+        /** @brief Default pattern density */
+        static const juce::String DEFAULT_PATTERN_DENSITY = "moderate";
+
+        /** @brief Default pattern style */
+        static const juce::String DEFAULT_PATTERN_STYLE = "rock";
+
+        /** @brief Default pattern tags */
+        static const juce::String DEFAULT_PATTERN_TAGS = "basic,rock,4/4,steady";
+
+        /** @brief Default MIDI note count */
+        static const int DEFAULT_MIDI_NOTE_COUNT = 64;
+
+        /** @brief Default controller data flag */
+        static const bool DEFAULT_CONTROLLER_DATA = false;
+
+        // ========================================================================
+        // MIXER AND EFFECTS DEFAULTS
+        // ========================================================================
+
+        /** @brief Default mixer snapshot category */
+        static const juce::String DEFAULT_MIXER_SNAPSHOT_CATEGORY = "Performance";
+
+        /** @brief Default mixer snapshot description */
+        static const juce::String DEFAULT_MIXER_SNAPSHOT_DESCRIPTION = "Optimized for live performance with crowd noise";
+
+        /** @brief Default EQ preset category */
+        static const juce::String DEFAULT_EQ_PRESET_CATEGORY = "Kick";
+
+        /** @brief Default EQ type */
+        static const juce::String DEFAULT_EQ_TYPE = "Parametric";
+
+        /** @brief Default EQ band 1 frequency */
+        static const float DEFAULT_EQ_BAND1_FREQ = 60.0f;
+
+        /** @brief Default EQ band 1 gain */
+        static const float DEFAULT_EQ_BAND1_GAIN = 3.0f;
+
+        /** @brief Default EQ band 1 Q factor */
+        static const float DEFAULT_EQ_BAND1_Q = 1.2f;
+
+        /** @brief Default EQ band 2 frequency */
+        static const float DEFAULT_EQ_BAND2_FREQ = 2500.0f;
+
+        /** @brief Default EQ band 2 gain */
+        static const float DEFAULT_EQ_BAND2_GAIN = -2.5f;
+
+        /** @brief Default EQ band 2 Q factor */
+        static const float DEFAULT_EQ_BAND2_Q = 0.8f;
+
+        /** @brief Default EQ band 3 frequency */
+        static const float DEFAULT_EQ_BAND3_FREQ = 8000.0f;
+
+        /** @brief Default EQ band 3 gain */
+        static const float DEFAULT_EQ_BAND3_GAIN = 1.8f;
+
+        /** @brief Default EQ band 3 Q factor */
+        static const float DEFAULT_EQ_BAND3_Q = 1.5f;
+
+        // ========================================================================
+        // PERFORMANCE AND CACHING DEFAULTS
+        // ========================================================================
+
+        /** @brief Default maximum voices for polyphony */
+        static const int DEFAULT_MAX_VOICES_ENHANCED = 128;
+
+        /** @brief Default CPU usage limit percentage */
+        static const int DEFAULT_CPU_LIMIT = 75;
+
+        /** @brief Default thread count (auto-detect) */
+        static const juce::String DEFAULT_THREAD_COUNT_AUTO = "auto";
+
+        /** @brief Default preload samples enabled */
+        static const bool DEFAULT_PRELOAD_SAMPLES = true;
+
+        /** @brief Default stream from disk enabled */
+        static const bool DEFAULT_STREAM_FROM_DISK = true;
+
+        /** @brief Default cache size in MB */
+        static const int DEFAULT_CACHE_SIZE_MB = 256;
+
+        /** @brief Default MIDI clock source */
+        static const juce::String DEFAULT_MIDI_CLOCK_SOURCE = "Internal";
+
+        /** @brief Default tempo source */
+        static const juce::String DEFAULT_TEMPO_SOURCE = "Internal";
+
+        /** @brief Default MIDI sync enabled */
+        static const bool DEFAULT_MIDI_SYNC_ENABLED = false;
+
+        /** @brief Default MIDI thru enabled */
+        static const bool DEFAULT_MIDI_THRU_ENABLED = true;
+
+        /** @brief Default velocity for new notes */
+        static const int DEFAULT_NEW_NOTE_VELOCITY = 100;
+
+        /** @brief Default note-on delay in milliseconds */
+        static const int DEFAULT_NOTE_ON_DELAY = 0;
+
+        /** @brief Default note-off delay in milliseconds */
+        static const int DEFAULT_NOTE_OFF_DELAY = 0;
+
+        // ========================================================================
+        // METADATA AND INDEXING DEFAULTS
+        // ========================================================================
+
+        /** @brief Default file size format */
+        static const juce::String DEFAULT_FILE_SIZE_FORMAT = "245MB";
+
+        /** @brief Default thumbnail path format */
+        static const juce::String DEFAULT_THUMBNAIL_PATH = "Images/Kits/";
+
+        /** @brief Default samples path format */
+        static const juce::String DEFAULT_SAMPLES_PATH = "Samples/";
+
+        /** @brief Default SFZ path format */
+        static const juce::String DEFAULT_SFZ_PATH = "Kits/";
+
+        /** @brief Default date format */
+        static const juce::String DEFAULT_DATE_FORMAT = "2024-07-15";
+
+        /** @brief Default ISO date format */
+        static const juce::String DEFAULT_ISO_DATE_FORMAT = "2024-08-08 12:30:45";
+
+        /** @brief Default MIDI file size in bytes */
+        static const int DEFAULT_MIDI_FILE_SIZE = 2048;
+
+        /** @brief Default search index enabled */
+        static const bool DEFAULT_SEARCH_INDEX_ENABLED = true;
+
+        /** @brief Default backup enabled */
+        static const bool DEFAULT_BACKUP_ENABLED = true;
+
+        /** @brief Default backup interval in minutes */
+        static const int DEFAULT_BACKUP_INTERVAL = 30;
+
+        /** @brief Default maximum backup files to keep */
+        static const int DEFAULT_MAX_BACKUP_FILES = 10;
     } // end namespace Defaults
 
 /**
@@ -1861,6 +2493,7 @@ namespace LayoutConstants {
        static const int MAX_AUTO_SAVE_INTERVAL = 3600;
        static const int MIN_PLAYER_INDEX = 0;
        static const int MAX_PLAYER_INDEX = 7;
+       static const int MIN_ARRAY_INDEX = 0;
        static const int MIN_BUTTON_INDEX = 0;
        static const int MAX_BUTTON_INDEX = 15;
        static const int MAX_THEME_NAME_LENGTH = 50;
@@ -1874,319 +2507,13 @@ namespace LayoutConstants {
        static const float MAX_EQ_GAIN = 20.0f;
        static const float MIN_EQ_Q = 0.1f;
        static const float MAX_EQ_Q = 10.0f;
-       static const int MIN_AUDIO_CHANNELS = 0;
-       static const int MAX_AUDIO_CHANNELS = 32;
-       static const float MIN_PAN = -1.0f;
-       static const float MAX_PAN = 1.0f;
-       static const int MIN_ARRAY_INDEX = 0;
-       static const int MAX_THREAD_COUNT = 16;
-       static const int MIN_THREAD_COUNT = 1;
-       static const float MIN_QUALITY = 0.0f;
-       static const float MAX_QUALITY = 1.0f;
-       static const int MIN_TIME_SIG_NUMERATOR = 1;
-       static const int MAX_TIME_SIG_NUMERATOR = 99;
-       static const int MIN_TIME_SIG_DENOMINATOR = 1;
-       static const int MAX_TIME_SIG_DENOMINATOR = 64;
-       static const float MIN_PHOSPHOR_ICON_BOX_FIT_RATIO = 0.5f;  // 50% minimum - still readable
-       static const float MAX_PHOSPHOR_ICON_BOX_FIT_RATIO = 1.0f;  // 100% maximum - fills entire box
-   }
-
-   namespace UI {
-       static const float SPLASH_SCREEN_ON_TIME = 1.0f;
-       static const float DEFAULT_SEPARATOR_THICKNESS = 1.0f;
-       static const int MAX_TOGGLE_STATES = 5;
-       static const int MAX_FILL_STATES = 5;
-       static const int MAX_PHOSPHOR_TYPEFACES = 6;
-       static const int HEX_COLOR_LENGTH = 7;
-       static const int HEX_COLOR_START_INDEX = 1;
-       static const int ISO_DATE_LENGTH = 19;
-       static const char ISO_DATE_SEPARATOR = '-';
-       static const int ISO_DATE_YEAR_POS = 4;
-       static const int ISO_DATE_MONTH_POS = 7;
-       static const int ISO_DATE_DAY_POS = 10;
-       static const int ISO_DATE_HOUR_POS = 13;
-       static const int ISO_DATE_MINUTE_POS = 16;
-       static const int BUTTON_TEXT_MAX_LENGTH = 50;
-       static const int BEATS_BUTTON_TEXT_LENGTH_DIVISOR = 4;
-       static const int LIGHT_THEME_ID = 2;
-       static const int CLASSIC_THEME_ID = 3;
-       static const int CLOSE_BUTTON_SIZE = 36;
-       static const int CLOSE_BUTTON_X = 45;
-       static const int CLOSE_BUTTON_Y = 8;
-       static const int CONTENT_MARGIN = 20;
-       static const int TITLE_HEIGHT = 30;
-       static const int MESSAGE_HEIGHT = 40;
-       static const int EDITOR_HEIGHT = 30;
-       static const int BUTTON_AREA_HEIGHT = 35;
-       static const int BUTTON_WIDTH = 80;
-       static const int BUTTON_SPACING = 15;
-       static const float CORNER_RADIUS = 4.0f;
-       static const float BORDER_THICKNESS = 1.0f;
-       static const int TIMER_DELAY_MS = 100;
-       static const int MAX_GROUP_NAME_LENGTH = 12;
-       static const int POPUP_WIDTH = 400;
-       static const int POPUP_HEIGHT = 250;
-       static const int TITLE_SPACING = 10;
-       static const int EDITOR_SPACING = 20;
-
-       static const int AI_PANEL_TIMER_HZ = 10;
-       static const float AI_PANEL_BLEND_MIN = 0.0f;
-       static const float AI_PANEL_BLEND_MAX = 1.0f;
-       static const float AI_PANEL_COMPLEXITY_MIN = 0.0f;
-       static const float AI_PANEL_COMPLEXITY_MAX = 1.0f;
-       static const float AI_PANEL_DEFAULT_COMPLEXITY = 0.5f;
-       static const int AI_PANEL_PERFORMANCE_UPDATE_INTERVAL = 1000;
-
-       static const int COMMUNITY_BROWSER_TIMER_INTERVAL = 5000;
-       static const int COMMUNITY_BROWSER_PREVIEW_WIDTH = 300;
-       static const int COMMUNITY_BROWSER_ITEM_HEIGHT = 60;
-       static const int COMMUNITY_BROWSER_MAX_RATING = 5;
-       static const float COMMUNITY_BROWSER_MIN_RATING = 0.0f;
-
-       static const int COLLAB_PANEL_TIMER_HZ = 2;
-       static const int COLLAB_PANEL_MAX_COLLABORATORS = 8;
-       static const int COLLAB_PANEL_SESSION_ID_LENGTH = 6;
-       static const int COLLAB_PANEL_CHAT_HISTORY_LINES = 100;
-
-       static const int DRUMKIT_EDITOR_WINDOW_WIDTH = 1200;
-       static const int DRUMKIT_EDITOR_WINDOW_HEIGHT = 800;
-       static const int DRUMKIT_EDITOR_MIN_WIDTH = 800;
-       static const int DRUMKIT_EDITOR_MIN_HEIGHT = 600;
-
-       static const int SCENE_LAUNCHER_NUM_SCENES = 8;
-       static const float SCENE_LAUNCHER_BUTTON_ALPHA = 0.8f;
-       static const float SCENE_LAUNCHER_INACTIVE_ALPHA = 0.4f;
-       static const int SCENE_LAUNCHER_ANIMATION_INTERVAL = 50;
-
-       static const juce::String TOGGLE_BUTTON_NAMES[MAX_TOGGLE_STATES] = {"Auto", "Manual", "Stick", "Ride", "Lock"};
-       static const juce::String FILL_BUTTON_NAMES[MAX_FILL_STATES] = {"4", "8", "16", "32", "Solo"};
-
-       // Menu selection indicators
-       static const juce::String MENU_SELECTION_INDICATOR = "->";
-       static const juce::String MENU_NON_SELECTION_PADDING = "  ";
-
-       static const double SWING_ENERGY_SLIDER_STEP = 1.0;
-       static const double VOLUME_SLIDER_STEP = 0.01;
-
-       static const float HORIZONTAL_SEPARATOR_THICKNESS = 2.0f;
-   }
-
-   namespace Color {
-       static const uint32_t DEFAULT_ERROR_COLOR = 0xffff4444;
-       static const uint32_t DEFAULT_WARNING_COLOR = 0xffffaa44;
-       static const uint32_t DEFAULT_SUCCESS_COLOR = 0xff44ff44;
-       static const uint32_t DEFAULT_METER_LOW_COLOR = 0xff44ff44;
-       static const uint32_t DEFAULT_METER_MID_COLOR = 0xffffaa44;
-       static const uint32_t DEFAULT_METER_HIGH_COLOR = 0xffff4444;
-       static const uint32_t DEFAULT_BUTTON_TEXT_COLOR = 0x000000;
-       static const float ALPHA_OVERLAY = 0.375f;
-
-       // ROW-SPECIFIC DEBUG BACKGROUND COLORS (Dark variants for easy identification)
-       // These darker colors help distinguish rows during layout debugging
-       static const uint32_t ROW_1_DEBUG_BACKGROUND = 0xff1a1a2e;  // Dark blue-purple (TopBar)
-       static const uint32_t ROW_2_DEBUG_BACKGROUND = 0xff2e1a1a;  // Dark red-brown (PlayerTabs)
-       static const uint32_t ROW_3_DEBUG_BACKGROUND = 0xff1a2e1a;  // Dark green (Player# + DrumKit)
-       static const uint32_t ROW_4_DEBUG_BACKGROUND = 0xff2e2e1a;  // Dark yellow-brown (Pattern Groups)
-       static const uint32_t ROW_5_DEBUG_BACKGROUND = 0xff1a1a1a;  // Darkest grey (Pattern Matrix - main content)
-       static const uint32_t ROW_6_DEBUG_BACKGROUND = 0xff2e1a2e;  // Dark purple (Loop Section)
-   }
-
-   namespace Audio {
-       static const float DEFAULT_START_POSITION = 0.0f;
-       static const float DEFAULT_END_POSITION = 1.0f;
-       static const float DEFAULT_PITCH_SHIFT = 0.0f;
-       static const int DEFAULT_FILTER_TYPE = 0;
-       static const float DEFAULT_FILTER_FREQUENCY = 1000.0f;
-       static const float DEFAULT_FILTER_RESONANCE = 1.0f;
-       static const int DEFAULT_CHOKE_GROUP = 0;
-       static const float DEFAULT_CURVE_AMOUNT = 0.5f;
-       static const float DEFAULT_GROOVE_TIGHTNESS = 1.0f;
-       static const int NUM_DRUM_PADS = 16;
-       static const int BIT_DEPTH_16 = 16;
-       static const int BIT_DEPTH_24 = 24;
-       static const int BIT_DEPTH_32 = 32;
-       static const int NUM_EQ_BANDS = 3;
-       static const int NUM_SEND_TYPES = 2;
-       static const float DEFAULT_PRE_GAIN = 0.0f;
-       static const float DEFAULT_POST_GAIN = 0.0f;
-       static const float DEFAULT_SAMPLERATE_REDUCTION = 1.0f;
-       static const float REVERB_HIGH_CUT_FACTOR = 0.4f;
-       static const float DELAY_HIGH_CUT_FACTOR = 0.2f;
-       static const int DEFAULT_SYNC_DIVISION = 8;
-       static const int DEFAULT_SIDECHAIN_SOURCE = 0;
-       static const float EQ_ATOMIC_INIT = 0.0f;
-       static const float SEND_ATOMIC_INIT = 0.0f;
-       static const float DEFAULT_PAN = 0.0f;
-       static const bool DEFAULT_MUTE = false;
-       static const bool DEFAULT_SOLO = false;
-
-       static const int WAVEFORM_THUMBNAIL_CACHE_SIZE = 512;
-       static const float WAVEFORM_POSITION_TOLERANCE = 0.02f;
-       static const float WAVEFORM_MIN_SELECTION_SIZE = 0.01f;
-
-       static const int VELOCITY_CURVE_NUM_POINTS = 128;
-       static const float VELOCITY_CURVE_LINE_WIDTH = 2.0f;
-
-       static const int CHOKE_GROUP_COUNT = 16;
-       static const float SAMPLE_BROWSER_FILE_PREVIEW_TIME = 2.0f;
-
-       static const float DEFAULT_ATTACK_TIME = 0.001f;
-       static const float DEFAULT_DECAY_TIME = 0.1f;
-       static const float DEFAULT_SUSTAIN_LEVEL = 0.7f;
-       static const float DEFAULT_RELEASE_TIME = 0.05f;
-   }
-
-   namespace Fonts {
-       static const float BODY_DEFAULT_SIZE = 16.0f;
-       static const float HEADER_DEFAULT_SIZE = 18.0f;
-       static const float NUMERIC_DEFAULT_SIZE = 16.0f;
-       static const float BRAND_DEFAULT_SIZE = 24.0f;
-       static const float BUTTON_DEFAULT_SIZE = 16.0f;
-       static const float ICON_DEFAULT_SIZE = 20.0f;
-       static const float VERSION_DEFAULT_SIZE = 12.0f;
-       static const float POPUP_DEFAULT_SIZE = 14.0f;
-       static const float MAX_FONT_SIZE = 72.0f;
-
-       static const float PHOSPHOR_ICON_SIZE_SMALL = 16.0f;
-       static const float PHOSPHOR_ICON_SIZE_MEDIUM = 24.0f;
-       static const float PHOSPHOR_ICON_SIZE_LARGE = 32.0f;
-       static const float PAD_EDITOR_TEXT_SIZE = 16.0f;
-       static const float PAD_EDITOR_SMALL_TEXT_SIZE = 12.0f;
-       static const float PLAYER_NUMBER_DEFAULT_SIZE = 144.0f;
-   }
-
-   namespace MIDI {
-       static const float VELOCITY_DIVISOR = 2.0f;
-       static const int CLOCK_PPQN = 24;
-       static const int INACTIVE_PATTERN = -1;
-       static const int INACTIVE_SCENE = -1;
-       static const int ALL_PLAYERS = -1;
-       static const int DEFAULT_CC_NUMBER = -1;
-       static const int DEFAULT_FEEDBACK_TYPE = 0;
-       static const int DEFAULT_SYSEX_DEVICE_ID = 0;
-       static const float DEFAULT_POSITION = 0.0;
-       static const float DEFAULT_LAST_TIME = 0.0;
-       static const float DEFAULT_VELOCITY_RANGE = 0.0f;
-       static const float DEFAULT_VELOCITY_VARIATION = 0.0f;
-       static const float DEFAULT_TIMING_DEVIATION = 0.0f;
-       static const float DEFAULT_NOTE_DENSITY = 0.0f;
-       static const int HEX_BASE = 16;
-       static const char HEX_PREFIX = '#';
-       static const char HEX_DIGIT_0 = '0';
-       static const char HEX_DIGIT_9 = '9';
-       static const char HEX_DIGIT_A_UPPER = 'A';
-       static const char HEX_DIGIT_F_UPPER = 'F';
-       static const char HEX_DIGIT_A_LOWER = 'a';
-       static const char HEX_DIGIT_F_LOWER = 'f';
-       static const int STRING_LENGTH_SUBTRACT_ONE = 1;
-   }
-
-   class TimeSignature
-   {
-   public:
-       static bool isValidTimeSignature(const juce::String& timeSignature)
-       {
-           auto parts = juce::StringArray::fromTokens(timeSignature, "/", "");
-
-           if (parts.size() != 2)
-               return false;
-
-           auto numerator = parts[0].getIntValue();
-           auto denominator = parts[1].getIntValue();
-
-           if (numerator < Validation::MIN_TIME_SIG_NUMERATOR ||
-               numerator > Validation::MAX_TIME_SIG_NUMERATOR)
-               return false;
-
-           if (!isPowerOfTwo(denominator) ||
-               denominator < Validation::MIN_TIME_SIG_DENOMINATOR ||
-               denominator > Validation::MAX_TIME_SIG_DENOMINATOR)
-               return false;
-
-           return true;
-       }
-
-       static bool isCommonTimeSignature(const juce::String& timeSignature)
-       {
-           static const juce::StringArray COMMON_TIME_SIGNATURES = {
-               "4/4", "3/4", "6/8", "2/4", "5/4", "7/8", "9/8", "12/8",
-               "2/2", "3/8", "5/8", "7/4", "11/8", "13/8", "15/8"
-           };
-
-           return COMMON_TIME_SIGNATURES.contains(timeSignature);
-       }
-
-       static juce::StringArray getSuggestedTimeSignatures()
-       {
-           return {
-               "4/4", "3/4", "6/8", "2/4", "2/2",
-               "5/4", "7/8", "5/8", "7/4",
-               "9/8", "12/8", "11/8", "13/8", "15/8",
-               "3/8", "4/8", "6/4", "9/4",
-               "15/16", "17/16", "19/16", "21/16"
-           };
-       }
-
-       struct TimeSignatureInfo
-       {
-           int numerator;
-           int denominator;
-           float beatsPerBar;
-           bool isCompound;
-           bool isOddMeter;
-           juce::String grouping;
-       };
-
-       static TimeSignatureInfo parseTimeSignature(const juce::String& timeSignature)
-       {
-           TimeSignatureInfo info;
-
-           auto parts = juce::StringArray::fromTokens(timeSignature, "/", "");
-           if (parts.size() == 2)
-           {
-               info.numerator = parts[0].getIntValue();
-               info.denominator = parts[1].getIntValue();
-
-               if (info.numerator % 3 == 0 && info.numerator > 3 && info.denominator >= 8)
-               {
-                   info.isCompound = true;
-                   info.beatsPerBar = static_cast<float>(info.numerator) / 3.0f;
-               }
-               else
-               {
-                   info.isCompound = false;
-                   info.beatsPerBar = static_cast<float>(info.numerator);
-               }
-
-               info.isOddMeter = (info.numerator % 2 != 0 && info.numerator != 3) ||
-                                 (info.numerator == 5 || info.numerator == 7 || info.numerator == 11);
-
-               info.grouping = getDefaultGrouping(info.numerator, info.denominator);
-           }
-
-           return info;
-       }
-
-   private:
-       static bool isPowerOfTwo(int n)
-       {
-           return n > 0 && (n & (n - 1)) == 0;
-       }
-
-       static juce::String getDefaultGrouping(int numerator, int denominator)
-       {
-           switch (numerator)
-           {
-               case 5:  return "3+2";
-               case 7:  return "3+2+2";
-               case 9:  return denominator >= 8 ? "3+3+3" : "3+3+3";
-               case 11: return "3+3+3+2";
-               case 13: return "3+3+3+2+2";
-               case 15: return denominator >= 8 ? "3+3+3+3+3" : "4+4+4+3";
-               default: return "";
-           }
-       }
+       static const float MIN_VOLUME_DB = -60.0f;
+       static const float MAX_VOLUME_DB = 12.0f;
    };
+
+   // ========================================================================
+   // VALIDATION ARRAYS
+   // ========================================================================
 
    static const juce::StringArray VALID_TIME_SIGNATURES = {"4/4", "3/4", "6/8", "2/4", "5/4", "7/8", "9/8", "12/8"};
    static const juce::StringArray KIT_TYPES = {"Acoustic", "Electronic", "808", "909", "Vintage", "Custom"};
@@ -2198,7 +2525,7 @@ namespace LayoutConstants {
 
    inline juce::File getOTTODataDirectory() {
        juce::File documentsDir = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory);
-       return documentsDir.getChildFile(OTTO_DATA_FOLDER);
+       return documentsDir.getChildFile(DATABASE_ROOT_FOLDER);
    }
 
    inline juce::File getSettingsDirectory() {
@@ -2218,7 +2545,7 @@ namespace LayoutConstants {
    }
 
    inline juce::File getMixingDirectory() {
-       return getOTTODataDirectory().getChildFile(MIXING_FOLDER);
+       return getOTTODataDirectory().getChildFile(MIX_FOLDER);
    }
 
    inline juce::File getSystemDirectory() {
@@ -2245,20 +2572,16 @@ namespace LayoutConstants {
        return getSettingsDirectory().getChildFile(AUDIO_SETTINGS_FILE);
    }
 
-   inline juce::File getPresetsFile() {
-       return getPerformanceDirectory().getChildFile(PRESETS_FILE);
-   }
-
    inline juce::File getPlayersFile() {
        return getPerformanceDirectory().getChildFile(PLAYERS_FILE);
    }
 
-   inline juce::File getPatternChainsFile() {
-       return getPerformanceDirectory().getChildFile(PATTERN_CHAINS_FILE);
-   }
-
    inline juce::File getPatternGroupsFile() {
        return getPatternsDirectory().getChildFile(PATTERN_GROUPS_FILE);
+   }
+
+   inline juce::File getPresetsFile() {
+       return getPresetsDirectory().getChildFile(PRESETS_FILE);
    }
 
    inline juce::File getDrumKitsFile() {
@@ -2297,220 +2620,61 @@ namespace LayoutConstants {
        return getSystemDirectory().getChildFile(FILE_INDEX_FILE);
    }
 
-   inline bool isValidThemeName(const juce::String& themeName) {
-       if (themeName.isEmpty() || themeName.length() > Validation::MAX_THEME_NAME_LENGTH) {
-           return false;
-       }
-       return true;
+   // ========================================================================
+   // MISSING NAMESPACES AND FUNCTIONS
+   // ========================================================================
+
+   namespace MIDI {
+       static const int STRING_LENGTH_SUBTRACT_ONE = 1;
    }
 
-   inline bool isValidThemeID(int id) {
-       return id >= Validation::MIN_THEME_ID && id <= Validation::MAX_THEME_ID;
+   namespace UI {
+       static const int LIGHT_THEME_ID = 1;
+       static const int CLASSIC_THEME_ID = 2;
+       static const float SPLASH_SCREEN_ON_TIME = 2.0f;
    }
 
-   inline bool isValidTempo(int tempo) {
-       return tempo >= Validation::MIN_TEMPO && tempo <= Validation::MAX_TEMPO;
+   namespace Fonts {
+       static const float BODY_DEFAULT_SIZE = 14.0f;
+       static const float HEADER_DEFAULT_SIZE = 18.0f;
+       static const float MAX_FONT_SIZE = 72.0f;
+   }
+
+   // Validation functions
+   inline bool isValidSettingsID(const juce::String& settingsID) {
+       return settingsID.isNotEmpty() && settingsID.length() <= 50;
+   }
+
+   inline bool isValidThemeID(const juce::String& themeID) {
+       return themeID.isNotEmpty() && themeID.length() <= 50;
    }
 
    inline bool isValidTempo(float tempo) {
-       return tempo >= static_cast<float>(Validation::MIN_TEMPO) && tempo <= static_cast<float>(Validation::MAX_TEMPO);
-  }
+       return tempo >= Defaults::DEFAULT_MIN_BPM && tempo <= Defaults::DEFAULT_MAX_BPM;
+   }
 
-  inline bool isValidSampleRate(int sampleRate) {
-      return sampleRate >= Validation::MIN_AUDIO_SAMPLE_RATE &&
-             sampleRate <= Validation::MAX_AUDIO_SAMPLE_RATE;
-  }
+   inline bool isValidInterfaceScale(float scale) {
+       return scale >= 0.5f && scale <= 3.0f;
+   }
 
-  inline bool isValidBufferSize(int bufferSize) {
-      return bufferSize >= Validation::MIN_BUFFER_SIZE &&
-             bufferSize <= Validation::MAX_BUFFER_SIZE &&
-             (bufferSize & (bufferSize - 1)) == 0;
-  }
+   inline bool isValidVolume(float volume) {
+       return volume >= 0.0f && volume <= 1.0f;
+   }
 
-  inline bool isValidInterfaceScale(float scale) {
-      return scale >= Validation::MIN_INTERFACE_SCALE &&
-             scale <= Validation::MAX_INTERFACE_SCALE;
-  }
+   inline bool isValidQuantizeValue(int quantize) {
+       return quantize >= 1 && quantize <= 32;
+   }
 
-  inline bool isValidVolume(float volume) {
-      return volume >= Validation::MIN_VOLUME && volume <= Validation::MAX_VOLUME;
-  }
-
-  inline bool isValidQuantizeValue(int value) {
-      return value >= Validation::MIN_QUANTIZE_VALUE &&
-             value <= Validation::MAX_QUANTIZE_VALUE;
-  }
-
-  inline bool isValidSettingsID(int id) {
-      return id >= Validation::MIN_SETTINGS_ID && id <= Validation::MAX_SETTINGS_ID;
-  }
-
-  inline bool isValidPlayerIndex(int index) {
-      return index >= Validation::MIN_PLAYER_INDEX && index <= Validation::MAX_PLAYER_INDEX;
-  }
-
-  inline bool isValidButtonIndex(int index) {
-      return index >= Validation::MIN_BUTTON_INDEX && index <= Validation::MAX_BUTTON_INDEX;
-  }
-
-  inline bool isValidPresetIndex(int index) {
-      return index >= Validation::MIN_PRESET_ID && index <= Validation::MAX_PRESET_ID;
-  }
-
-  inline bool isValidSwing(float swing) {
-      return swing >= Validation::MIN_SWING && swing <= Validation::MAX_SWING;
-  }
-
-  inline bool isValidEnergy(float energy) {
-      return energy >= Validation::MIN_ENERGY && energy <= Validation::MAX_ENERGY;
-  }
-
-  inline bool isValidMidiNote(int note) {
-      return note >= Validation::MIN_MIDI_NOTE && note <= Validation::MAX_MIDI_NOTE;
-  }
-
-  inline bool isValidMidiChannel(int channel) {
-      return channel >= Validation::MIN_MIDI_CHANNEL && channel <= Validation::MAX_MIDI_CHANNEL;
-  }
-
-  inline bool isValidPatternLength(int length) {
-      return length >= Validation::MIN_PATTERN_LENGTH && length <= Validation::MAX_PATTERN_LENGTH;
-  }
-
-  inline bool isValidTimeSignature(const juce::String& timeSig) {
-      return TimeSignature::isValidTimeSignature(timeSig);
-  }
-
-  inline bool isValidPan(float pan) {
-      return pan >= Validation::MIN_PAN && pan <= Validation::MAX_PAN;
-  }
-
-  inline bool isValidEQFreq(float freq) {
-      return freq >= Validation::MIN_EQ_FREQ && freq <= Validation::MAX_EQ_FREQ;
-  }
-
-  inline bool isValidEQGain(float gain) {
-      return gain >= Validation::MIN_EQ_GAIN && gain <= Validation::MAX_EQ_GAIN;
-  }
-
-  inline bool isValidEQQ(float q) {
-      return q >= Validation::MIN_EQ_Q && q <= Validation::MAX_EQ_Q;
-  }
-
-  inline bool isValidLoopPosition(float position) {
-      return position >= Validation::MIN_LOOP_POSITION && position <= Validation::MAX_LOOP_POSITION;
-  }
-
-  inline bool isValidHexColor(const juce::String& color) {
-      if (!color.startsWith("#") || color.length() != UI::HEX_COLOR_LENGTH) return false;
-      for (int i = UI::HEX_COLOR_START_INDEX; i < color.length(); ++i) {
-          char c = color[i];
-          if (!((c >= MIDI::HEX_DIGIT_0 && c <= MIDI::HEX_DIGIT_9) ||
-                (c >= MIDI::HEX_DIGIT_A_UPPER && c <= MIDI::HEX_DIGIT_F_UPPER) ||
-                (c >= MIDI::HEX_DIGIT_A_LOWER && c <= MIDI::HEX_DIGIT_F_LOWER))) {
-              return false;
-          }
-      }
-      return true;
-  }
-
-  inline bool isValidISODate(const juce::String& dateStr) {
-      if (dateStr.length() != UI::ISO_DATE_LENGTH) return false;
-      if (dateStr[UI::ISO_DATE_YEAR_POS] != UI::ISO_DATE_SEPARATOR ||
-          dateStr[UI::ISO_DATE_MONTH_POS] != UI::ISO_DATE_SEPARATOR ||
-          dateStr[UI::ISO_DATE_DAY_POS] != UI::ISO_DATE_SEPARATOR ||
-          dateStr[UI::ISO_DATE_HOUR_POS] != UI::ISO_DATE_SEPARATOR ||
-          dateStr[UI::ISO_DATE_MINUTE_POS] != UI::ISO_DATE_SEPARATOR) return false;
-      return true;
-  }
-
-  inline float clampScale(float scale) {
-      return juce::jlimit(Validation::MIN_INTERFACE_SCALE, Validation::MAX_INTERFACE_SCALE, scale);
-  }
-
-  inline int clampTempo(int tempo) {
-      return juce::jlimit(Validation::MIN_TEMPO, Validation::MAX_TEMPO, tempo);
-  }
-
-  inline float clampTempo(float tempo) {
-      return juce::jlimit(static_cast<float>(Validation::MIN_TEMPO),
-                         static_cast<float>(Validation::MAX_TEMPO), tempo);
-  }
-
-  inline float clampVolume(float volume) {
-      return juce::jlimit(Validation::MIN_VOLUME, Validation::MAX_VOLUME, volume);
-  }
-
-  inline int clampPlayerIndex(int index) {
-      return juce::jlimit(Validation::MIN_PLAYER_INDEX, Validation::MAX_PLAYER_INDEX, index);
-  }
-
-  inline int clampButtonIndex(int index) {
-      return juce::jlimit(Validation::MIN_BUTTON_INDEX, Validation::MAX_BUTTON_INDEX, index);
-  }
-
-  inline float clampSwing(float swing) {
-      return juce::jlimit(Validation::MIN_SWING, Validation::MAX_SWING, swing);
-  }
-
-  inline int clampPatternLength(int length) {
-      return juce::jlimit(Validation::MIN_PATTERN_LENGTH, Validation::MAX_PATTERN_LENGTH, length);
-  }
-
-  inline int clampChannelIndex(int index) {
-      return juce::jlimit(Validation::MIN_AUDIO_CHANNELS, Validation::MAX_AUDIO_CHANNELS - 1, index);
-  }
-
-  inline float clampPan(float pan) {
-      return juce::jlimit(Validation::MIN_PAN, Validation::MAX_PAN, pan);
-  }
-
-  inline float clampGain(float gain) {
-      return juce::jlimit(Validation::MIN_EQ_GAIN, Validation::MAX_EQ_GAIN, gain);
-  }
-
-  inline int clampMidiChannel(int channel) {
-      return juce::jlimit(Validation::MIN_MIDI_CHANNEL, Validation::MAX_MIDI_CHANNEL, channel);
-  }
-
-  inline int clampMidiNote(int note) {
-      return juce::jlimit(Validation::MIN_MIDI_NOTE, Validation::MAX_MIDI_NOTE, note);
-  }
-
-  inline int clampMidiVelocity(int velocity) {
-      return juce::jlimit(Validation::MIN_MIDI_VELOCITY, Validation::MAX_MIDI_VELOCITY, velocity);
-  }
-
-  inline int clampPhosphorWeight(int weight) {
-      return juce::jlimit(Validation::MIN_PHOSPHOR_WEIGHT, Validation::MAX_PHOSPHOR_WEIGHT, weight);
-  }
-
-  inline int clampWindowSize(int size) {
-      return juce::jlimit(Validation::MIN_WINDOW_SIZE, Validation::MAX_WINDOW_SIZE, size);
-  }
-
-  inline int clampPresetIndex(int index) {
-      return juce::jlimit(0, 127, index);  // MIDI preset range
-  }
-
-  inline float clampEnergy(float energy) {
-      return juce::jlimit(0.0f, 1.0f, energy);  // Energy typically 0-1 range
-  }
-
-  inline float clampLoopPosition(float position) {
-      return juce::jlimit(Validation::MIN_LOOP_POSITION, Validation::MAX_LOOP_POSITION, position);
-  }
-
-  inline float clampPhosphorIconBoxFitRatio(float ratio) {
-      return juce::jlimit(Validation::MIN_PHOSPHOR_ICON_BOX_FIT_RATIO, Validation::MAX_PHOSPHOR_ICON_BOX_FIT_RATIO, ratio);
-  }
-
-  /**
-   * @brief Creates the complete directory structure for OTTO data storage
-   * @param baseDirectory The root directory path
-   */
-  inline void createDirectoryStructure(const juce::File& baseDirectory) {
-      // Implementation would go here
-  }
+   inline bool isValidHexColor(const juce::String& color) {
+       if (color.isEmpty() || !color.startsWith("#")) return false;
+       if (color.length() != 7 && color.length() != 9) return false;
+       for (int i = 1; i < color.length(); ++i) {
+           char c = color[i];
+           if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))) {
+               return false;
+           }
+       }
+       return true;
+   }
 
 } // namespace INIConfig

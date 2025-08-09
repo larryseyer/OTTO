@@ -4,9 +4,9 @@
 #include "INIUtils.h"
 
 struct GlobalSettings {
-    int settingsID = INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID;
+    juce::String settingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
     juce::String settingsName = "Default";
-    int themeID = INIConfig::Defaults::DEFAULT_THEME_ID;
+    juce::String themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
     int presetID = INIConfig::Defaults::DEFAULT_CURRENT_PRESET;
     int tempo = INIConfig::Defaults::DEFAULT_TEMPO;
     juce::String linkSyncMode = INIConfig::Defaults::DEFAULT_LINK_SYNC_MODE;
@@ -22,7 +22,7 @@ struct GlobalSettings {
     juce::String metronomeSound = INIConfig::Defaults::DEFAULT_METRONOME_SOUND;
     int quantizeValue = INIConfig::Defaults::DEFAULT_QUANTIZE_VALUE;
     int countInBars = INIConfig::Defaults::DEFAULT_COUNT_IN_BARS;
-    int audioSettingsID = INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID;
+    juce::String audioSettingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
     juce::String lastModified;
     juce::String fileFormatVersion = INIConfig::FILE_FORMAT_VERSION;
     bool midiClockOut = INIConfig::Defaults::DEFAULT_MIDI_CLOCK_OUT;
@@ -45,9 +45,9 @@ struct GlobalSettings {
     juce::String customFontPath = "";
 
     void setDefaults() {
-        settingsID = INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID;
+        settingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
         settingsName = "Default";
-        themeID = INIConfig::Defaults::DEFAULT_THEME_ID;
+        themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
         presetID = INIConfig::Defaults::DEFAULT_CURRENT_PRESET;
         tempo = INIConfig::Defaults::DEFAULT_TEMPO;
         linkSyncMode = INIConfig::Defaults::DEFAULT_LINK_SYNC_MODE;
@@ -102,7 +102,7 @@ struct GlobalSettings {
 };
 
 struct ThemeSettings {
-    int themeID = INIConfig::Defaults::DEFAULT_THEME_ID;
+    juce::String themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
     juce::String themeName = "Dark";
     juce::String backgroundColor = "#2A2A2A";
     juce::String foregroundColor = "#FFFFFF";
@@ -132,7 +132,7 @@ struct ThemeSettings {
     juce::String modifiedDate;
 
     void setDefaults() {
-        themeID = INIConfig::Defaults::DEFAULT_THEME_ID;
+        themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
         themeName = "Dark";
         backgroundColor = "#2A2A2A";
         foregroundColor = "#FFFFFF";
@@ -164,7 +164,7 @@ struct ThemeSettings {
     }
 
     void setLightThemeDefaults() {
-        themeID = INIConfig::UI::LIGHT_THEME_ID;
+        themeID = juce::String(INIConfig::UI::LIGHT_THEME_ID);
         themeName = "Light";
         backgroundColor = "#F5F5F5";
         foregroundColor = "#212121";
@@ -196,7 +196,7 @@ struct ThemeSettings {
     }
 
     void setClassicThemeDefaults() {
-        themeID = INIConfig::UI::CLASSIC_THEME_ID;
+        themeID = juce::String(INIConfig::UI::CLASSIC_THEME_ID);
         themeName = "Classic";
         backgroundColor = "#3C3C3C";
         foregroundColor = "#E8E8E8";
@@ -255,7 +255,7 @@ struct ThemeSettings {
 };
 
 struct AudioSettings {
-    int audioSettingsID = INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID;
+    juce::String audioSettingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
     juce::String settingsName = "Standard";
     int sampleRate = INIConfig::Defaults::DEFAULT_SAMPLE_RATE;
     int bufferSize = INIConfig::Defaults::DEFAULT_BUFFER_SIZE;

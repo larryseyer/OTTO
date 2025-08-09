@@ -111,6 +111,19 @@ public:
     static bool loadComponentState(const juce::String& componentName, ComponentState& state);
     static bool saveComponentState(const juce::String& componentName, const ComponentState& state);
 
+    // Enhanced database creation methods
+    bool createEnhancedSystemFiles();
+    bool createEnhancedSettingsFiles();
+    bool createEnhancedUIFiles();
+    bool createEnhancedThemesFiles();
+    bool createEnhancedPlayersFiles();
+    bool createEnhancedKitsFiles();
+    bool createEnhancedPatternsFiles();
+    bool createEnhancedMixFiles();
+    bool createEnhancedPerformanceFiles();
+    bool createEnhancedCacheFiles();
+    bool createEnhancedPresetsFiles();
+
 private:
     juce::String lastError;
     void* midiFileManager = nullptr;

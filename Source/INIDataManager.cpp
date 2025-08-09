@@ -239,7 +239,10 @@ bool INIDataManager::allFilesExist() const {
                         getINIFilePath(getAudioSettingsFilename()).existsAsFile();
 
     // Check if Default preset exists, and if not, try to create it
-    auto defaultPresetFile = INIConfig::getPresetsDirectory().getChildFile("Defaults").getChildFile("Default.ini");
+    auto defaultPresetFile = INIConfig::getPresetsDirectory()
+        .getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+        .getChildFile(INIConfig::PRESETS_USER_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     bool defaultPresetExists = defaultPresetFile.existsAsFile();
     if (!defaultPresetExists) {
         // Try to create the Default preset (cast away const for this critical operation)
@@ -359,7 +362,10 @@ bool INIDataManager::createAllRequiredFiles() {
         success = success && createSamplePlayerSettings();
     }
 
-    auto defaultPresetFile = INIConfig::getPresetsDirectory().getChildFile("Defaults").getChildFile("Default.ini");
+    auto defaultPresetFile = INIConfig::getPresetsDirectory()
+        .getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+        .getChildFile(INIConfig::PRESETS_USER_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     if (!defaultPresetFile.existsAsFile()) {
         success = success && createDefaultPreset();
     }
@@ -2546,11 +2552,10 @@ bool INIDataManager::savePreset(const juce::String& presetName, const ComponentS
         return false;
     }
 
-    // Determine category - Default preset goes in "Defaults" folder, others in "User" folder
-    juce::String categoryName = (presetName == "Default") ? "Defaults" : "User";
-    
     auto presetsDir = INIConfig::getPresetsDirectory();
-    auto categoryDir = presetsDir.getChildFile(categoryName);
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    juce::String categoryName = INIConfig::PRESETS_USER_FOLDER;
+    auto categoryDir = categoriesDir.getChildFile(categoryName);
     
     // Ensure category directory exists
     if (!categoryDir.exists()) {
@@ -2647,16 +2652,15 @@ bool INIDataManager::loadPreset(const juce::String& presetName, ComponentState& 
     juce::File presetFile;
     bool found = false;
     
-    // Check default category first
-    juce::String categoryName = (presetName == "Default") ? "Defaults" : "User";
-    auto categoryDir = presetsDir.getChildFile(categoryName);
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    juce::String categoryName = INIConfig::PRESETS_USER_FOLDER;
+    auto categoryDir = categoriesDir.getChildFile(categoryName);
     presetFile = categoryDir.getChildFile(presetName + ".ini");
     
     if (presetFile.existsAsFile()) {
         found = true;
     } else {
-        // Search all category directories for the preset
-        for (auto& dir : presetsDir.findChildFiles(juce::File::findDirectories, false)) {
+        for (auto& dir : categoriesDir.findChildFiles(juce::File::findDirectories, false)) {
             presetFile = dir.getChildFile(presetName + ".ini");
             if (presetFile.existsAsFile()) {
                 found = true;
@@ -2832,15 +2836,14 @@ juce::StringArray INIDataManager::getAvailablePresetNames() {
     juce::StringArray defaultPresets;
     juce::StringArray userPresets;
     
-    // Scan through all category directories
-    for (auto& categoryDir : presetsDir.findChildFiles(juce::File::findDirectories, false)) {
+    auto categoriesDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER);
+    for (auto& categoryDir : categoriesDir.findChildFiles(juce::File::findDirectories, false)) {
         juce::String categoryName = categoryDir.getFileName();
         
-        // Find all .ini files in this category
         for (auto& presetFile : categoryDir.findChildFiles(juce::File::findFiles, false, "*.ini")) {
             juce::String presetName = presetFile.getFileNameWithoutExtension();
             
-            if (categoryName == "Defaults") {
+            if (categoryName == INIConfig::PRESETS_USER_FOLDER) {
                 defaultPresets.add(presetName);
             } else {
                 userPresets.add(presetName);
@@ -2872,9 +2875,9 @@ juce::StringArray INIDataManager::getAvailablePresetNames() {
 }
 
 bool INIDataManager::createDefaultPreset() {
-    // Ensure Defaults directory exists
     auto presetsDir = INIConfig::getPresetsDirectory();
-    auto defaultsDir = presetsDir.getChildFile("Defaults");
+    auto defaultsDir = presetsDir.getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+                                 .getChildFile(INIConfig::PRESETS_USER_FOLDER);
     
     if (!defaultsDir.exists()) {
         auto result = defaultsDir.createDirectory();
@@ -2907,7 +2910,10 @@ bool INIDataManager::createDefaultPreset() {
 }
 
 bool INIDataManager::ensureDefaultPresetExists() {
-    auto defaultPresetFile = INIConfig::getPresetsDirectory().getChildFile("Defaults").getChildFile("Default.ini");
+    auto defaultPresetFile = INIConfig::getPresetsDirectory()
+        .getChildFile(INIConfig::PRESETS_CATEGORIES_FOLDER)
+        .getChildFile(INIConfig::PRESETS_USER_FOLDER)
+        .getChildFile(INIConfig::DEFAULT_PRESET_FILE);
     
     if (!defaultPresetFile.existsAsFile()) {
         // Default preset is missing - recreate it immediately

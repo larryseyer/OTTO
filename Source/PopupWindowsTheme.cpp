@@ -297,7 +297,6 @@ void ThemeEditorTab::saveThemeSettings(ThemeSettings& settings) {
     if (INIManager.loadAllThemes(existingThemes)) {
         for (const auto& theme : existingThemes) {
             if (theme.themeName == settings.themeName) {
-                settings.themeID = theme.themeID;
                 settings.createdDate = theme.createdDate;
 
                 settings.fontMain = theme.fontMain;
@@ -311,13 +310,6 @@ void ThemeEditorTab::saveThemeSettings(ThemeSettings& settings) {
         }
     }
 
-    if (settings.themeID == 1 && settings.themeName != "Dark") {
-        int maxID = 0;
-        for (const auto& theme : existingThemes) {
-            maxID = juce::jmax(maxID, theme.themeID);
-        }
-        settings.themeID = maxID + 1;
-    }
 
     for (auto* editor : colorEditors) {
         auto colorString = editor->currentColor.toDisplayString(true);

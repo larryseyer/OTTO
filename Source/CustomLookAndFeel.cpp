@@ -1073,10 +1073,8 @@ void CustomLookAndFeel::drawVerticalSeparator(juce::Graphics& g, int x, int y, i
 
 void CustomLookAndFeel::saveStates(ComponentState& state) {
    if (colorScheme.getCurrentTheme() == 0) {
-       state.themeSettings.themeID = 1;
        state.themeSettings.themeName = "Dark";
    } else {
-       state.themeSettings.themeID = 2;
        state.themeSettings.themeName = "Light";
    }
 
@@ -1112,9 +1110,9 @@ void CustomLookAndFeel::saveStates(ComponentState& state) {
 }
 
 void CustomLookAndFeel::loadStates(const ComponentState& state) {
-   if (state.themeSettings.themeID == 1) {
+   if (state.themeSettings.themeName == "Dark") {
        colorScheme.setDarkTheme();
-   } else if (state.themeSettings.themeID == 2) {
+   } else if (state.themeSettings.themeName == "Light") {
        colorScheme.setLightTheme();
    }
 

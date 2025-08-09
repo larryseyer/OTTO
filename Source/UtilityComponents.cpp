@@ -383,7 +383,7 @@ void HierarchicalComboBox::saveState(ComponentState& state) const {
          }
      }
  } else if (componentId.contains("theme")) {
-     state.globalSettings.themeID = getSelectedId();
+     state.globalSettings.currentThemeName = getText();
  }
 }
 
@@ -397,8 +397,8 @@ void HierarchicalComboBox::loadState(const ComponentState& state) {
              setText(state.playerSettings[playerIndex].selectedDrumkit);
          }
      }
- } else if (componentId.contains("theme")) {
-     setSelectedId(state.globalSettings.themeID);
+} else if (componentId.contains("theme")) {
+     setText(state.globalSettings.currentThemeName, juce::dontSendNotification);
  }
 }
 

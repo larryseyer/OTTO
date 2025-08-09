@@ -1,0 +1,137 @@
+# OTTO Linux Makefile
+# JUCE-based audio plugin/standalone application
+
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -O2 -DLINUX=1 -DJUCE_STANDALONE_APPLICATION=1
+JUCE_PATH = $(HOME)/JUCE
+BUILD_DIR = build-linux
+
+# pkg-config for text/font stacks
+PKG_CFLAGS := $(shell pkg-config --cflags freetype2 harfbuzz fontconfig)
+PKG_LIBS   := $(shell pkg-config --libs freetype2 harfbuzz fontconfig)
+
+# Include paths
+INCLUDES = -I JuceLibraryCode \
+           -I Source \
+           -I $(JUCE_PATH)/modules
+
+# Preprocessor definitions for JUCE
+DEFINES = -D JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 \
+          -D JUCE_STANDALONE_APPLICATION=1 \
+          -D JUCE_USE_CURL=0 \
+          -D JUCE_WEB_BROWSER=0 \
+          -D JUCE_USE_CAMERA=0 \
+          -D JUCE_DONT_DECLARE_PROJECTINFO=1 \
+          -D JUCE_DISPLAY_SPLASH_SCREEN=0 \
+          -D JUCE_REPORT_APP_USAGE=0 \
+          -D JUCE_ALSA=1 \
+          -D JUCE_JACK=1
+
+# Linux system libraries
+LDFLAGS = -ldl -lpthread -lrt \
+          -lasound \
+          -ljack \
+          -lX11 -lXext -lXinerama -lXrandr -lXcursor -lXrender \
+          -lcurl
+
+# JUCE module source files (these should exist in JuceLibraryCode)
+JUCE_SOURCES = JuceLibraryCode/include_juce_core.cpp \
+               JuceLibraryCode/include_juce_data_structures.cpp \
+               JuceLibraryCode/include_juce_events.cpp \
+               JuceLibraryCode/include_juce_graphics.cpp \
+               JuceLibraryCode/include_juce_gui_basics.cpp \
+               JuceLibraryCode/include_juce_audio_basics.cpp \
+               JuceLibraryCode/include_juce_audio_devices.cpp \
+               JuceLibraryCode/include_juce_audio_formats.cpp \
+               JuceLibraryCode/include_juce_audio_processors.cpp
+
+# Main application sources (discover dynamically)
+APP_SOURCES := $(shell find Source -type f -name '*.cpp')
+
+# Check if we have the JUCE library code
+JUCE_HEADER_CHECK = JuceLibraryCode/JuceHeader.h
+
+.PHONY: all clean check-juce run
+
+all: check-juce otto-standalone
+
+check-juce:
+	@echo "Checking for JUCE library code..."
+	@if [ ! -f "$(JUCE_HEADER_CHECK)" ]; then \
+		echo "ERROR: JUCE library code not found!"; \
+		echo "The JuceLibraryCode directory appears to be missing or incomplete."; \
+		echo "This usually means the project needs to be regenerated with Projucer."; \
+		echo ""; \
+		echo "For now, we'll build a simple test version instead."; \
+		exit 1; \
+	fi
+	@echo "✓ JUCE library code found"
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# Fallback: build a simple test application
+otto-test: $(BUILD_DIR)
+	@echo "Building OTTO test application (simplified version)..."
+	$(CXX) $(CXXFLAGS) -DSIMPLE_TEST_BUILD=1 \
+		-I Source \
+		test_simple.cpp \
+		-o $(BUILD_DIR)/otto-test
+	@echo "✓ OTTO test application built successfully!"
+	@echo "Run with: ./$(BUILD_DIR)/otto-test"
+
+# Linux demo application
+otto-demo: $(BUILD_DIR)
+	@echo "Building OTTO Linux demo application..."
+	$(CXX) $(CXXFLAGS) \
+		simple_standalone.cpp \
+		-o $(BUILD_DIR)/otto-demo
+	@echo "✓ OTTO Linux demo application built successfully!"
+	@echo "Run with: ./$(BUILD_DIR)/otto-demo"
+
+# Full JUCE application (requires complete JUCE setup)
+otto-standalone: $(BUILD_DIR)
+	@echo "Building OTTO standalone application..."
+	@echo "This requires a complete JUCE setup with generated library code."
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(DEFINES) $(PKG_CFLAGS) \
+		$(JUCE_SOURCES) $(APP_SOURCES) \
+		$(LDFLAGS) $(PKG_LIBS) \
+		-o $(BUILD_DIR)/otto-standalone
+	@echo "✓ OTTO standalone application built successfully!"
+
+clean:
+	rm -rf $(BUILD_DIR)
+	@echo "Build directory cleaned"
+
+run-test: otto-test
+	@echo "Running OTTO test application..."
+	./$(BUILD_DIR)/otto-test
+
+run-demo: otto-demo
+	@echo "Running OTTO Linux demo application..."
+	./$(BUILD_DIR)/otto-demo
+
+# Try to run the full application (may require audio setup)
+run: otto-standalone
+	@echo "Running OTTO standalone application..."
+	@echo "Note: This may require proper audio device setup"
+	./$(BUILD_DIR)/otto-standalone
+
+help:
+	@echo "OTTO Linux Build System"
+	@echo "======================="
+	@echo ""
+	@echo "Available targets:"
+	@echo "  otto-test      - Build simple test version (no JUCE GUI)"
+	@echo "  otto-demo      - Build OTTO Linux demo application"
+	@echo "  otto-standalone- Build full JUCE application (requires complete setup)"
+	@echo "  clean          - Clean build directory"
+	@echo "  run-test       - Build and run test version"
+	@echo "  run-demo       - Build and run demo version"
+	@echo "  run            - Build and run full application"
+	@echo "  help           - Show this help"
+	@echo ""
+	@echo "For the full application, you need:"
+	@echo "  1. Complete JUCE library code in JuceLibraryCode/"
+	@echo "  2. All required Linux audio libraries installed"
+	@echo "  3. Proper audio device configuration"

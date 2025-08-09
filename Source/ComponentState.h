@@ -6,7 +6,6 @@
 struct GlobalSettings {
     juce::String settingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
     juce::String settingsName = "Default";
-    juce::String themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
     int presetID = INIConfig::Defaults::DEFAULT_CURRENT_PRESET;
     int tempo = INIConfig::Defaults::DEFAULT_TEMPO;
     juce::String linkSyncMode = INIConfig::Defaults::DEFAULT_LINK_SYNC_MODE;
@@ -47,7 +46,6 @@ struct GlobalSettings {
     void setDefaults() {
         settingsID = juce::String(INIConfig::Defaults::DEFAULT_AUDIO_SETTINGS_ID);
         settingsName = "Default";
-        themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
         presetID = INIConfig::Defaults::DEFAULT_CURRENT_PRESET;
         tempo = INIConfig::Defaults::DEFAULT_TEMPO;
         linkSyncMode = INIConfig::Defaults::DEFAULT_LINK_SYNC_MODE;
@@ -86,9 +84,7 @@ struct GlobalSettings {
     }
 
     bool isValid() const {
-        return INIConfig::isValidSettingsID(settingsID) &&
-               INIConfig::isValidThemeID(themeID) &&
-               INIConfig::isValidTempo(tempo) &&
+        return INIConfig::isValidSettingsID(settingsID) &&               INIConfig::isValidTempo(tempo) &&
                INIConfig::isValidInterfaceScale(interfaceScale) &&
                INIConfig::isValidVolume(metronomeVolume) &&
                INIConfig::isValidQuantizeValue(quantizeValue) &&
@@ -102,7 +98,6 @@ struct GlobalSettings {
 };
 
 struct ThemeSettings {
-    juce::String themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
     juce::String themeName = "Dark";
     juce::String backgroundColor = "#2A2A2A";
     juce::String foregroundColor = "#FFFFFF";
@@ -132,7 +127,6 @@ struct ThemeSettings {
     juce::String modifiedDate;
 
     void setDefaults() {
-        themeID = juce::String(INIConfig::Defaults::DEFAULT_THEME_ID);
         themeName = "Dark";
         backgroundColor = "#2A2A2A";
         foregroundColor = "#FFFFFF";
@@ -164,7 +158,6 @@ struct ThemeSettings {
     }
 
     void setLightThemeDefaults() {
-        themeID = juce::String(INIConfig::UI::LIGHT_THEME_ID);
         themeName = "Light";
         backgroundColor = "#F5F5F5";
         foregroundColor = "#212121";
@@ -196,7 +189,6 @@ struct ThemeSettings {
     }
 
     void setClassicThemeDefaults() {
-        themeID = juce::String(INIConfig::UI::CLASSIC_THEME_ID);
         themeName = "Classic";
         backgroundColor = "#3C3C3C";
         foregroundColor = "#E8E8E8";
@@ -228,7 +220,7 @@ struct ThemeSettings {
     }
 
     bool isValid() const {
-        return INIConfig::isValidThemeID(themeID) &&
+        return 
                themeName.length() <= INIConfig::Validation::MAX_THEME_NAME_LENGTH &&
                themeName.isNotEmpty() &&
                INIConfig::isValidHexColor(backgroundColor) &&

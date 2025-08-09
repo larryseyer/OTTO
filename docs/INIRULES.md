@@ -28,6 +28,88 @@ OTTO_Data/
 ```
 
 ### INI File Categories
+## First-run generation behavior
+
+On first launch with a clean data directory, OTTO will generate the full hierarchical INI structure under the DatabaseRoot automatically. Creation is idempotent: files and folders are created only if missing and existing user files are never overwritten.
+
+The generated structure includes (non-exhaustive):
+- Settings
+  - UI
+    - ThemeManager.ini
+    - WindowLayout.ini
+- Themes
+  - Default.ini
+  - Dark.ini
+  - Light.ini
+  - ThemeIndex.ini
+- Players
+  - PlayerConfigs.ini
+  - PlayerGroups.ini
+  - GlobalPlayerSettings.ini
+  - PlayerStates.ini
+- Kits
+  - DrumKits.ini
+  - KitCategories.ini
+  - SampleMappings.ini
+  - VelocityMappings.ini
+  - MidiMappings.ini
+  - KitIndex.ini
+- Patterns
+  - PatternMetadata.ini
+  - PatternChains.ini
+  - PatternIndex.ini
+  - TempoMaps.ini
+- Mix
+  - Presets
+    - EQPresets.ini
+    - CompressorPresets.ini
+    - ReverbPresets.ini
+    - DelayPresets.ini
+  - Channels
+    - ChannelPresets.ini
+    - ChannelGroups.ini
+    - BusConfigurations.ini
+    - RoutingPresets.ini
+  - Master
+    - MasterChannelPresets.ini
+    - MasterEQ.ini
+    - MasterLimiter.ini
+    - MasterMetering.ini
+  - MixerSnapshots.ini
+- Presets
+  - Categories
+    - Vintage/
+    - Modern/
+    - Experimental/
+    - User/
+      - Default.ini
+  - Templates
+    - ProjectTemplates.ini
+    - KitTemplates.ini
+    - PatternTemplates.ini
+  - PresetIndex.ini
+- Performance
+  - Sessions.ini
+  - SetLists.ini
+  - MacroControls.ini
+  - SceneChanges.ini
+  - BackupStates.ini
+- System
+  - Application.ini
+  - AudioDevices.ini
+  - MidiDevices.ini
+  - ExternalFolders.ini
+  - FileIndex.ini
+  - Licensing.ini
+- Cache
+  - SampleCache.ini
+  - PatternCache.ini
+  - KitCache.ini
+  - SearchIndex.ini
+
+All paths and filenames are centralized in Source/INIConfig.h and must be referenced via its constants and getters.
+
+
 
 #### System Configuration Files
 - `Global.ini` - Global application settings
@@ -117,6 +199,17 @@ namespace INIConfig::LayoutConstants {
 namespace INIConfig::Defaults {
     // Audio Settings
     static const int DEFAULT_SAMPLE_RATE = 48000;
+## Linux build notes (JUCE 8)
+
+- JUCE modules expected at: ~/JUCE/modules
+- Makefile.linux uses pkg-config to collect text stack flags:
+  - freetype2, harfbuzz, fontconfig
+- Links required Linux libs:
+  - X11, Xext, Xinerama, Xrandr, Xcursor, Xrender, dl, pthread, rt, asound (ALSA), jack
+- Build:
+  - make -f Makefile.linux -j
+  - Binary output at build-linux/otto-standalone
+
     static const int DEFAULT_BUFFER_SIZE = 256;
     static const int DEFAULT_INPUT_CHANNELS = 2;
     static const int DEFAULT_OUTPUT_CHANNELS = 2;

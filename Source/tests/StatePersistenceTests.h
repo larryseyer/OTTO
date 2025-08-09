@@ -256,7 +256,6 @@ private:
         themes.add(lightTheme);
 
         ThemeSettings neonTheme;
-        neonTheme.themeID = 10;
         neonTheme.themeName = "Neon";
         neonTheme.backgroundColor = "#000000";
         neonTheme.foregroundColor = "#00FF00";
@@ -276,13 +275,13 @@ private:
 
             ThemeSettings* loaded = nullptr;
             for (auto& theme : loadedThemes) {
-                if (theme.themeID == original.themeID) {
+                if (theme.themeName == original.themeName) {
                     loaded = &theme;
                     break;
                 }
             }
 
-            expect(loaded != nullptr, "Theme with ID " + juce::String(original.themeID) + " should exist");
+            expect(loaded != nullptr, "Theme '" + original.themeName + "' should exist");
 
             if (loaded) {
                 expectEquals(loaded->themeName, original.themeName, "Theme name should match");

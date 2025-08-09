@@ -79,7 +79,6 @@ void SettingsPanelWindow::setupComponents() {
         ComponentState currentState;
         if (INIManager.loadAllSettings(currentState)) {
             saveStates(currentState);
-            currentState.globalSettings.themeID = 1;
             currentState.globalSettings.currentThemeName = "Dark";
             if (!INIManager.saveAllSettings(currentState)) {
 
@@ -101,7 +100,6 @@ void SettingsPanelWindow::setupComponents() {
         ComponentState currentState;
         if (INIManager.loadAllSettings(currentState)) {
             saveStates(currentState);
-            currentState.globalSettings.themeID = 2;
             currentState.globalSettings.currentThemeName = "Light";
             if (!INIManager.saveAllSettings(currentState)) {
 
@@ -134,10 +132,8 @@ void SettingsPanelWindow::saveStates(ComponentState& state) {
     state.globalSettings.interfaceScale = INIConfig::clampScale(layoutManager.getCurrentScale());
 
     if (colorScheme.getCurrentThemeName() == "Dark") {
-        state.globalSettings.themeID = 1;
         state.globalSettings.currentThemeName = "Dark";
     } else if (colorScheme.getCurrentThemeName() == "Light") {
-        state.globalSettings.themeID = 2;
         state.globalSettings.currentThemeName = "Light";
     }
 }
@@ -150,9 +146,9 @@ void SettingsPanelWindow::loadStates(const ComponentState& state) {
 
     layoutManager.setScale(INIConfig::clampScale(state.globalSettings.interfaceScale));
 
-    if (state.globalSettings.themeID == 1 || state.globalSettings.currentThemeName == "Dark") {
+    if (state.globalSettings.currentThemeName == "Dark") {
         colorScheme.setDarkTheme();
-    } else if (state.globalSettings.themeID == 2 || state.globalSettings.currentThemeName == "Light") {
+    } else if (state.globalSettings.currentThemeName == "Light") {
         colorScheme.setLightTheme();
     }
 }

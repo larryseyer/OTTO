@@ -693,7 +693,6 @@ bool INIDataManager::saveGlobalSettings(const GlobalSettings& settings) {
     sectionData["sync"] = syncLines;
 
     juce::StringArray themeLines;
-    themeLines.add("theme_id=" + juce::String(settings.themeID));
     themeLines.add("theme_name=" + INIUtils::escapeINIValue(settings.currentThemeName));
     sectionData["theme"] = themeLines;
 
@@ -807,9 +806,6 @@ bool INIDataManager::loadGlobalSettings(GlobalSettings& settings) {
 
         if (data.count("theme")) {
             auto& section = data["theme"];
-
-            if (section.count("theme_id"))
-                settings.themeID = section["theme_id"].getIntValue();
             if (section.count("theme_name"))
                 settings.currentThemeName = section["theme_name"];
         }
@@ -889,7 +885,7 @@ bool INIDataManager::saveAllSettings(const ComponentState& state) {
    if (loadAllThemes(themes)) {
        bool found = false;
        for (auto& theme : themes) {
-           if (theme.themeID == state.themeSettings.themeID) {
+           if (theme.themeName == state.themeSettings.themeName) {
                theme = state.themeSettings;
                found = true;
                break;
@@ -926,7 +922,7 @@ bool INIDataManager::loadAllSettings(ComponentState& state) {
    juce::Array<ThemeSettings> themes;
    if (loadAllThemes(themes)) {
        for (const auto& theme : themes) {
-           if (theme.themeID == state.globalSettings.themeID) {
+           if (theme.themeName == state.globalSettings.currentThemeName) {
                state.themeSettings = theme;
                break;
            }
@@ -976,7 +972,6 @@ bool INIDataManager::saveAllThemes(const juce::Array<ThemeSettings>& themes) {
        sections.add(sectionName);
 
        juce::StringArray themeLines;
-       themeLines.add("theme_id=" + juce::String(theme.themeID));
        themeLines.add("theme_name=" + INIUtils::escapeINIValue(theme.themeName));
        themeLines.add("background_color=" + theme.backgroundColor);
        themeLines.add("foreground_color=" + theme.foregroundColor);
